@@ -1,12 +1,12 @@
 package org.nees.uiuc.test;
 
 import org.apache.log4j.Logger;
+import org.nees.uiuc.simcor.factories.ConnectionFactory;
 import org.nees.uiuc.simcor.tcp.Connection;
-import org.nees.uiuc.simcor.tcp.ConnectionFactory;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto;
 import org.nees.uiuc.simcor.tcp.TcpListenerDto;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
-import org.nees.uiuc.simcor.tcp.Connection.ConnectionState;
+import org.nees.uiuc.simcor.tcp.Connection.ConnectionStatus;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.Msg2Tcp;
@@ -64,7 +64,7 @@ public class MultiMessageSender {
 		return execute(ActionsType.CONNECT,null);
 	}
 	public TcpErrorTypes closeRemoteConnection() {
-		cf.closeConnection(connection);
+		cf.closingConnection(connection);
 		TcpActionsDto rsp  = connection.getFromRemoteMsg();
 		log.info("Close result [" + rsp + "]");
 		return rsp.getError().getType();		
@@ -84,7 +84,7 @@ public class MultiMessageSender {
 			cmd.setMsg(m2t);
 		}
 		connection.setToRemoteMsg(cmd);
-		while(connection.getConnectionState().equals(ConnectionState.BUSY)) {
+		while(connection.getConnectionState().equals(ConnectionStatus.BUSY)) {
 			try {
 				log.debug("Waiting to complete action " + a);
 				Thread.sleep(1000);
