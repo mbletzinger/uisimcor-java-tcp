@@ -1,27 +1,28 @@
-package org.nees.uiuc.simcor.tcp;
+package org.nees.uiuc.simcor.factories;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.nees.uiuc.simcor.tcp.Connection.ConnectionState;
-import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
+import org.nees.uiuc.simcor.tcp.Connection;
+import org.nees.uiuc.simcor.tcp.TcpError;
+import org.nees.uiuc.simcor.tcp.TcpLinkDto;
+import org.nees.uiuc.simcor.tcp.TcpListen;
+import org.nees.uiuc.simcor.tcp.TcpListenerDto;
+import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpListenerDto.TcpListenerState;
 
 public class ConnectionFactory {
 
-	private Connection connection;
-	private TcpListener listener;
+	private TcpListen listener;
 	private final Logger log = Logger.getLogger(ConnectionFactory.class);
 	private TcpParameters params;
 	private TcpError savedError = new TcpError();
 
 	public TcpError checkForErrors() {
 		TcpError result = new TcpError();
-		if (connection != null) {
-			result = connection.getFromRemoteMsg().getError();
-		} else if (listener != null) {
+		if (listener != null) {
 			result = listener.getDto().getError();
 		}
 		return result;
@@ -44,7 +45,6 @@ public class ConnectionFactory {
 			} catch (Exception e) {
 				log.error("Check for Listener Connection " + c.getRemoteHost() + " failed",e);
 			}
-			connection = c;
 			return c;
 		}
 		return null;
@@ -74,48 +74,8 @@ public class ConnectionFactory {
 		savedError = new TcpError();
 	}
 
-	public boolean closeConnection() {
-		boolean result = closeConnection(connection);
-		if(result) {
-			connection = null;
-		}
-		return result;
-	}
 
-	public boolean closeConnection(Connection c) {
-		if (c == null) {
-			return true;
-		}
-		if (c.getState().equals(ConnectionState.BUSY) == false && c.isAlive()) {
-			TcpActionsDto cmd = new TcpActionsDto();
-			cmd.setAction(ActionsType.CLOSE);
-			c.setToRemoteMsg(cmd);
-		}
-		return c.getConnectionState().equals(ConnectionState.CLOSED) || (c.isAlive() == false);
-	}
-
-	public boolean deleteConnectionHandle(Connection c) {
-		if (c.getState().equals(ConnectionState.CLOSED) == false) {
-			log.error("Connection is still" + c.getRemoteHost() + " is still"
-					+ c.getState());
-			return false;
-		}
-		
-		return c.isAlive() == false;
-	}
-
-	/**
-	 * 
-	 * @return For connections to a remote host, returns the connection. For
-	 *         connections that listen on a local port, returns a connection
-	 *         request or null.
-	 * @throws Exception
-	 */
-	public Connection getConnection()  {
-		return connection;
-	}
-
-	public TcpListener getListener() {
+	public TcpListen getListener() {
 		return listener;
 	}
 
@@ -127,20 +87,6 @@ public class ConnectionFactory {
 		return savedError;
 	}
 
-	public void openConnection() {
-		connection = new Connection();
-		try {
-			connection.setParams(params);
-			connection.start();
-			Thread.sleep(300); // Give the connection time to start
-		} catch (Exception e) {
-			log.error("Open Connection failed for " + connection.getRemoteHost(),e);
-		}
-		TcpActionsDto cmd = new TcpActionsDto();
-		cmd.setAction(ActionsType.CONNECT);
-		connection.setToRemoteMsg(cmd);
-	}
-
 	public void saveError() {
 		savedError = checkForErrors();
 	}
@@ -150,7 +96,7 @@ public class ConnectionFactory {
 	}
 
 	public void startListener() {
-		listener = new TcpListener();
+		listener = new TcpListen();
 		TcpListenerDto serverDto = new TcpListenerDto();
 		try {
 			listener.setParams(params);

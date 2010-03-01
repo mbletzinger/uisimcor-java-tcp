@@ -1,6 +1,11 @@
-package org.nees.uiuc.simcor.transaction;
+package org.nees.uiuc.simcor.factories;
 
 import org.apache.log4j.Logger;
+import org.nees.uiuc.simcor.transaction.Address;
+import org.nees.uiuc.simcor.transaction.SimCorCompoundMsg;
+import org.nees.uiuc.simcor.transaction.SimCorMsg;
+import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity.StepTypes;
@@ -13,10 +18,30 @@ public class TransactionFactory {
 	private final Logger log = Logger.getLogger(TransactionFactory.class);
 	
 	private int transactionTimeout = 3000;
+	private String mdl = "MDL-00-01";
+	private String systemDescription;
 
+	public String getSystemDescription() {
+		return systemDescription;
+	}
+	public void setSystemDescription(String systemDescription) {
+		this.systemDescription = systemDescription;
+	}
+	public String getMdl() {
+		return mdl;
+	}
+	public void setMdl(String mdl) {
+		this.mdl = mdl;
+	}
+	public SimCorMsg createSessionCommand(boolean isOpen) {
+		return createCommand((isOpen ? "open-session" : "close-session"),mdl,null,"");
+	}
+	public SimCorMsg createSessionResponse(SimCorMsg cmd) {
+		return createResponse(mdl,null, (systemDescription + " " + cmd.getCommand() + " done"), false);
+	}
 	public SimCorMsg createCommand(String cmd, String mdl, String cps, String cnt) {
 		SimCorMsg result;
-		result = new SimCorMsg();
+		result = new SimCorMsg(); 
 		Address a = new Address(mdl);
 		if (cps != null) {
 			a.setSuffix(cps);
@@ -86,12 +111,6 @@ public class TransactionFactory {
 		return result;
 	}
 
-	public synchronized int getTransactionTimeout() {
-		return transactionTimeout;
-	}
-	public synchronized void setTransactionTimeout(int transactionTimeout) {
-		this.transactionTimeout = transactionTimeout;
-	}
 	public void setId(TransactionIdentity id) {
 		this.id = id;
 	}
