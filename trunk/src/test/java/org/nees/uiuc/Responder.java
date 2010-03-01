@@ -9,8 +9,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.ConnectionPeer;
 import org.nees.uiuc.simcor.UiSimCorTcp;
+import org.nees.uiuc.simcor.factories.ConnectionFactory;
 import org.nees.uiuc.simcor.tcp.Connection;
-import org.nees.uiuc.simcor.tcp.ConnectionFactory;
 import org.nees.uiuc.simcor.tcp.TcpListenerDto;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
@@ -54,9 +54,9 @@ public class Responder extends Thread {
 	@Override
 	public void run() {
 		params.setLocalPort(6445);
-		params.setTcpTimeout(20000);
-		simcor = new ConnectionPeer(DirectionType.RECEIVE_COMMAND, params);
-		simcor.startup();
+		params.setTcpTimeout(200000);
+		simcor = new ConnectionPeer(DirectionType.RECEIVE_COMMAND);
+		simcor.startup(params);
 		connected = false;
 		int count = 0;
 
@@ -75,7 +75,7 @@ public class Responder extends Thread {
 		log.info("Open result [" + simcor.getTransaction() + "]");
 		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, simcor.getTransaction().getError().getType());
 		org.junit.Assert.assertEquals(TransactionStateNames.TRANSACTION_DONE, simcor.getTransaction().getState());
-		org.junit.Assert.assertNotNull(simcor.getConnectionFactory().getConnection());
+		org.junit.Assert.assertNotNull(simcor.getConnectionManager().getConnection());
 		connected = true;
 		log.info("Connection established");
 

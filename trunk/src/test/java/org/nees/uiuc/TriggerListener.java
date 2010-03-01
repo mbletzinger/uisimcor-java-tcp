@@ -7,12 +7,12 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.ConnectionPeer;
 import org.nees.uiuc.simcor.UiSimCorTcp;
+import org.nees.uiuc.simcor.factories.ConnectionFactory;
 import org.nees.uiuc.simcor.tcp.Connection;
-import org.nees.uiuc.simcor.tcp.ConnectionFactory;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto;
 import org.nees.uiuc.simcor.tcp.TcpListenerDto;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
-import org.nees.uiuc.simcor.tcp.Connection.ConnectionState;
+import org.nees.uiuc.simcor.tcp.Connection.ConnectionStatus;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
@@ -65,14 +65,14 @@ public class TriggerListener extends Thread {
 		simcor = new ConnectionPeer(DirectionType.RECEIVE_COMMAND, params);
 		simcor.startup();
 		connected = false;
-		ConnectionFactory cf = simcor.getConnectionFactory();
+		ConnectionFactory cf = simcor.getConnectionManager();
 		Connection c = null;
 		try {
 			c = cf.getConnection();
 		} catch (Exception e1) {
 			log.error("Connection failed because ",e1);
 		}
-		while(c.getConnectionState() == ConnectionState.BUSY) {
+		while(c.getConnectionState() == ConnectionStatus.BUSY) {
 			try {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {

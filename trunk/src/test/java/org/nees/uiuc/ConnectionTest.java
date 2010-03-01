@@ -10,12 +10,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.nees.uiuc.simcor.ConnectionPeer;
 import org.nees.uiuc.simcor.UiSimCorTcp;
+import org.nees.uiuc.simcor.factories.ConnectionFactory;
 import org.nees.uiuc.simcor.tcp.Connection;
-import org.nees.uiuc.simcor.tcp.ConnectionFactory;
+import org.nees.uiuc.simcor.tcp.ConnectionManager;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto;
 import org.nees.uiuc.simcor.tcp.TcpListenerDto;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
-import org.nees.uiuc.simcor.tcp.Connection.ConnectionState;
+import org.nees.uiuc.simcor.tcp.Connection.ConnectionStatus;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
@@ -25,6 +26,7 @@ public class ConnectionTest {
 
 	private TcpParameters params = new TcpParameters();
 	private final Logger log = Logger.getLogger(ConnectionTest.class);
+	private ConnectionManager cm;
 	private ConnectionFactory cf;
 	private Connection connection;
 	private List<TransactionStateNames> readyStates = new ArrayList<TransactionStateNames>();
@@ -42,18 +44,18 @@ public class ConnectionTest {
 		params.setRemoteHost("127.0.0.1");
 		params.setRemotePort(6444);
 		params.setTcpTimeout(20000);
-		cf = new ConnectionFactory();
-		cf.setParams(params);
-		cf.openConnection();
-		connection = cf.getConnection();
-		while (connection.getConnectionState().equals(ConnectionState.BUSY)) {
+		cm = new ConnectionManager();
+		cm.setParams(params);
+		cm.openConnection();
+		connection = cm.getConnection();
+		while (connection.getConnectionState().equals(ConnectionStatus.BUSY)) {
 			Thread.sleep(100);
 		}
 		TcpActionsDto rsp = connection.getFromRemoteMsg();
 		log.info("Open result [" + rsp + "]");
 		TcpErrorTypes err = rsp.getError().getType();
 		assertEquals(TcpErrorTypes.IO_ERROR, err);
-		assertEquals(ConnectionState.IN_ERROR, connection.getConnectionState());
+		assertEquals(ConnectionStatus.IN_ERROR, connection.getConnectionState());
 	}
 
 	@Test
@@ -65,7 +67,7 @@ public class ConnectionTest {
 		cf.setParams(params);
 		cf.startListener();
 		int count = 0;
-		connection = cf.getConnection();
+		connection = cf.checkForListenerConnection();
 		TcpListenerDto dto = cf.getListener().getDto();
 		log.info("Open result [" + dto + "]");
 
@@ -102,9 +104,8 @@ public class ConnectionTest {
 		params.setRemoteHost("127.0.0.1");
 		params.setRemotePort(6454);
 		params.setTcpTimeout(20000);
-		UiSimCorTcp simcor = new ConnectionPeer(DirectionType.RECEIVE_COMMAND,
-				params);
-		simcor.startup();
+		UiSimCorTcp simcor = new ConnectionPeer(DirectionType.RECEIVE_COMMAND);
+		simcor.startup(params);
 		int cnt = 0;
 
 		TransactionStateNames state = simcor.isReady();
@@ -147,9 +148,8 @@ public class ConnectionTest {
 		log.info("========= Running testUiSimCorTcpListenerConnection =========");
 		params.setLocalPort(6454);
 		params.setTcpTimeout(20000);
-		UiSimCorTcp simcor = new ConnectionPeer(DirectionType.RECEIVE_COMMAND,
-				params);
-		simcor.startup();
+		UiSimCorTcp simcor = new ConnectionPeer(DirectionType.RECEIVE_COMMAND);
+		simcor.startup(params);
 		int count = 0;
 		TransactionStateNames state = simcor.isReady();
 		while (readyStates.contains(state) == false && count < 4) {
