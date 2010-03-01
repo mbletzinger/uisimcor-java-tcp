@@ -1,15 +1,12 @@
 package org.nees.uiuc.simcor;
 
 import org.apache.log4j.Logger;
-import org.nees.uiuc.simcor.states.ResponseAvailable;
-import org.nees.uiuc.simcor.states.SendingCommand;
-import org.nees.uiuc.simcor.states.TransactionState;
-import org.nees.uiuc.simcor.states.TransmitCommandWaitForCommand;
-import org.nees.uiuc.simcor.states.TransmitCommandWaitForResponse;
-import org.nees.uiuc.simcor.tcp.Connection;
-import org.nees.uiuc.simcor.tcp.TcpError;
+import org.nees.uiuc.simcor.factories.ConnectionFactory;
+import org.nees.uiuc.simcor.states.common.ResponseAvailable;
+import org.nees.uiuc.simcor.states.common.SendingCommand;
+import org.nees.uiuc.simcor.states.p2p.SetUpCommand;
+import org.nees.uiuc.simcor.states.p2p.TransmitCommandWaitForResponse;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
-import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
@@ -39,9 +36,9 @@ public class TriggerClient extends UiSimCorTcp {
  * @param dir - flag to indicate which direction the commands are going.
  * @param params - network parameters
  */
-	public TriggerClient(Connection connection) {
+	public TriggerClient(ConnectionFactory cf) {
 			machine.put(TransactionStateNames.WAIT_FOR_COMMAND,
-				new TransmitCommandWaitForCommand());
+				new SetUpCommand());
 		machine
 				.put(TransactionStateNames.SENDING_COMMAND,
 						new SendingCommand());
@@ -85,36 +82,18 @@ public class TriggerClient extends UiSimCorTcp {
 		log.debug("Current transaction: " + transaction);
 		return transaction.getState();
 	}
-	/**
-	 * Start a Transmit command transaction
-	 * @param command - transaction containing the command.  This should be created with the transactionFactory.
-	 */
-	public void startTransaction(Transaction command) {
-		
-		transaction = command;
-		transaction.setPosted(true);
-		transaction.setState(TransactionStateNames.WAIT_FOR_COMMAND);
-		execute();
-	}
-//	private void execute() {
-//		TransactionState state = machine.get(transaction.getState());
-//		log.debug("Executing state: " + state);
-//		state.execute(transaction, connection);
-//		if (connection.isAlive() == false) {
-//			TcpError e = new TcpError();
-//			e.setText("Connection thread has died unexpectedly");
-//			e.setType(TcpErrorTypes.THREAD_DIED);
-//			transaction.setError(e);
-//			transaction.setState(TransactionStateNames.ERRORS_EXIST);
-//		}
-//	}
 	@Override
 	public void continueTransaction(SimCorMsg response) {
 		// TODO Auto-generated method stub
 		
 	}
 	@Override
-	protected void initialize(DirectionType dir, TcpParameters params) {
+	public void startTransaction(Transaction command) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	protected void initialize(DirectionType dir) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -129,7 +108,7 @@ public class TriggerClient extends UiSimCorTcp {
 		
 	}
 	@Override
-	public void startup() {
+	public void startup(TcpParameters params) {
 		// TODO Auto-generated method stub
 		
 	}

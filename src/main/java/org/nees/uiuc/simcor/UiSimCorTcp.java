@@ -4,26 +4,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.logging.Archiving;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.tcp.Connection;
-import org.nees.uiuc.simcor.tcp.ConnectionFactory;
+import org.nees.uiuc.simcor.tcp.ConnectionManager;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
-import org.nees.uiuc.simcor.transaction.TransactionFactory;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
 import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity.StepTypes;
 
 public abstract class UiSimCorTcp {
 
-	protected ConnectionFactory connectionFactory = new ConnectionFactory();
+	protected ConnectionManager connectionManager = new ConnectionManager();
 
 	public abstract void shutdown();
 
-	public abstract void startup();
+	public abstract void startup(TcpParameters params);
 
 	public abstract void startTransaction();
 
@@ -33,7 +33,7 @@ public abstract class UiSimCorTcp {
 
 	public abstract void continueTransaction(SimCorMsg response);
 
-	protected abstract void initialize(DirectionType dir, TcpParameters params);
+	protected abstract void initialize(DirectionType dir, String mdl);
 
 	private TcpError errors;
 	protected Map<TransactionStateNames, TransactionState> machine = new HashMap<TransactionStateNames, TransactionState>();
@@ -46,8 +46,8 @@ public abstract class UiSimCorTcp {
 		super();
 	}
 
-	public ConnectionFactory getConnectionFactory() {
-		return connectionFactory;
+	public ConnectionManager getConnectionManager() {
+		return connectionManager;
 	}
 
 	public TcpError getErrors() {
@@ -90,8 +90,7 @@ public abstract class UiSimCorTcp {
 	protected void execute() {
 		TransactionState state = machine.get(transaction.getState());
 		log.debug("Executing state: " + state);
-		Connection connection = connectionFactory.getConnection();
-		state.execute(transaction, connection);
+		state.execute(transaction, connectionManager);
 	}
 
 	public void setArchiveFilename(String filename) {

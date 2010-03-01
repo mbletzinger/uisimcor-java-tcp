@@ -1,26 +1,26 @@
 package org.nees.uiuc.simcor;
 
 import org.apache.log4j.Logger;
+import org.nees.uiuc.simcor.factories.ConnectionFactory;
 import org.nees.uiuc.simcor.logging.ExitTransaction;
-import org.nees.uiuc.simcor.states.ClosingConnection;
-import org.nees.uiuc.simcor.states.CommandAvailable;
-import org.nees.uiuc.simcor.states.ErrorsExist;
-import org.nees.uiuc.simcor.states.OpeningConnection;
-import org.nees.uiuc.simcor.states.ReadCommand;
-import org.nees.uiuc.simcor.states.ReadResponse;
-import org.nees.uiuc.simcor.states.Ready;
-import org.nees.uiuc.simcor.states.ReceiveCommandWaitForCommand;
-import org.nees.uiuc.simcor.states.ReceiveCommandWaitForResponse;
-import org.nees.uiuc.simcor.states.ResponseAvailable;
-import org.nees.uiuc.simcor.states.SendingCommand;
-import org.nees.uiuc.simcor.states.SendingResponse;
-import org.nees.uiuc.simcor.states.StartListening;
-import org.nees.uiuc.simcor.states.StopListening;
-import org.nees.uiuc.simcor.states.TransactionDone;
-import org.nees.uiuc.simcor.states.TransmitCommandWaitForCommand;
-import org.nees.uiuc.simcor.states.TransmitCommandWaitForResponse;
+import org.nees.uiuc.simcor.states.common.ClosingConnection;
+import org.nees.uiuc.simcor.states.common.CommandAvailable;
+import org.nees.uiuc.simcor.states.common.ErrorsExist;
+import org.nees.uiuc.simcor.states.common.OpeningConnection;
+import org.nees.uiuc.simcor.states.common.ReadCommand;
+import org.nees.uiuc.simcor.states.common.ReadResponse;
+import org.nees.uiuc.simcor.states.common.Ready;
+import org.nees.uiuc.simcor.states.common.ResponseAvailable;
+import org.nees.uiuc.simcor.states.common.SendingCommand;
+import org.nees.uiuc.simcor.states.common.SendingResponse;
+import org.nees.uiuc.simcor.states.common.StartListening;
+import org.nees.uiuc.simcor.states.common.StopListening;
+import org.nees.uiuc.simcor.states.common.TransactionDone;
+import org.nees.uiuc.simcor.states.p2p.ReceiveCommandWaitForCommand;
+import org.nees.uiuc.simcor.states.p2p.ReceiveCommandWaitForResponse;
+import org.nees.uiuc.simcor.states.p2p.SetUpCommand;
+import org.nees.uiuc.simcor.states.p2p.TransmitCommandWaitForResponse;
 import org.nees.uiuc.simcor.tcp.Connection;
-import org.nees.uiuc.simcor.tcp.ConnectionFactory;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
@@ -61,6 +61,7 @@ import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
  */
 public class ConnectionPeer extends UiSimCorTcp {
 	final Logger log = Logger.getLogger(ConnectionPeer.class);
+	ConnectionFactory connectionFactory = new ConnectionFactory();
 
 	/**
 	 * 
@@ -69,18 +70,16 @@ public class ConnectionPeer extends UiSimCorTcp {
 	 * @param params
 	 *            - network parameters
 	 */
-	public ConnectionPeer(DirectionType dir, TcpParameters params) {
-		initialize(dir, params);
+	public ConnectionPeer(DirectionType dir,String mdl) {
+		initialize(dir, mdl);
 	}
 
-	public ConnectionPeer(String dirS, TcpParameters params) {
-		initialize(DirectionType.valueOf(dirS), params);
+	public ConnectionPeer(String dirS,String mdl) {
+		initialize(DirectionType.valueOf(dirS), mdl);
 	}
 
 	@Override
-	protected void initialize(DirectionType dir, TcpParameters params) {
-		connectionFactory.setParams(params);
-		transactionFactory.setDirection(dir);
+	protected void initialize(DirectionType dir,String mdl) {
 		if (dir == DirectionType.RECEIVE_COMMAND) {
 			machine.put(TransactionStateNames.START_LISTENING,
 					new StartListening(connectionFactory));
@@ -96,7 +95,7 @@ public class ConnectionPeer extends UiSimCorTcp {
 					new SendingResponse());
 		} else {
 			machine.put(TransactionStateNames.WAIT_FOR_COMMAND,
-					new TransmitCommandWaitForCommand());
+					new SetUpCommand());
 			machine.put(TransactionStateNames.SENDING_COMMAND,
 					new SendingCommand());
 			machine.put(TransactionStateNames.WAIT_FOR_RESPONSE,
@@ -120,6 +119,7 @@ public class ConnectionPeer extends UiSimCorTcp {
 				new ReadResponse());
 		transaction = transactionFactory.createTransaction(null);
 		transaction.setState(TransactionStateNames.TRANSACTION_DONE);
+		transactionFactory.setMdl(mdl);
 
 	}
 
@@ -186,21 +186,26 @@ public class ConnectionPeer extends UiSimCorTcp {
 	 * @see {@link ConnectionFactory#getConnection()}
 	 */
 	@Override
-	public void startup() {
+	public void startup(TcpParameters params) {
+		if(params.isListener()) {
+			transactionFactory.setDirection(DirectionType.RECEIVE_COMMAND);
+		} else {
+			transactionFactory.setDirection(DirectionType.SEND_COMMAND);			
+		}
 		transaction = transactionFactory.createTransaction(null);
 		transaction.setPosted(true);
-		if (connectionFactory.getParams().isListener()) {
+		if (params.isListener()) {
 			transaction.setState(TransactionStateNames.START_LISTENING);
-			log.debug("Start listening");
-			connectionFactory.startListener();
 		} else {
 			transaction.setState(TransactionStateNames.OPENING_CONNECTION);
-			log.debug("Starting connection");
-			connectionFactory.openConnection();
 		}
 		if (archive.isAlive() == false) {
 			archive.start();
 		}
+	}
+
+	public ConnectionFactory getConnectionFactory() {
+		return connectionFactory;
 	}
 
 	@Override
@@ -210,9 +215,9 @@ public class ConnectionPeer extends UiSimCorTcp {
 		transaction.setPosted(true);
 		transaction.setState(TransactionStateNames.CLOSING_CONNECTION);
 		log.info("Closing connection");
-		Connection connection = connectionFactory.getConnection();
+		Connection connection = connectionManager.getConnection();
 		if (connection != null) {
-			connectionFactory.closeConnection(connection);
+			connectionManager.closeConnection();
 		}
 		log.info("Shutting down network logger");
 		archive.logTransaction(transaction);

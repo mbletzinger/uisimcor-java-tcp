@@ -8,17 +8,19 @@ public class Transaction {
 	};
 
 	public enum DirectionType {
-		RECEIVE_COMMAND, SEND_COMMAND
+		NONE, RECEIVE_COMMAND, SEND_COMMAND
 	};
 
 	public enum TransactionStateNames {
-		CLOSING_CONNECTION, COMMAND_AVAILABLE, ERRORS_EXIST, OPENING_CONNECTION, READ_COMMAND, READ_RESPONSE, READY, RESPONSE_AVAILABLE, SENDING_COMMAND, SENDING_RESPONSE, START_LISTENING, STOP_LISTENING, TRANSACTION_DONE, WAIT_FOR_COMMAND, WAIT_FOR_RESPONSE
+		ASSEMBLE_OPEN_RESPONSE, CHECK_OPEN_CONNECTION, CLOSING_CONNECTION, COMMAND_AVAILABLE, OPENING_CONNECTION, READ_COMMAND, READ_RESPONSE, READY, 
+		RESPONSE_AVAILABLE, SEND_CLOSE_SESSION, SEND_OPEN_SESSION, SEND_OPEN_SESSION_RESPONSE, SENDING_COMMAND, SENDING_RESPONSE, SETUP_COMMAND, SETUP_RESPONSE, 
+		START_LISTENING, STOP_LISTENING, TRANSACTION_DONE,WAIT_FOR_COMMAND, WAIT_FOR_OPEN_SESSION, WAIT_FOR_RESPONSE
 	}
 
 	private ActionType action = ActionType.NONE;
 
 	private SimCorMsg command = null;
-	private DirectionType direction;
+	private DirectionType direction = DirectionType.NONE;
 	private TcpError error;
 	// id is null i not used
 	private TransactionIdentity id;
@@ -27,14 +29,6 @@ public class Transaction {
 	private SimCorMsg response = null;
 	private TransactionStateNames state = TransactionStateNames.READY;
 	private int timeout = 3000;
-
-	public int getTimeout() {
-		return timeout;
-	}
-
-	public void setTimeout(int timeout) {
-		this.timeout = timeout;
-	}
 
 	public Transaction() {
 	}
@@ -93,6 +87,10 @@ public class Transaction {
 		return state;
 	}
 
+	public int getTimeout() {
+		return timeout;
+	}
+
 	public boolean isPickedUp() {
 		return pickedUp;
 	}
@@ -137,9 +135,14 @@ public class Transaction {
 		this.state = status;
 	}
 
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
+	}
+
 	@Override
 	public String toString() {
-		String result = "/state=" + state + "/dir=" + direction + "/pickedUp=" + pickedUp + "/posted=" + posted + "\n";
+		String result = "/state=" + state + "/dir=" + direction + "/pickedUp="
+				+ pickedUp + "/posted=" + posted + "\n";
 		result += "/transId=" + id + "/error=" + error + "\n";
 		result += "/command=" + command;
 		result += "/response=" + response;
