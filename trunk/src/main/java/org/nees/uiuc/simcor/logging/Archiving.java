@@ -12,6 +12,7 @@ import java.util.concurrent.BlockingQueue;
 
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
 
 public class Archiving extends Thread {
 	private boolean archivingEnabled = false;
@@ -68,6 +69,10 @@ public class Archiving extends Thread {
 				Transaction t = r.next();
 				if (t instanceof ExitTransaction) {
 					setExit(true);
+					continue;
+				}
+				if(t.getDirection().equals(DirectionType.NONE)) {
+					log.error("Transaction [" + t + "] is empty");
 					continue;
 				}
 				wf.print(tlr.toString(t));

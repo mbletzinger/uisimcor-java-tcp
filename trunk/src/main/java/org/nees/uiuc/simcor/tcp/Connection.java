@@ -5,9 +5,9 @@ import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 
 public class Connection extends Thread {
-	public enum ConnectionState {BUSY,CLOSED,IN_ERROR,READY};
+	public enum ConnectionStatus {BUSY,CLOSED,IN_ERROR,READY};
 	private TcpActions actions = new TcpActions();
-	private ConnectionState connectionState = ConnectionState.CLOSED;
+	private ConnectionStatus connectionState = ConnectionStatus.CLOSED;
 	private TcpActionsDto fromRemoteMsg = new TcpActionsDto();
 	private final Logger log = Logger.getLogger(Connection.class);
 	private String remoteHost;
@@ -35,7 +35,7 @@ public class Connection extends Thread {
 		remoteHost = link.getRemoteHost();
 	}
 
-	public synchronized ConnectionState getConnectionState() {
+	public synchronized ConnectionStatus getConnectionState() {
 		return connectionState;
 	}
 
@@ -53,7 +53,7 @@ public class Connection extends Thread {
 	}
 
 	public synchronized TcpActionsDto getToRemoteMsg() {
-		if (getConnectionState() == ConnectionState.READY) {
+		if (getConnectionState() == ConnectionStatus.READY) {
 			try {
 				log.debug("I'm WAAAAIITING");
 				wait();
@@ -85,7 +85,7 @@ public class Connection extends Thread {
 				inM = actions.connect();	
 				inM.setAction(ActionsType.NONE);
 				setFromRemoteMsg(inM,act);
-				if(getConnectionState().equals(ConnectionState.IN_ERROR)) {
+				if(getConnectionState().equals(ConnectionStatus.IN_ERROR)) {
 					log.debug("Attempting to EXIT");
 					noRemoteMsgNeeded = true;
 					break;
@@ -122,13 +122,13 @@ public class Connection extends Thread {
 		}
 		if (noRemoteMsgNeeded == false) {
 			setFromRemoteMsg(new TcpActionsDto(), ActionsType.EXIT);
-			setConnectionState(ConnectionState.CLOSED);
+			setConnectionState(ConnectionStatus.CLOSED);
 		}
 		running = false;
 		log.info("Goodbye");
 	}
 
-	public synchronized void setConnectionState(ConnectionState busy) {
+	public synchronized void setConnectionState(ConnectionStatus busy) {
 		log.debug("I am " + busy);
 		this.connectionState = busy;
 	}
@@ -139,12 +139,12 @@ public class Connection extends Thread {
 		this.fromRemoteMsg = inMsg;
 		if (inMsg.getError().getType() != TcpErrorTypes.NONE) {
 			fromRemoteMsg.getError().setRemoteHost(remoteHost);
-			setConnectionState(ConnectionState.IN_ERROR);
+			setConnectionState(ConnectionStatus.IN_ERROR);
 		} else {
 			if (act.equals(ActionsType.CLOSE)) {
-				setConnectionState(ConnectionState.CLOSED);
+				setConnectionState(ConnectionStatus.CLOSED);
 			} else {
-				setConnectionState(ConnectionState.READY);
+				setConnectionState(ConnectionStatus.READY);
 			}
 		}
 		log.debug("Connection set to " + getConnectionState());
@@ -175,7 +175,7 @@ public class Connection extends Thread {
 		this.toRemoteMsg = new TcpActionsDto(outMsg);
 		notifyAll();
 		if(running) {
-			setConnectionState(ConnectionState.BUSY);
+			setConnectionState(ConnectionStatus.BUSY);
 			log.debug("Connection set to " + getConnectionState());
 		} else {
 			log.debug("Connection is not running");

@@ -5,16 +5,16 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.nees.uiuc.simcor.factories.ConnectionFactory;
+import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.tcp.Connection;
-import org.nees.uiuc.simcor.tcp.ConnectionFactory;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto;
 import org.nees.uiuc.simcor.tcp.TcpError;
-import org.nees.uiuc.simcor.tcp.Connection.ConnectionState;
+import org.nees.uiuc.simcor.tcp.Connection.ConnectionStatus;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
-import org.nees.uiuc.simcor.transaction.TransactionFactory;
 import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 
 public class TriggerBroadcaster {
@@ -120,7 +120,7 @@ public class TriggerBroadcaster {
 		TcpActionsDto cmd = new TcpActionsDto();
 		cmd.setAction(a);
 		connection.setToRemoteMsg(cmd);
-		while(connection.getConnectionState().equals(ConnectionState.BUSY)) {
+		while(connection.getConnectionState().equals(ConnectionStatus.BUSY)) {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
