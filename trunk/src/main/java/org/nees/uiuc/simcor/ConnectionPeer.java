@@ -3,23 +3,23 @@ package org.nees.uiuc.simcor;
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.factories.ConnectionFactory;
 import org.nees.uiuc.simcor.logging.ExitTransaction;
-import org.nees.uiuc.simcor.states.common.ClosingConnection;
-import org.nees.uiuc.simcor.states.common.CommandAvailable;
 import org.nees.uiuc.simcor.states.common.ErrorsExist;
-import org.nees.uiuc.simcor.states.common.OpeningConnection;
-import org.nees.uiuc.simcor.states.common.ReadCommand;
-import org.nees.uiuc.simcor.states.common.ReadResponse;
-import org.nees.uiuc.simcor.states.common.Ready;
-import org.nees.uiuc.simcor.states.common.ResponseAvailable;
-import org.nees.uiuc.simcor.states.common.SendingCommand;
-import org.nees.uiuc.simcor.states.common.SendingResponse;
-import org.nees.uiuc.simcor.states.common.StartListening;
-import org.nees.uiuc.simcor.states.common.StopListening;
-import org.nees.uiuc.simcor.states.common.TransactionDone;
-import org.nees.uiuc.simcor.states.p2p.ReceiveCommandWaitForCommand;
-import org.nees.uiuc.simcor.states.p2p.ReceiveCommandWaitForResponse;
-import org.nees.uiuc.simcor.states.p2p.SetUpCommand;
-import org.nees.uiuc.simcor.states.p2p.TransmitCommandWaitForResponse;
+import org.nees.uiuc.simcor.states.listener.ClosingConnection;
+import org.nees.uiuc.simcor.states.listener.ReadResponse;
+import org.nees.uiuc.simcor.states.listener.SendingCommand;
+import org.nees.uiuc.simcor.states.listener.SendingResponse;
+import org.nees.uiuc.simcor.states.listener.StartListening;
+import org.nees.uiuc.simcor.states.listener.StopListening;
+import org.nees.uiuc.simcor.states.listener.WaitForResponse;
+import org.nees.uiuc.simcor.states.old.CommandAvailable;
+import org.nees.uiuc.simcor.states.old.OpeningConnection;
+import org.nees.uiuc.simcor.states.old.ReadCommand;
+import org.nees.uiuc.simcor.states.old.Ready;
+import org.nees.uiuc.simcor.states.old.ReceiveCommandWaitForCommand;
+import org.nees.uiuc.simcor.states.old.ReceiveCommandWaitForResponse;
+import org.nees.uiuc.simcor.states.old.ResponseAvailable;
+import org.nees.uiuc.simcor.states.old.SetUpCommand;
+import org.nees.uiuc.simcor.states.old.TransactionDone;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
@@ -99,7 +99,7 @@ public class ConnectionPeer extends UiSimCorTcp {
 			machine.put(TransactionStateNames.SENDING_COMMAND,
 					new SendingCommand());
 			machine.put(TransactionStateNames.WAIT_FOR_RESPONSE,
-					new TransmitCommandWaitForResponse());
+					new WaitForResponse());
 			machine.put(TransactionStateNames.RESPONSE_AVAILABLE,
 					new ResponseAvailable());
 

@@ -2,10 +2,10 @@ package org.nees.uiuc.simcor;
 
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.factories.ConnectionFactory;
-import org.nees.uiuc.simcor.states.common.ResponseAvailable;
-import org.nees.uiuc.simcor.states.common.SendingCommand;
-import org.nees.uiuc.simcor.states.p2p.SetUpCommand;
-import org.nees.uiuc.simcor.states.p2p.TransmitCommandWaitForResponse;
+import org.nees.uiuc.simcor.states.listener.SendingCommand;
+import org.nees.uiuc.simcor.states.listener.WaitForResponse;
+import org.nees.uiuc.simcor.states.old.ResponseAvailable;
+import org.nees.uiuc.simcor.states.old.SetUpCommand;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
@@ -43,7 +43,7 @@ public class TriggerClient extends UiSimCorTcp {
 				.put(TransactionStateNames.SENDING_COMMAND,
 						new SendingCommand());
 		machine.put(TransactionStateNames.WAIT_FOR_RESPONSE,
-				new TransmitCommandWaitForResponse());
+				new WaitForResponse());
 		machine.put(TransactionStateNames.RESPONSE_AVAILABLE,
 				new ResponseAvailable());
 //		machine.put(TransactionStateNames.TRANSACTION_DONE,
