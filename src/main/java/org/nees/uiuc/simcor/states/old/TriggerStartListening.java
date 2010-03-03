@@ -1,4 +1,4 @@
-package org.nees.uiuc.simcor.states.trigger;
+package org.nees.uiuc.simcor.states.old;
 
 import org.nees.uiuc.simcor.factories.ConnectionFactory;
 import org.nees.uiuc.simcor.states.ConnectionState;

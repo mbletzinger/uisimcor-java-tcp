@@ -48,7 +48,7 @@ public class StateActionsProcessor {
 		setUpWrite(transaction, isCommand, next);
 	}
 
-	public void checkOpenConnection(Transaction transaction) {
+	public void checkOpenConnection(Transaction transaction, TransactionStateNames next) {
 		TcpError er = new TcpError();
 		Connection connection = null;
 		if (cm.getParams().isListener()) {
@@ -68,13 +68,11 @@ public class StateActionsProcessor {
 			}
 			er = cm.checkForErrors();
 		}
-		;
 		TcpActionsDto action = new TcpActionsDto();
 		action.setAction(ActionsType.READ);
 		connection.setMsgTimeout(transaction.getTimeout());
 		connection.setToRemoteMsg(action);
-		TransactionStateNames state = TransactionStateNames.WAIT_FOR_OPEN_SESSION;
-		saveStatus(transaction, er, state);
+		saveStatus(transaction, er, next);
 	}
 
 	public void closingConnection(Transaction transaction) {
@@ -192,7 +190,8 @@ public class StateActionsProcessor {
 		transaction.setState(next);
 	}
 
-	public void setUpWrite(Transaction transaction, boolean isCommand, TransactionStateNames next) {
+	public void setUpWrite(Transaction transaction, boolean isCommand,
+			TransactionStateNames next) {
 		Connection connection = cm.getConnection();
 		TcpActionsDto action = new TcpActionsDto();
 		action.setAction(ActionsType.WRITE);
@@ -220,12 +219,10 @@ public class StateActionsProcessor {
 	}
 
 	public void stopListening(Transaction transaction) {
-		boolean stopped = cf.stopListener();
+		cf.stopListener();
 		TcpError er = cf.checkForErrors();
 		TransactionStateNames state = TransactionStateNames.STOP_LISTENING;
-		if (stopped) {
-			state = TransactionStateNames.TRANSACTION_DONE;
-		}
+		state = TransactionStateNames.TRANSACTION_DONE;
 		setStatus(transaction, er, state);
 	}
 
@@ -246,6 +243,7 @@ public class StateActionsProcessor {
 		setStatus(transaction, new TcpError(), next);
 		transaction.setPosted(false);
 	}
+
 	public void waitForRead(Transaction transaction, boolean isCommand,
 			TransactionStateNames next) {
 		Connection connection = cm.getConnection();

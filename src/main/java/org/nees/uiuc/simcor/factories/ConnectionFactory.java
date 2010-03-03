@@ -1,17 +1,11 @@
 package org.nees.uiuc.simcor.factories;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpLinkDto;
 import org.nees.uiuc.simcor.tcp.TcpListen;
-import org.nees.uiuc.simcor.tcp.TcpListenerDto;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
-import org.nees.uiuc.simcor.tcp.TcpListenerDto.TcpListenerState;
 
 public class ConnectionFactory {
 
@@ -23,7 +17,7 @@ public class ConnectionFactory {
 	public TcpError checkForErrors() {
 		TcpError result = new TcpError();
 		if (listener != null) {
-			result = listener.getDto().getError();
+			result = listener.getError();
 		}
 		return result;
 	}
@@ -31,43 +25,20 @@ public class ConnectionFactory {
 		return c.getFromRemoteMsg().getError();
 	}
 	public Connection checkForListenerConnection() {
-		TcpListenerDto serverDto = listener.getDto();
-		TcpListenerState state = serverDto.getListenerState();
-		if (state == TcpListenerState.STOPPED) {
+		TcpLinkDto client = listener.listen();
+		if (client == null) {
 			return null;
 		}
-		if (state == TcpListenerState.NEW_CLIENTS) {
-			Connection c = new Connection(listener.flushList().get(0));
-			try {
-				c.setParams(params);
-				c.start();
-				Thread.sleep(300); // Give the connection time to start
-			} catch (Exception e) {
-				log.error("Check for Listener Connection " + c.getRemoteHost() + " failed",e);
-			}
-			return c;
-		}
-		return null;
-	}
-
-	public List<Connection> checkForListenerConnections() {
-		List<Connection> result = new ArrayList<Connection>();
-		List<TcpLinkDto> sockets = listener.flushList();
-		for (Iterator<TcpLinkDto> s = sockets.iterator(); s.hasNext();) {
-			Connection cn = new Connection(s.next());
-			try {
-				cn.setParams(params);
-			} catch (Exception e) {
-				log.error("Check for Listener Connection " + cn.getRemoteHost() + " failed",e);
-			}
-			cn.start();
-			result.add(cn);
-		}
+		Connection c = new Connection(client);
 		try {
-			Thread.sleep(300);
-		} catch (InterruptedException e) {
-		} // Give the connection time to start
-		return result;
+			c.setParams(params);
+			c.start();
+			Thread.sleep(300); // Give the connection time to start
+		} catch (Exception e) {
+			log.error("Check for Listener Connection " + c.getRemoteHost()
+					+ " failed", e);
+		}
+		return c;
 	}
 
 	public void clearError() {
@@ -97,18 +68,15 @@ public class ConnectionFactory {
 
 	public void startListener() {
 		listener = new TcpListen();
-		TcpListenerDto serverDto = new TcpListenerDto();
 		try {
 			listener.setParams(params);
-			listener.start();
-			Thread.sleep(300); // Give the lisstener time to start
+			listener.startListening();
 		} catch (Exception e) {
 			log.error("Start Listener failed",e);
 		}
 	}
 
-	public boolean stopListener() {
-		listener.setShutdown(true);
-		return listener.isAlive() == false;
+	public void stopListener() {
+		listener.stopListening();
 	}
 }

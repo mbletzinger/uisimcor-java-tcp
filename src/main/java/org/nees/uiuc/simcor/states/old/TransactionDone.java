@@ -1,19 +1,18 @@
-package org.nees.uiuc.simcor.states.common;
+package org.nees.uiuc.simcor.states.old;
 
 import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 
-public class SendingCommand extends TransactionState {
-
-	public SendingCommand(StateActionsProcessor sap) {
-		super(TransactionStateNames.SENDING_COMMAND, sap);
+public class TransactionDone extends TransactionState {
+	public TransactionDone(StateActionsProcessor sap) {
+		super(TransactionStateNames.TRANSACTION_DONE,sap);
 	}
 
 	@Override
 	public void execute(Transaction transaction) {
-		sap.waitForSend(transaction, TransactionStateNames.READ_RESPONSE);
+		sap.recordTransaction(transaction);
 	}
 
 }
