@@ -1,4 +1,4 @@
-package org.nees.uiuc.test;
+package org.nees.uiuc.simcor.test;
 
 import static org.junit.Assert.assertEquals;
 
@@ -11,10 +11,13 @@ import org.junit.Test;
 import org.nees.uiuc.simcor.ConnectionPeer;
 import org.nees.uiuc.simcor.UiSimCorTcp;
 import org.nees.uiuc.simcor.factories.ConnectionFactory;
+import org.nees.uiuc.simcor.factories.TransactionFactory;
+import org.nees.uiuc.simcor.logging.Archiving;
+import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.ConnectionManager;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto;
-import org.nees.uiuc.simcor.tcp.TcpListenerDto;
+import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.Connection.ConnectionStatus;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
@@ -26,16 +29,18 @@ public class ConnectionTest {
 
 	private TcpParameters params = new TcpParameters();
 	private final Logger log = Logger.getLogger(ConnectionTest.class);
-	private ConnectionManager cm;
-	private ConnectionFactory cf;
-	private Connection connection;
+	private StateActionsProcessor sap;
 	private List<TransactionStateNames> readyStates = new ArrayList<TransactionStateNames>();
 
 	@Before
 	public void setUp() throws Exception {
 		readyStates.add(TransactionStateNames.TRANSACTION_DONE);
-		readyStates.add(TransactionStateNames.ERRORS_EXIST);
 		readyStates.add(TransactionStateNames.READY);
+		ConnectionManager cm = new ConnectionManager();
+		ConnectionFactory cf = new ConnectionFactory();
+		TransactionFactory tf = new TransactionFactory();
+		Archiving archive = new Archiving();
+		sap = new StateActionsProcessor(cf, tf, cm, archive);
 	}
 
 	@Test
@@ -44,10 +49,10 @@ public class ConnectionTest {
 		params.setRemoteHost("127.0.0.1");
 		params.setRemotePort(6444);
 		params.setTcpTimeout(20000);
-		cm = new ConnectionManager();
+		ConnectionManager cm = sap.getCm();
 		cm.setParams(params);
 		cm.openConnection();
-		connection = cm.getConnection();
+		Connection connection = cm.getConnection();
 		while (connection.getConnectionState().equals(ConnectionStatus.BUSY)) {
 			Thread.sleep(100);
 		}
@@ -63,16 +68,14 @@ public class ConnectionTest {
 		log.info("========= Running testListener =========");
 		params.setLocalPort(6444);
 		params.setTcpTimeout(20000);
-		cf = new ConnectionFactory();
+		ConnectionFactory cf = sap.getCf();
 		cf.setParams(params);
 		cf.startListener();
 		int count = 0;
-		connection = cf.checkForListenerConnection();
-		TcpListenerDto dto = cf.getListener().getDto();
-		log.info("Open result [" + dto + "]");
-
+		Connection connection = cf.checkForListenerConnection();
+		TcpError er = cf.checkForErrors();
 		while (connection == null
-				&& dto.getError().getType().equals(TcpErrorTypes.NONE)
+				&& er.getType().equals(TcpErrorTypes.NONE)
 				&& count < 4) {
 			log.info("Waiting for a connection");
 			count++;
@@ -82,8 +85,6 @@ public class ConnectionTest {
 				log.info("My sleep was interrupted.");
 			}
 			connection = cf.checkForListenerConnection();
-			dto = cf.getListener().getDto();
-			log.info("Open result [" + dto + "]");
 		}
 
 		if (count < 4) {

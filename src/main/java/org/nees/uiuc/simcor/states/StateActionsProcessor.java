@@ -26,6 +26,14 @@ public class StateActionsProcessor {
 	private TcpParameters params;
 	private TransactionFactory tf;
 
+	public StateActionsProcessor() {
+		super();
+		cf = new ConnectionFactory();
+		tf = new TransactionFactory();
+		cm = new ConnectionManager();
+		archive = new Archiving();
+	}
+
 	public StateActionsProcessor(ConnectionFactory cf, TransactionFactory tf,
 			ConnectionManager cm, Archiving archive) {
 		super();
@@ -277,4 +285,5 @@ public class StateActionsProcessor {
 		saveStatus(transaction, result.getError(), next);
 
 	}
+	
 }

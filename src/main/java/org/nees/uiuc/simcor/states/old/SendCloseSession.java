@@ -8,13 +8,13 @@ import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 public class SendCloseSession extends TransactionState {
 
 	public SendCloseSession(StateActionsProcessor sap) {
-		super(TransactionStateNames.WAIT_FOR_COMMAND,sap);
+		super(TransactionStateNames.WAIT_FOR_COMMAND, sap);
 	}
 
 	@Override
 	public void execute(Transaction transaction) {
-sap.assembleSessionMessage(transaction, false, true, next)		
+		sap.assembleSessionMessage(transaction, false, true,
+				TransactionStateNames.CLOSING_CONNECTION);
 	}
-
 
 }

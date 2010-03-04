@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.nees.uiuc.simcor.factories.ConnectionFactory;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.logging.Archiving;
+import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.ConnectionManager;
@@ -19,8 +21,8 @@ import org.nees.uiuc.simcor.transaction.TransactionIdentity.StepTypes;
 
 public abstract class UiSimCorTcp {
 
-	protected ConnectionManager connectionManager = new ConnectionManager();
-
+	public StateActionsProcessor sap;
+	
 	public abstract void shutdown();
 
 	public abstract void startup(TcpParameters params);
@@ -39,15 +41,12 @@ public abstract class UiSimCorTcp {
 	protected Map<TransactionStateNames, TransactionState> machine = new HashMap<TransactionStateNames, TransactionState>();
 	protected TransactionFactory transactionFactory = new TransactionFactory();
 	protected Transaction transaction;
-	protected Archiving archive = new Archiving();
+	protected Archiving archive;
 	private final Logger log = Logger.getLogger(UiSimCorTcp.class);
 
 	public UiSimCorTcp() {
-		super();
-	}
-
-	public ConnectionManager getConnectionManager() {
-		return connectionManager;
+		sap = new StateActionsProcessor();
+		archive = sap.getArchive();
 	}
 
 	public TcpError getErrors() {
@@ -90,7 +89,7 @@ public abstract class UiSimCorTcp {
 	protected void execute() {
 		TransactionState state = machine.get(transaction.getState());
 		log.debug("Executing state: " + state);
-		state.execute(transaction, connectionManager);
+		state.execute(transaction);
 	}
 
 	public void setArchiveFilename(String filename) {

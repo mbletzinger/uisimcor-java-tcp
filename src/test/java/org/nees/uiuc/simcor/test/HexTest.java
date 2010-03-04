@@ -1,4 +1,4 @@
-package org.nees.uiuc.test;
+package org.nees.uiuc.simcor.test;
 
 
 import org.apache.log4j.Logger;
