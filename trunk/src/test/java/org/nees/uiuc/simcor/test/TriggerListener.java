@@ -1,4 +1,4 @@
-package org.nees.uiuc.test;
+package org.nees.uiuc.simcor.test;
 
 import static org.junit.Assert.assertEquals;
 
@@ -10,10 +10,10 @@ import org.nees.uiuc.simcor.UiSimCorTcp;
 import org.nees.uiuc.simcor.factories.ConnectionFactory;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto;
-import org.nees.uiuc.simcor.tcp.TcpListenerDto;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.Connection.ConnectionStatus;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
+import org.nees.uiuc.simcor.test.simcor.tcp.TcpListenerDto;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;

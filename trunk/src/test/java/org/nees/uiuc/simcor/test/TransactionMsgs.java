@@ -1,4 +1,4 @@
-package org.nees.uiuc.test;
+package org.nees.uiuc.simcor.test;
 
 import java.util.ArrayList;
 import java.util.HashMap;

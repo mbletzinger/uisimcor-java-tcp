@@ -1,6 +1,4 @@
-package org.nees.uiuc.test;
-
-import static org.junit.Assert.assertNotNull;
+package org.nees.uiuc.simcor.test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -9,9 +7,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.ConnectionPeer;
 import org.nees.uiuc.simcor.UiSimCorTcp;
-import org.nees.uiuc.simcor.factories.ConnectionFactory;
-import org.nees.uiuc.simcor.tcp.Connection;
-import org.nees.uiuc.simcor.tcp.TcpListenerDto;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;

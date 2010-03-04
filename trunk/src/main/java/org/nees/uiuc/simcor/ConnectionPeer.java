@@ -3,7 +3,6 @@ package org.nees.uiuc.simcor;
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.factories.ConnectionFactory;
 import org.nees.uiuc.simcor.logging.ExitTransaction;
-import org.nees.uiuc.simcor.states.common.ErrorsExist;
 import org.nees.uiuc.simcor.states.listener.ClosingConnection;
 import org.nees.uiuc.simcor.states.listener.ReadResponse;
 import org.nees.uiuc.simcor.states.listener.SendingCommand;
@@ -61,7 +60,6 @@ import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
  */
 public class ConnectionPeer extends UiSimCorTcp {
 	final Logger log = Logger.getLogger(ConnectionPeer.class);
-	ConnectionFactory connectionFactory = new ConnectionFactory();
 
 	/**
 	 * 
@@ -82,41 +80,39 @@ public class ConnectionPeer extends UiSimCorTcp {
 	protected void initialize(DirectionType dir,String mdl) {
 		if (dir == DirectionType.RECEIVE_COMMAND) {
 			machine.put(TransactionStateNames.START_LISTENING,
-					new StartListening(connectionFactory));
+					new StartListening(sap));
 			machine.put(TransactionStateNames.STOP_LISTENING,
-					new StopListening(connectionFactory));
+					new StopListening(sap));
 			machine.put(TransactionStateNames.WAIT_FOR_COMMAND,
-					new ReceiveCommandWaitForCommand());
+					new ReceiveCommandWaitForCommand(sap));
 			machine.put(TransactionStateNames.COMMAND_AVAILABLE,
-					new CommandAvailable());
+					new CommandAvailable(sap));
 			machine.put(TransactionStateNames.WAIT_FOR_RESPONSE,
-					new ReceiveCommandWaitForResponse());
+					new ReceiveCommandWaitForResponse(sap));
 			machine.put(TransactionStateNames.SENDING_RESPONSE,
-					new SendingResponse());
+					new SendingResponse(sap));
 		} else {
 			machine.put(TransactionStateNames.WAIT_FOR_COMMAND,
-					new SetUpCommand());
+					new SetUpCommand(sap));
 			machine.put(TransactionStateNames.SENDING_COMMAND,
-					new SendingCommand());
+					new SendingCommand(sap));
 			machine.put(TransactionStateNames.WAIT_FOR_RESPONSE,
-					new WaitForResponse());
+					new WaitForResponse(sap));
 			machine.put(TransactionStateNames.RESPONSE_AVAILABLE,
-					new ResponseAvailable());
+					new ResponseAvailable(sap));
 
 		}
 		machine.put(TransactionStateNames.TRANSACTION_DONE,
-				new TransactionDone(connectionFactory, archive));
-		machine.put(TransactionStateNames.ERRORS_EXIST, new ErrorsExist(
-				connectionFactory, archive));
-		machine.put(TransactionStateNames.READY, new Ready());
+				new TransactionDone(sap));
+		machine.put(TransactionStateNames.READY, new Ready(sap));
 		machine.put(TransactionStateNames.OPENING_CONNECTION,
-				new OpeningConnection(connectionFactory));
+				new OpeningConnection(sap));
 		machine.put(TransactionStateNames.CLOSING_CONNECTION,
-				new ClosingConnection(connectionFactory));
+				new ClosingConnection(sap));
 		machine.put(TransactionStateNames.READ_COMMAND,
-				new ReadCommand());
+				new ReadCommand(sap));
 		machine.put(TransactionStateNames.READ_RESPONSE,
-				new ReadResponse());
+				new ReadResponse(sap));
 		transaction = transactionFactory.createTransaction(null);
 		transaction.setState(TransactionStateNames.TRANSACTION_DONE);
 		transactionFactory.setMdl(mdl);
@@ -204,9 +200,6 @@ public class ConnectionPeer extends UiSimCorTcp {
 		}
 	}
 
-	public ConnectionFactory getConnectionFactory() {
-		return connectionFactory;
-	}
 
 	@Override
 	public void shutdown() {
@@ -215,10 +208,10 @@ public class ConnectionPeer extends UiSimCorTcp {
 		transaction.setPosted(true);
 		transaction.setState(TransactionStateNames.CLOSING_CONNECTION);
 		log.info("Closing connection");
-		Connection connection = connectionManager.getConnection();
-		if (connection != null) {
-			connectionManager.closeConnection();
-		}
+//		Connection connection = connectionManager.getConnection();
+//		if (connection != null) {
+//			connectionManager.closeConnection();
+//		}
 		log.info("Shutting down network logger");
 		archive.logTransaction(transaction);
 	}
