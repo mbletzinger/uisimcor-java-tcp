@@ -21,42 +21,42 @@ import org.nees.uiuc.simcor.transaction.TransactionIdentity.StepTypes;
 
 public abstract class UiSimCorTcp {
 
-	public StateActionsProcessor sap;
-	
-	public abstract void shutdown();
-
-	public abstract void startup(TcpParameters params);
-
-	public abstract void startTransaction();
-
-	public abstract void startTransaction(Transaction command);
-
-	public abstract Transaction pickupTransaction();
-
-	public abstract void continueTransaction(SimCorMsg response);
-
-	protected abstract void initialize(DirectionType dir, String mdl);
-
-	private TcpError errors;
-	protected Map<TransactionStateNames, TransactionState> machine = new HashMap<TransactionStateNames, TransactionState>();
-	protected TransactionFactory transactionFactory = new TransactionFactory();
-	protected Transaction transaction;
 	protected Archiving archive;
+	
+	private TcpError errors;
+
 	private final Logger log = Logger.getLogger(UiSimCorTcp.class);
+
+	protected Map<TransactionStateNames, TransactionState> machine = new HashMap<TransactionStateNames, TransactionState>();
+
+	protected StateActionsProcessor sap;
+
+	protected Transaction transaction;
 
 	public UiSimCorTcp() {
 		sap = new StateActionsProcessor();
 		archive = sap.getArchive();
 	}
 
+	public abstract void continueTransaction(SimCorMsg response);
+
+	protected void execute() {
+		TransactionState state = machine.get(transaction.getState());
+		log.debug("Executing state: " + state);
+		state.execute(transaction);
+	}
+
+	public Archiving getArchive() {
+		return archive;
+	}
+
 	public TcpError getErrors() {
 		return errors;
 	}
 
-	public TransactionFactory getTransactionFactory() {
-		return transactionFactory;
+	public StateActionsProcessor getSap() {
+		return sap;
 	}
-
 	/**
 	 * 
 	 * @return - returns the current transaction as a reference
@@ -65,6 +65,7 @@ public abstract class UiSimCorTcp {
 		return transaction;
 	}
 
+	protected abstract void initialize(DirectionType dir, String mdl);
 	/**
 	 * Executes the next state of the state machine
 	 * 
@@ -76,6 +77,13 @@ public abstract class UiSimCorTcp {
 		return transaction.getState();
 	}
 
+	public abstract Transaction pickupTransaction();
+
+	public void setArchiveFilename(String filename) {
+		archive.setFilename(filename);
+		archive.setArchivingEnabled(true);
+	}
+
 	/**
 	 * Set the current step or substep
 	 * 
@@ -83,18 +91,19 @@ public abstract class UiSimCorTcp {
 	 * @param type
 	 */
 	public void setStep(int s, StepTypes type) {
-		transactionFactory.setStep(s, type);
+		sap.getTf().setStep(s, type);
 	}
 
-	protected void execute() {
-		TransactionState state = machine.get(transaction.getState());
-		log.debug("Executing state: " + state);
-		state.execute(transaction);
+	public void setTransaction(Transaction transaction) {
+		this.transaction = transaction;
 	}
 
-	public void setArchiveFilename(String filename) {
-		archive.setFilename(filename);
-		archive.setArchivingEnabled(true);
-	}
+	public abstract void shutdown();
+
+	public abstract void startTransaction();
+
+	public abstract void startTransaction(Transaction command);
+
+	public abstract void startup(TcpParameters params);
 
 }
