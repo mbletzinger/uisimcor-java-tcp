@@ -113,6 +113,7 @@ public class StateActionsResponder extends Thread {
 			if (count >= 50) {
 				setTransaction(tr);
 				log.error("Ending because count = " + count);
+				shutdown();
 				return;
 			}
 		}
@@ -121,21 +122,25 @@ public class StateActionsResponder extends Thread {
 
 		if (lifeSpan.equals(LifeSpanType.OPEN_COMMAND)) {
 			log.debug("Ending because lifespan is " + lifeSpan);
+			shutdown();
 			return;
 		}
 		log.debug("Current transaction after open connection: " + getTransaction());
 		if (sendSession) {
 			if (sendSessionCommand(true) == false) {
 				log.debug("Ending because sendSendSessionCommand died");
+				shutdown();
 				return;
 			}
 			log.debug("Current transaction after send open session command: " + getTransaction());
 			if (lifeSpan.equals(LifeSpanType.OPEN_RESPONSE)) {
 				log.debug("Ending because lifespan is " + lifeSpan);
+				shutdown();
 				return;
 			}
 			if (receiveSessionResponse() == false) {
 				log.debug("Ending because receiveSessionResponse died");
+				shutdown();
 				return;
 			}
 			log.debug("Current transaction after receive open session response: " + getTransaction());
@@ -143,33 +148,39 @@ public class StateActionsResponder extends Thread {
 		} else {
 			if (receiveSessionCommand() == false) {
 				log.debug("Ending because receiveSessionCommand died");
+				shutdown();
 				return;
 			}
 			log.debug("Current transaction: " + getTransaction());
 			if (lifeSpan.equals(LifeSpanType.OPEN_RESPONSE)) {
 				log.debug("Ending because lifespan is " + lifeSpan);
+				shutdown();
 				return;
 			}
 			log.debug("Current transaction after receive open session command: " + getTransaction());
 			if (sendSessionResponse(true) == false) {
 				log.debug("Ending because sendSessionResponse died");
+				shutdown();
 				return;
 			}
 			log.debug("Current transaction after send open session response: " + getTransaction());
 		}
 		if (lifeSpan.equals(LifeSpanType.CLOSE_COMMAND)) {
 			log.debug("Ending because lifespan is " + lifeSpan);
+			shutdown();
 			return;
 		}
 
 		if (sendSession) {
 			if (sendSessionCommand(false) == false) {
 				log.debug("Ending because sendSessionCommand died");
+				shutdown();
 				return;
 			}
 		} else {
 			if (receiveSessionCommand() == false) {
 				log.debug("Ending because receiveSessionCommand died");
+				shutdown();
 				return;
 			}
 			log.debug("Current transaction after receive close session command: " + getTransaction());
@@ -188,7 +199,7 @@ public class StateActionsResponder extends Thread {
 			}
 			setTransaction(tr);
 		}
-
+		shutdown();
 	}
 
 	private boolean sendSessionCommand(boolean isOpen) {
@@ -255,5 +266,9 @@ public class StateActionsResponder extends Thread {
 
 	public synchronized void setTransaction(Transaction transaction) {
 		this.transaction = transaction;
+	}
+	private void shutdown() {
+		Transaction tr = getTransaction();
+		sap.closingConnection(tr, TransactionStateNames.TRANSACTION_DONE);
 	}
 }
