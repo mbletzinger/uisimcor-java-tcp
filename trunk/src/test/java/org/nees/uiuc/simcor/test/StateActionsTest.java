@@ -13,12 +13,39 @@ import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 
 public class StateActionsTest {
+	private final Logger log = Logger.getLogger(StateActionsTest.class);
+	private TcpParameters lparams = new TcpParameters();
+	private TcpParameters rparams = new TcpParameters();
 	private StateActionsResponder rspdr;
 	private StateActionsProcessor sap;
-	private TcpParameters rparams = new TcpParameters();
-	private TcpParameters lparams = new TcpParameters();
 	private Transaction transaction;
-	private final Logger log = Logger.getLogger(StateActionsTest.class);
+
+	private void read(TransactionStateNames current,
+			TransactionStateNames next, boolean errorExpected, boolean isCommand) {
+		String cmdStr = isCommand ? "command" : "response";
+		sap.setUpRead(transaction, false, current);
+		while (transaction.getState().equals(current)) {
+			sap.waitForRead(transaction, isCommand, next);
+			try {
+				Thread.sleep(300);
+			} catch (InterruptedException e) {
+			}
+		}
+		log.debug("Local Transaction after read " + cmdStr + " message: "
+				+ transaction);
+		log.debug("Remote Transaction: " + rspdr.getTransaction());
+		if (errorExpected) {
+			org.junit.Assert.assertEquals(
+					TransactionStateNames.CLOSING_CONNECTION, transaction
+							.getState());
+			org.junit.Assert.assertEquals(TcpErrorTypes.IO_ERROR, transaction
+					.getError().getType());
+		} else {
+			org.junit.Assert.assertEquals(next, transaction.getState());
+			org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
+					.getError().getType());
+		}
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -35,6 +62,53 @@ public class StateActionsTest {
 		transaction.setTimeout(2000);
 	}
 
+	private void setupConnection(LifeSpanType lfsp, boolean sendOpenSession) {
+		sap.startListening(transaction);
+
+		rspdr = new StateActionsResponder(lfsp, rparams, sendOpenSession);
+		rspdr.start();
+
+		sap.checkOpenConnection(transaction,
+				TransactionStateNames.TRANSACTION_DONE);
+		log.debug("Local Transaction after open connection: " + transaction);
+		org.junit.Assert.assertEquals(TransactionStateNames.TRANSACTION_DONE,
+				transaction.getState());
+		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
+				.getError().getType());
+	}
+
+	private void shutdown(boolean errorExpected) {
+		sap.closingConnection(transaction,
+				TransactionStateNames.STOP_LISTENING);
+		while (transaction.getState().equals(
+				TransactionStateNames.CLOSING_CONNECTION)) {
+			sap.closingConnection(transaction,
+					TransactionStateNames.STOP_LISTENING);
+			try {
+				Thread.sleep(300);
+			} catch (InterruptedException e) {
+			}
+		}
+		log.debug("Local Transaction after close connection: " + transaction);
+		if(errorExpected) {
+		org.junit.Assert.assertEquals(TransactionStateNames.TRANSACTION_DONE,
+				transaction.getState());
+		org.junit.Assert.assertEquals(TcpErrorTypes.IO_ERROR, transaction
+				.getError().getType());
+		} else {
+			org.junit.Assert.assertEquals(TransactionStateNames.STOP_LISTENING,
+					transaction.getState());
+			org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
+					.getError().getType());
+		}
+		sap.stopListening(transaction);
+		log.debug("Local Transaction after stop listener: " + transaction);
+		org.junit.Assert.assertEquals(TransactionStateNames.TRANSACTION_DONE,
+				transaction.getState());
+		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
+				.getError().getType());
+	}
+
 	@After
 	public void tearDown() throws Exception {
 
@@ -42,10 +116,11 @@ public class StateActionsTest {
 			log.debug("Waiting for responder shutdown");
 			Thread.sleep(1000);
 		}
+		sap.stopListening(transaction);
 	}
 
 	@Test
-	public void testStartListenerFail() {
+	public void test01StartListenerFail() {
 		sap.startListening(transaction);
 		rspdr = new StateActionsResponder(LifeSpanType.OPEN_COMMAND, rparams,
 				true); // never started
@@ -73,119 +148,78 @@ public class StateActionsTest {
 				transaction.getState());
 		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
 				.getError().getType());
-		shutdown();
+		shutdown(false);
 	}
 
 	@Test
-	public void testOpenSessionReadFail() {
-		setupConnection(LifeSpanType.OPEN_COMMAND);
+	public void test02OpenSessionReadFail() {
+		setupConnection(LifeSpanType.OPEN_COMMAND,true);
 		read(TransactionStateNames.READ_COMMAND,
-				TransactionStateNames.COMMAND_AVAILABLE, true);
-		shutdown();
+				TransactionStateNames.COMMAND_AVAILABLE, true,true);
+		shutdown(true);
 	}
 
 	@Test
-	public void testOpenSessionWriteFail() {
-		setupConnection(LifeSpanType.OPEN_RESPONSE);
+	public void test03OpenSessionWriteFail() {
+		setupConnection(LifeSpanType.OPEN_RESPONSE,false);
 		write(TransactionStateNames.SEND_OPEN_SESSION,
-				TransactionStateNames.WAIT_FOR_RESPONSE);
-		read(TransactionStateNames.SEND_OPEN_SESSION,
-				TransactionStateNames.SEND_OPEN_SESSION_RESPONSE, true);
-		shutdown();
+				TransactionStateNames.WAIT_FOR_RESPONSE,true,true);
+		read(TransactionStateNames.READ_RESPONSE,
+				TransactionStateNames.RESPONSE_AVAILABLE, true,false);
+		shutdown(true);
 	}
 
 	@Test
-	public void testCloseSessionWriteFail() {
-		setupConnection(LifeSpanType.CLOSE_COMMAND);
+	public void test04CloseSessionWriteFail() {
+		setupConnection(LifeSpanType.CLOSE_COMMAND,false);
 		write(TransactionStateNames.SEND_OPEN_SESSION,
-				TransactionStateNames.WAIT_FOR_RESPONSE);
-		read(TransactionStateNames.SEND_OPEN_SESSION,
-				TransactionStateNames.WAIT_FOR_RESPONSE, false);
+				TransactionStateNames.WAIT_FOR_RESPONSE,true,true);
+		read(TransactionStateNames.READ_RESPONSE,
+				TransactionStateNames.RESPONSE_AVAILABLE, false,false);
 		write(TransactionStateNames.SEND_CLOSE_SESSION,
-				TransactionStateNames.TRANSACTION_DONE);
-		shutdown();
+				TransactionStateNames.TRANSACTION_DONE,true,false);
+		shutdown(false);
 	}
 
 	@Test
-	public void testCloseSessionReadFail() {
-		setupConnection(LifeSpanType.CLOSE_COMMAND);
+	public void test05CloseSessionReadFail() {
+		setupConnection(LifeSpanType.CLOSE_COMMAND,true);
 		read(TransactionStateNames.READ_COMMAND,
-				TransactionStateNames.COMMAND_AVAILABLE, false);
+				TransactionStateNames.COMMAND_AVAILABLE, false,true);
 		write(TransactionStateNames.SEND_OPEN_SESSION_RESPONSE,
-				TransactionStateNames.TRANSACTION_DONE);
+				TransactionStateNames.TRANSACTION_DONE,false,true);
 		read(TransactionStateNames.READ_COMMAND,
-				TransactionStateNames.COMMAND_AVAILABLE, true);
-		shutdown();
+				TransactionStateNames.COMMAND_AVAILABLE, true,true);
+		shutdown(true);
 	}
 
-	private void shutdown() {
-		sap.closingConnection(transaction,
-				TransactionStateNames.CLOSING_CONNECTION);
-		while (transaction.getState().equals(
-				TransactionStateNames.CLOSING_CONNECTION)) {
-			sap.closingConnection(transaction,
-					TransactionStateNames.STOP_LISTENING);
-			try {
-				Thread.sleep(300);
-			} catch (InterruptedException e) {
-			}
-		}
-		log.debug("Local Transaction after close connection: " + transaction);
-		org.junit.Assert.assertEquals(TransactionStateNames.TRANSACTION_DONE,
-				transaction.getState());
-		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
-				.getError().getType());
-		sap.stopListening(transaction);
-		log.debug("Local Transaction after stop listener: " + transaction);
-		org.junit.Assert.assertEquals(TransactionStateNames.TRANSACTION_DONE,
-				transaction.getState());
-		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
-				.getError().getType());
+	@Test
+	public void test06CloseSessionWritePass() {
+		setupConnection(LifeSpanType.END,false);
+		write(TransactionStateNames.SEND_OPEN_SESSION,
+				TransactionStateNames.WAIT_FOR_RESPONSE,true,true);
+		read(TransactionStateNames.READ_RESPONSE,
+				TransactionStateNames.RESPONSE_AVAILABLE, false,false);
+		write(TransactionStateNames.SEND_CLOSE_SESSION,
+				TransactionStateNames.TRANSACTION_DONE,true,false);
+		shutdown(false);
 	}
 
-	private void setupConnection(LifeSpanType lfsp) {
-		sap.startListening(transaction);
-
-		rspdr = new StateActionsResponder(lfsp, rparams, true);
-		rspdr.start();
-
-		sap.checkOpenConnection(transaction,
-				TransactionStateNames.TRANSACTION_DONE);
-		log.debug("Local Transaction after open connection: " + transaction);
-		org.junit.Assert.assertEquals(TransactionStateNames.TRANSACTION_DONE,
-				transaction.getState());
-		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
-				.getError().getType());
+	@Test
+	public void test07CloseSessionReadPass() {
+		setupConnection(LifeSpanType.END,true);
+		read(TransactionStateNames.READ_COMMAND,
+				TransactionStateNames.COMMAND_AVAILABLE, false,true);
+		write(TransactionStateNames.SEND_OPEN_SESSION_RESPONSE,
+				TransactionStateNames.TRANSACTION_DONE,false,true);
+		read(TransactionStateNames.READ_COMMAND,
+				TransactionStateNames.COMMAND_AVAILABLE, false,true);
+		shutdown(false);
 	}
-
-	private void read(TransactionStateNames current,
-			TransactionStateNames next, boolean errorExpected) {
-		sap.setUpRead(transaction, false, current);
-		while (transaction.getState().equals(current)) {
-			sap.waitForRead(transaction, false, next);
-			try {
-				Thread.sleep(300);
-			} catch (InterruptedException e) {
-			}
-		}
-		log.debug("Local Transaction after read open session command: "
-				+ transaction);
-		log.debug("Remote Transaction: " + rspdr.getTransaction());
-		if (errorExpected) {
-			org.junit.Assert.assertEquals(
-					TransactionStateNames.CLOSING_CONNECTION, transaction
-							.getState());
-			org.junit.Assert.assertEquals(TcpErrorTypes.IO_ERROR, transaction
-					.getError().getType());
-		} else {
-			org.junit.Assert.assertEquals(next, transaction.getState());
-			org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
-					.getError().getType());
-		}
-	}
-
-	private void write(TransactionStateNames current, TransactionStateNames next) {
-		sap.assembleSessionMessage(transaction, true, false, current);
+	private void write(TransactionStateNames current, TransactionStateNames next, boolean isCommand, boolean isOpen) {
+		sap.assembleSessionMessage(transaction, isOpen, isCommand, current);
+		String openStr = isOpen ? "open" : "close";
+		String cmdStr = isCommand ? "command" : "response";
 		while (transaction.getState().equals(current)) {
 			sap.waitForSend(transaction, next);
 			try {
@@ -193,7 +227,7 @@ public class StateActionsTest {
 			} catch (InterruptedException e) {
 			}
 		}
-		log.debug("Local Transaction after write close session command: "
+		log.debug("Local Transaction after write " + openStr + " session " + cmdStr + ": "
 				+ transaction);
 		org.junit.Assert.assertEquals(next, transaction.getState());
 		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
