@@ -17,28 +17,10 @@ public class TransactionFactory {
 
 	private final Logger log = Logger.getLogger(TransactionFactory.class);
 	
-	private int transactionTimeout = 3000;
 	private String mdl = "MDL-00-01";
 	private String systemDescription;
+	private int transactionTimeout = 3000;
 
-	public String getSystemDescription() {
-		return systemDescription;
-	}
-	public void setSystemDescription(String systemDescription) {
-		this.systemDescription = systemDescription;
-	}
-	public String getMdl() {
-		return mdl;
-	}
-	public void setMdl(String mdl) {
-		this.mdl = mdl;
-	}
-	public SimCorMsg createSessionCommand(boolean isOpen) {
-		return createCommand((isOpen ? "open-session" : "close-session"),mdl,null,"");
-	}
-	public SimCorMsg createSessionResponse(SimCorMsg cmd) {
-		return createResponse(mdl,null, (systemDescription + " " + cmd.getCommand() + " done"), false);
-	}
 	public SimCorMsg createCommand(String cmd, String mdl, String cps, String cnt) {
 		SimCorMsg result;
 		result = new SimCorMsg(); 
@@ -70,18 +52,6 @@ public class TransactionFactory {
 		log.debug("Created " + result);
 		return result;
 	}
-	public SimCorMsg createResponse(String mdl, String cps, String cnt, boolean notOk) {
-		SimCorMsg result = new SimCorMsg();
-		Address a = new Address(mdl);
-		if (cps != null) {
-			a.setSuffix(cps);
-		}
-		result.setAddress(a);
-		result.setContent(cnt);
-		result.setType(notOk ? MsgType.NOT_OK_RESPONSE : MsgType.OK_RESPONSE);
-		log.debug("Created " + result);
-		return result;
-	}
 	public SimCorCompoundMsg createCompoundResponse(String[] mdl, String[] cps,
 			String[] cnt, boolean notOk) {
 		SimCorCompoundMsg result = new SimCorCompoundMsg();
@@ -98,7 +68,24 @@ public class TransactionFactory {
 		log.debug("Created " + result);
 		return result;
 	}
-	
+	public SimCorMsg createResponse(String mdl, String cps, String cnt, boolean notOk) {
+		SimCorMsg result = new SimCorMsg();
+		Address a = new Address(mdl);
+		if (cps != null) {
+			a.setSuffix(cps);
+		}
+		result.setAddress(a);
+		result.setContent(cnt);
+		result.setType(notOk ? MsgType.NOT_OK_RESPONSE : MsgType.OK_RESPONSE);
+		log.debug("Created " + result);
+		return result;
+	}
+	public SimCorMsg createSessionCommand(boolean isOpen) {
+		return createCommand((isOpen ? "open-session" : "close-session"),mdl,null,systemDescription);
+	}
+	public SimCorMsg createSessionResponse(SimCorMsg cmd) {
+		return createResponse(mdl,null, (systemDescription + " " + cmd.getCommand() + " done"), false);
+	}
 	public Transaction createTransaction(SimCorMsg msg) {
 		Transaction result = new Transaction();
 		if (direction == DirectionType.SEND_COMMAND) {
@@ -109,30 +96,6 @@ public class TransactionFactory {
 		result.setTimeout(transactionTimeout);
 		log.debug("Created transaction: " + result);
 		return result;
-	}
-
-	public void setId(TransactionIdentity id) {
-		this.id = id;
-	}
-	public DirectionType getDirection() {
-		return direction;
-	}
-
-	public TransactionIdentity getId() {
-		return id;
-	}
-	public void setDirection(DirectionType direction) {
-		this.direction = direction;
-	}
-
-	public void setStep(int s,StepTypes type) {
-		if(type.equals(StepTypes.SUBSTEP)) {
-			id.setSubStep(s);
-		}else if(type.equals(StepTypes.CORRECTIONSTEP)){
-			id.setCorrectionStep(s);				
-			} else {
-			id.setStep(s);
-		}
 	}
 	public TransactionIdentity createTransactionId(int step, int subStep, int correctionStep) {
 		TransactionIdentity result = new TransactionIdentity();
@@ -147,6 +110,43 @@ public class TransactionFactory {
 		}
 		result.createTransId();
 		return result;
+	}
+	public DirectionType getDirection() {
+		return direction;
+	}
+	public TransactionIdentity getId() {
+		return id;
+	}
+	
+	public String getMdl() {
+		return mdl;
+	}
+
+	public String getSystemDescription() {
+		return systemDescription;
+	}
+	public void setDirection(DirectionType direction) {
+		this.direction = direction;
+	}
+
+	public void setId(TransactionIdentity id) {
+		this.id = id;
+	}
+	public void setMdl(String mdl) {
+		this.mdl = mdl;
+	}
+
+	public void setStep(int s,StepTypes type) {
+		if(type.equals(StepTypes.SUBSTEP)) {
+			id.setSubStep(s);
+		}else if(type.equals(StepTypes.CORRECTIONSTEP)){
+			id.setCorrectionStep(s);				
+			} else {
+			id.setStep(s);
+		}
+	}
+	public void setSystemDescription(String systemDescription) {
+		this.systemDescription = systemDescription;
 	}
 	
 }
