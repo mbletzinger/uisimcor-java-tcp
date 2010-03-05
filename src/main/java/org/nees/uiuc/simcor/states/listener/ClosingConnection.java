@@ -3,6 +3,7 @@ package org.nees.uiuc.simcor.states.listener;
 import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 
 public class ClosingConnection extends TransactionState {
 
@@ -13,6 +14,6 @@ public class ClosingConnection extends TransactionState {
 
 	@Override
 	public void execute(Transaction transaction) {
-		sap.closingConnection(transaction);
+		sap.closingConnection(transaction, TransactionStateNames.STOP_LISTENING);
 	}
 }

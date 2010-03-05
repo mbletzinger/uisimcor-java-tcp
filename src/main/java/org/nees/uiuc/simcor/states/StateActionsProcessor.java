@@ -34,6 +34,10 @@ public class StateActionsProcessor {
 		archive = new Archiving();
 	}
 
+	public void setIdentity(String mdl, String systemDescription) {
+		tf.setMdl(mdl);
+		tf.setSystemDescription(systemDescription);
+	}
 	public StateActionsProcessor(ConnectionFactory cf, TransactionFactory tf,
 			ConnectionManager cm, Archiving archive) {
 		super();
@@ -83,20 +87,15 @@ public class StateActionsProcessor {
 		saveStatus(transaction, er, next);
 	}
 
-	public void closingConnection(Transaction transaction) {
+	public void closingConnection(Transaction transaction,TransactionStateNames next) {
 		boolean closed = cm.closeConnection();
 		TcpError er = new TcpError();
 		TransactionStateNames state = TransactionStateNames.CLOSING_CONNECTION;
 		if (closed) {
+			state = next;
+			er = cm.checkForErrors();
 			if (er.getType().equals(TcpErrorTypes.NONE)) {
-				er = cm.checkForErrors();
-			}
-			if (cm.getParams().isListener()) {
-				state = TransactionStateNames.STOP_LISTENING;
-				cf.stopListener();
-			} else {
 				er = cm.getSavedError();
-				state = TransactionStateNames.TRANSACTION_DONE;
 			}
 		}
 		setStatus(transaction, er, state);
