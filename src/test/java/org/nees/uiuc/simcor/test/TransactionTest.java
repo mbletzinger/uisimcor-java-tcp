@@ -28,26 +28,25 @@ import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 public class TransactionTest {
 	private final Logger log = Logger.getLogger(TransactionTest.class);
 	private TcpParameters params = new TcpParameters();
-	private Responder responder;
+	private TransactionResponder responder;
 	private UiSimCorTcp simcor;
 	private List<TransactionStateNames> readyStates = new ArrayList<TransactionStateNames>();
 	TransactionMsgs data = new TransactionMsgs();
 
 	@Before
 	public void setUp() throws Exception {
-		responder = new Responder();
+		responder = new TransactionResponder();
 		data.setUp();
 		responder.setData(data);
 		readyStates.add(TransactionStateNames.TRANSACTION_DONE);
-		readyStates.add(TransactionStateNames.ERRORS_EXIST);
 		readyStates.add(TransactionStateNames.READY);
 	}
  
 	@After
 	public void shutdown() {
 		responder.connected = false;
-		responder.getSimcor().getConnectionManager().closeConnection();
-		simcor.getConnectionManager().closeConnection();
+		responder.getSimcor().shutdown();
+		simcor.shutdown();
 	}
 
 	@Test
@@ -61,18 +60,16 @@ public class TransactionTest {
 		params.setTcpTimeout(20000);
 		String home = System.getProperty("user.dir");
 		String fs = System.getProperty("file.separator");
-		simcor = new ConnectionPeer(DirectionType.SEND_COMMAND);
+		simcor = new ConnectionPeer(DirectionType.SEND_COMMAND, "MDL-00-00");
 		simcor.setArchiveFilename(home + fs + "archive.txt");
 		simcor.startup(params);
 		while(simcor.isReady().equals(TransactionStateNames.OPENING_CONNECTION)) {
 			Thread.sleep(200);
 		}
-		TcpActionsDto dto = simcor.getConnectionManager().getConnection().getFromRemoteMsg();
-		log.info("Open result [" + dto + "]");
-		assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+		assertEquals(TcpErrorTypes.NONE, simcor.getErrors().getType());
 		assertEquals(TransactionStateNames.READY,simcor.isReady());
 		
-		TransactionFactory tf = simcor.getTransactionFactory();
+		TransactionFactory tf = simcor.getSap().getTf();
 		checkResponder();
 		for(Iterator<Transaction> t = data.cmdList.iterator(); t.hasNext();) {
 			Transaction transO = t.next();
@@ -86,7 +83,7 @@ public class TransactionTest {
 			log.debug("Sending command " + trans.getCommand());
 			simcor.startTransaction(trans);
 			TransactionStateNames state = simcor.isReady();
-			while(state != TransactionStateNames.RESPONSE_AVAILABLE  && state != TransactionStateNames.ERRORS_EXIST) {
+			while(state != TransactionStateNames.RESPONSE_AVAILABLE) {
 				try {
 					checkResponder();
 					Thread.sleep(200);
@@ -136,7 +133,7 @@ public class TransactionTest {
 			state = simcor.isReady();
 			log.debug("Transaction completing state is " + state);					
 		}
-		assertNull(simcor.getConnectionManager().getConnection());
+		assertNull(simcor.getSap().getCm().getConnection());
 	}
 	private void checkResponder() {
 		if(responder.isAlive() == false) {

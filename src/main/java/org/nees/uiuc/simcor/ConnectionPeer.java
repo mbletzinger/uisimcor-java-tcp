@@ -2,6 +2,7 @@ package org.nees.uiuc.simcor;
 
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.factories.ConnectionFactory;
+import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.logging.ExitTransaction;
 import org.nees.uiuc.simcor.states.listener.ClosingConnection;
 import org.nees.uiuc.simcor.states.listener.ReadResponse;
@@ -113,9 +114,9 @@ public class ConnectionPeer extends UiSimCorTcp {
 				new ReadCommand(sap));
 		machine.put(TransactionStateNames.READ_RESPONSE,
 				new ReadResponse(sap));
-		transaction = transactionFactory.createTransaction(null);
+		transaction = sap.getTf().createTransaction(null);
 		transaction.setState(TransactionStateNames.TRANSACTION_DONE);
-		transactionFactory.setMdl(mdl);
+		sap.getTf().setMdl(mdl);
 
 	}
 
@@ -183,6 +184,7 @@ public class ConnectionPeer extends UiSimCorTcp {
 	 */
 	@Override
 	public void startup(TcpParameters params) {
+		TransactionFactory transactionFactory = sap.getTf();
 		if(params.isListener()) {
 			transactionFactory.setDirection(DirectionType.RECEIVE_COMMAND);
 		} else {
@@ -203,6 +205,7 @@ public class ConnectionPeer extends UiSimCorTcp {
 
 	@Override
 	public void shutdown() {
+		TransactionFactory transactionFactory = sap.getTf();
 		transaction = new ExitTransaction();
 		transaction.setDirection(transactionFactory.getDirection());
 		transaction.setPosted(true);
