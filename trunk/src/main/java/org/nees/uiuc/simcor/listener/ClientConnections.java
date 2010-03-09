@@ -14,14 +14,14 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
 public class ClientConnections {
-	private final ArrayList<ClientConnection> clients = new ArrayList<ClientConnection>();
+	private final ArrayList<ClientId> clients = new ArrayList<ClientId>();
 	private String message;
 	private int msgTimeout = 3000;
-	private final ArrayList<ClientConnection> newClients = new ArrayList<ClientConnection>();
+	private final ArrayList<ClientId> newClients = new ArrayList<ClientId>();
 	public ClientConnections() {
 	}
 
-	public synchronized void addClient(ClientConnection client) {
+	public synchronized void addClient(ClientId client) {
 		newClients.add(client);
 	}
 
@@ -29,7 +29,7 @@ public class ClientConnections {
 		boolean result = true;
 		message = "";
 		List<Integer> lostClientsIdx = new ArrayList<Integer>();
-		for (ClientConnection c : clients) {
+		for (ClientId c : clients) {
 			TcpError er = checkResponse(c.connection);
 			if (er == null) {
 				result = false;
@@ -52,7 +52,7 @@ public class ClientConnections {
 
 	public synchronized void broadcast(SimCorMsg msg, TransactionIdentity id) {
 		mergeClients();
-		for (ClientConnection c : clients) {
+		for (ClientId c : clients) {
 			sendMsg(c.connection, msg, id);
 		}
 	}
@@ -75,7 +75,7 @@ public class ClientConnections {
 	private void mergeClients() {
 		clients.addAll(newClients);
 		message = "";
-		for (ClientConnection c : newClients) {
+		for (ClientId c : newClients) {
 			message = message + c.system + " at " + c.remoteHost
 					+ " is connected.\n";
 		}

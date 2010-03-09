@@ -82,7 +82,7 @@ public class ConnectionPeer extends UiSimCorTcp {
 		if (dir == DirectionType.RECEIVE_COMMAND) {
 			machine.put(TransactionStateNames.START_LISTENING,
 					new StartListening(sap));
-			machine.put(TransactionStateNames.STOP_LISTENING,
+			machine.put(TransactionStateNames.STOP_LISTENER,
 					new StopListening(sap));
 			machine.put(TransactionStateNames.WAIT_FOR_COMMAND,
 					new ReceiveCommandWaitForCommand(sap));
