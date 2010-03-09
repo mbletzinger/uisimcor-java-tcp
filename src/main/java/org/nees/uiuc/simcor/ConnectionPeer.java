@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.factories.ConnectionFactory;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.logging.ExitTransaction;
+import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.states.listener.ClosingConnection;
 import org.nees.uiuc.simcor.states.listener.ReadResponse;
 import org.nees.uiuc.simcor.states.listener.SendingCommand;
@@ -25,7 +26,6 @@ import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
-import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 
 /**
  * 

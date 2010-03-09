@@ -1,5 +1,6 @@
 package org.nees.uiuc.simcor.transaction;
 
+import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpError;
 
 public class Transaction {
@@ -10,12 +11,6 @@ public class Transaction {
 	public enum DirectionType {
 		NONE, RECEIVE_COMMAND, SEND_COMMAND
 	};
-
-	public enum TransactionStateNames {
-		ASSEMBLE_OPEN_RESPONSE, CHECK_OPEN_CONNECTION, CLOSING_CONNECTION, COMMAND_AVAILABLE, LISTEN_FOR_CONNECTIONS, OPENING_CONNECTION, READ_COMMAND, READ_RESPONSE, 
-		READY, RESPONSE_AVAILABLE, SEND_CLOSE_SESSION, SEND_OPEN_SESSION, SEND_OPEN_SESSION_RESPONSE, SENDING_COMMAND, SENDING_RESPONSE, SETUP_COMMAND, 
-		SETUP_RESPONSE, START_LISTENING, STOP_LISTENING, TRANSACTION_DONE,WAIT_FOR_COMMAND, WAIT_FOR_OPEN_SESSION, WAIT_FOR_RESPONSE
-	}
 
 	private ActionType action = ActionType.NONE;
 

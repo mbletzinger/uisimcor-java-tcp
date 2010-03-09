@@ -5,12 +5,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.nees.uiuc.simcor.states.StateActionsProcessor;
+import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
-import org.nees.uiuc.simcor.test.StateActionsResponder.LifeSpanType;
+import org.nees.uiuc.simcor.test.util.StateActionsResponder;
+import org.nees.uiuc.simcor.test.util.StateActionsResponder.LifeSpanType;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
-import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 
 public class StateActionsTest {
 	private final Logger log = Logger.getLogger(StateActionsTest.class);
@@ -79,11 +80,11 @@ public class StateActionsTest {
 
 	private void shutdown(boolean errorExpected) {
 		sap.closingConnection(transaction,
-				TransactionStateNames.STOP_LISTENING);
+				TransactionStateNames.STOP_LISTENER);
 		while (transaction.getState().equals(
 				TransactionStateNames.CLOSING_CONNECTION)) {
 			sap.closingConnection(transaction,
-					TransactionStateNames.STOP_LISTENING);
+					TransactionStateNames.STOP_LISTENER);
 			try {
 				Thread.sleep(300);
 			} catch (InterruptedException e) {
@@ -96,7 +97,7 @@ public class StateActionsTest {
 		org.junit.Assert.assertEquals(TcpErrorTypes.IO_ERROR, transaction
 				.getError().getType());
 		} else {
-			org.junit.Assert.assertEquals(TransactionStateNames.STOP_LISTENING,
+			org.junit.Assert.assertEquals(TransactionStateNames.STOP_LISTENER,
 					transaction.getState());
 			org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
 					.getError().getType());
@@ -137,14 +138,14 @@ public class StateActionsTest {
 		while (transaction.getState().equals(
 				TransactionStateNames.CLOSING_CONNECTION)) {
 			sap.closingConnection(transaction,
-					TransactionStateNames.STOP_LISTENING);
+					TransactionStateNames.STOP_LISTENER);
 			try {
 				Thread.sleep(300);
 			} catch (InterruptedException e) {
 			}
 		}
 		log.debug("Local Transaction after close connection: " + transaction);
-		org.junit.Assert.assertEquals(TransactionStateNames.STOP_LISTENING,
+		org.junit.Assert.assertEquals(TransactionStateNames.STOP_LISTENER,
 				transaction.getState());
 		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
 				.getError().getType());
@@ -162,7 +163,7 @@ public class StateActionsTest {
 	@Test
 	public void test03OpenSessionWriteFail() {
 		setupConnection(LifeSpanType.OPEN_RESPONSE,false);
-		write(TransactionStateNames.SEND_OPEN_SESSION,
+		write(TransactionStateNames.ASSEMBLE_OPEN_COMMAND,
 				TransactionStateNames.WAIT_FOR_RESPONSE,true,true);
 		read(TransactionStateNames.READ_RESPONSE,
 				TransactionStateNames.RESPONSE_AVAILABLE, true,false);
@@ -172,11 +173,11 @@ public class StateActionsTest {
 	@Test
 	public void test04CloseSessionWriteFail() {
 		setupConnection(LifeSpanType.CLOSE_COMMAND,false);
-		write(TransactionStateNames.SEND_OPEN_SESSION,
+		write(TransactionStateNames.ASSEMBLE_CLOSE_COMMAND,
 				TransactionStateNames.WAIT_FOR_RESPONSE,true,true);
 		read(TransactionStateNames.READ_RESPONSE,
 				TransactionStateNames.RESPONSE_AVAILABLE, false,false);
-		write(TransactionStateNames.SEND_CLOSE_SESSION,
+		write(TransactionStateNames.ASSEMBLE_CLOSE_COMMAND,
 				TransactionStateNames.TRANSACTION_DONE,true,false);
 		shutdown(false);
 	}
@@ -186,7 +187,7 @@ public class StateActionsTest {
 		setupConnection(LifeSpanType.CLOSE_COMMAND,true);
 		read(TransactionStateNames.READ_COMMAND,
 				TransactionStateNames.COMMAND_AVAILABLE, false,true);
-		write(TransactionStateNames.SEND_OPEN_SESSION_RESPONSE,
+		write(TransactionStateNames.ASSEMBLE_OPEN_RESPONSE,
 				TransactionStateNames.TRANSACTION_DONE,false,true);
 		read(TransactionStateNames.READ_COMMAND,
 				TransactionStateNames.COMMAND_AVAILABLE, true,true);
@@ -196,11 +197,11 @@ public class StateActionsTest {
 	@Test
 	public void test06CloseSessionWritePass() {
 		setupConnection(LifeSpanType.END,false);
-		write(TransactionStateNames.SEND_OPEN_SESSION,
+		write(TransactionStateNames.ASSEMBLE_OPEN_COMMAND,
 				TransactionStateNames.WAIT_FOR_RESPONSE,true,true);
 		read(TransactionStateNames.READ_RESPONSE,
 				TransactionStateNames.RESPONSE_AVAILABLE, false,false);
-		write(TransactionStateNames.SEND_CLOSE_SESSION,
+		write(TransactionStateNames.ASSEMBLE_CLOSE_COMMAND,
 				TransactionStateNames.TRANSACTION_DONE,true,false);
 		shutdown(false);
 	}
@@ -210,7 +211,7 @@ public class StateActionsTest {
 		setupConnection(LifeSpanType.END,true);
 		read(TransactionStateNames.READ_COMMAND,
 				TransactionStateNames.COMMAND_AVAILABLE, false,true);
-		write(TransactionStateNames.SEND_OPEN_SESSION_RESPONSE,
+		write(TransactionStateNames.ASSEMBLE_OPEN_RESPONSE,
 				TransactionStateNames.TRANSACTION_DONE,false,true);
 		read(TransactionStateNames.READ_COMMAND,
 				TransactionStateNames.COMMAND_AVAILABLE, false,true);

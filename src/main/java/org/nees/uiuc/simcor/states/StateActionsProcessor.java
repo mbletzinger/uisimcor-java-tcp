@@ -16,7 +16,6 @@ import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
-import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 
 public class StateActionsProcessor {
 	private Archiving archive;
@@ -34,10 +33,6 @@ public class StateActionsProcessor {
 		archive = new Archiving();
 	}
 
-	public void setIdentity(String mdl, String systemDescription) {
-		tf.setMdl(mdl);
-		tf.setSystemDescription(systemDescription);
-	}
 	public StateActionsProcessor(ConnectionFactory cf, TransactionFactory tf,
 			ConnectionManager cm, Archiving archive) {
 		super();
@@ -60,26 +55,16 @@ public class StateActionsProcessor {
 		setUpWrite(transaction, isCommand, next);
 	}
 
-	public void checkOpenConnection(Transaction transaction, TransactionStateNames next) {
+	public void checkOpenConnection(Transaction transaction,
+			TransactionStateNames next) {
 		TcpError er = new TcpError();
 		Connection connection = null;
-		if (cm.getParams().isListener()) {
-			connection = cf.checkForListenerConnection();
-			if (connection == null
-					|| connection.getConnectionState().equals(
-							Connection.ConnectionStatus.BUSY)) {
-				return;
-			}
-			er = cf.checkForErrors();
-			cm.setConnection(connection);
-		} else {
-			connection = cm.getConnection();
-			if (connection.getConnectionState().equals(
-					Connection.ConnectionStatus.BUSY)) {
-				return;
-			}
-			er = cm.checkForErrors();
+		connection = cm.getConnection();
+		if (connection.getConnectionState().equals(
+				Connection.ConnectionStatus.BUSY)) {
+			return;
 		}
+		er = cm.checkForErrors();
 		TcpActionsDto action = new TcpActionsDto();
 		action.setAction(ActionsType.READ);
 		connection.setMsgTimeout(transaction.getTimeout());
@@ -87,7 +72,8 @@ public class StateActionsProcessor {
 		saveStatus(transaction, er, next);
 	}
 
-	public void closingConnection(Transaction transaction,TransactionStateNames next) {
+	public void closingConnection(Transaction transaction,
+			TransactionStateNames next) {
 		boolean closed = cm.closeConnection();
 		TcpError er = new TcpError();
 		TransactionStateNames state = TransactionStateNames.CLOSING_CONNECTION;
@@ -119,6 +105,25 @@ public class StateActionsProcessor {
 
 	public TransactionFactory getTf() {
 		return tf;
+	}
+
+	public void ListenerForConnection(Transaction transaction,
+			TransactionStateNames next) {
+		TcpError er = new TcpError();
+		Connection connection = null;
+		connection = cf.checkForListenerConnection();
+		if (connection == null
+				|| connection.getConnectionState().equals(
+						Connection.ConnectionStatus.BUSY)) {
+			return;
+		}
+		er = cf.checkForErrors();
+		cm.setConnection(connection);
+		TcpActionsDto action = new TcpActionsDto();
+		action.setAction(ActionsType.READ);
+		connection.setMsgTimeout(transaction.getTimeout());
+		connection.setToRemoteMsg(action);
+		saveStatus(transaction, er, next);
 	}
 
 	public void openConnection(Transaction transaction) {
@@ -166,6 +171,11 @@ public class StateActionsProcessor {
 
 	public void setCm(ConnectionManager cm) {
 		this.cm = cm;
+	}
+
+	public void setIdentity(String mdl, String systemDescription) {
+		tf.setMdl(mdl);
+		tf.setSystemDescription(systemDescription);
 	}
 
 	public void setParams(TcpParameters params) {
@@ -228,7 +238,7 @@ public class StateActionsProcessor {
 	public void stopListening(Transaction transaction) {
 		cf.stopListener();
 		TcpError er = cf.checkForErrors();
-		TransactionStateNames state = TransactionStateNames.STOP_LISTENING;
+		TransactionStateNames state = TransactionStateNames.STOP_LISTENER;
 		state = TransactionStateNames.TRANSACTION_DONE;
 		setStatus(transaction, er, state);
 	}
@@ -284,5 +294,5 @@ public class StateActionsProcessor {
 		saveStatus(transaction, result.getError(), next);
 
 	}
-	
+
 }
