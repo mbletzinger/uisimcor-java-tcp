@@ -3,6 +3,7 @@ package org.nees.uiuc.simcor.states.listener;
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.TransactionState;
+import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.ConnectionManager;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto;
@@ -10,7 +11,6 @@ import org.nees.uiuc.simcor.tcp.Connection.ConnectionStatus;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
-import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 
 public class SendingResponse extends TransactionState {
 

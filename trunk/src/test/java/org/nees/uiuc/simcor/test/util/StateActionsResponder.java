@@ -1,10 +1,10 @@
-package org.nees.uiuc.simcor.test;
+package org.nees.uiuc.simcor.test.util;
 
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.states.StateActionsProcessor;
+import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.Transaction;
-import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 
 public class StateActionsResponder extends Thread {
 	public enum LifeSpanType {

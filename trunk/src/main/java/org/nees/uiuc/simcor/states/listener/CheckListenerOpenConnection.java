@@ -1,19 +1,20 @@
-package org.nees.uiuc.simcor.states.old;
+package org.nees.uiuc.simcor.states.listener;
 
 import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
-public class ReadCommand extends TransactionState {
+public class CheckListenerOpenConnection extends TransactionState {
 
-	public ReadCommand(StateActionsProcessor sap) {
-		super(TransactionStateNames.READ_COMMAND, sap);
+	public CheckListenerOpenConnection(TransactionStateNames state,
+			StateActionsProcessor sap, TransactionStateNames next) {
+		super(state, sap, next);
 	}
 
 	@Override
 	public void execute(Transaction transaction) {
-		sap.setUpRead(transaction, true, TransactionStateNames.WAIT_FOR_COMMAND);
+
 	}
 
 }

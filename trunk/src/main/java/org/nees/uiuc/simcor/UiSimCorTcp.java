@@ -9,6 +9,7 @@ import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.logging.Archiving;
 import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.TransactionState;
+import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.ConnectionManager;
 import org.nees.uiuc.simcor.tcp.TcpError;
@@ -16,7 +17,6 @@ import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
-import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity.StepTypes;
 
 public abstract class UiSimCorTcp {

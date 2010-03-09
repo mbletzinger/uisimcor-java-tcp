@@ -17,14 +17,16 @@ import org.junit.Test;
 import org.nees.uiuc.simcor.ConnectionPeer;
 import org.nees.uiuc.simcor.UiSimCorTcp;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
+import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
+import org.nees.uiuc.simcor.test.util.TransactionMsgs;
+import org.nees.uiuc.simcor.test.util.TransactionResponder;
 import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
-import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 public class TransactionTest {
 	private final Logger log = Logger.getLogger(TransactionTest.class);
 	private TcpParameters params = new TcpParameters();

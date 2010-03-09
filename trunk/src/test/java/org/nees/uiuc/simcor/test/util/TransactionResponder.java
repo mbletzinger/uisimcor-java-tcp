@@ -1,4 +1,4 @@
-package org.nees.uiuc.simcor.test;
+package org.nees.uiuc.simcor.test.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -7,12 +7,12 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.ConnectionPeer;
 import org.nees.uiuc.simcor.UiSimCorTcp;
+import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
-import org.nees.uiuc.simcor.transaction.Transaction.TransactionStateNames;
 
 public class TransactionResponder extends Thread {
 	public boolean connected;

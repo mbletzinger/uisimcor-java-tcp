@@ -9,6 +9,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
+import org.nees.uiuc.simcor.test.util.TransactionMsgs;
 import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 import org.nees.uiuc.simcor.transaction.SimCorCompoundMsg;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
