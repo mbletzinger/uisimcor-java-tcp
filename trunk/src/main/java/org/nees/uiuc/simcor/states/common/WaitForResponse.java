@@ -5,16 +5,16 @@ import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
-public class CheckListenerOpenConnection extends TransactionState {
+public class WaitForResponse extends TransactionState {
 
-	public CheckListenerOpenConnection(
-			StateActionsProcessor sap, TransactionStateNames next) {
-		super(TransactionStateNames.CHECK_LISTENER_OPEN_CONNECTION, sap, next);
+	public WaitForResponse(StateActionsProcessor sap) {
+		super(TransactionStateNames.WAIT_FOR_RESPONSE, sap,
+				TransactionStateNames.READ_RESPONSE);
 	}
 
 	@Override
 	public void execute(Transaction transaction) {
-
+		sap.setUpRead(transaction, false, next);
 	}
 
 }
