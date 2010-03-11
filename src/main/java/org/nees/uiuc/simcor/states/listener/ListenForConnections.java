@@ -7,9 +7,8 @@ import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class ListenForConnections extends TransactionState {
 
-	public ListenForConnections(TransactionStateNames state,
-			StateActionsProcessor sap, TransactionStateNames next) {
-		super(state, sap, next);
+	public ListenForConnections(StateActionsProcessor sap, TransactionStateNames next) {
+		super(TransactionStateNames.LISTEN_FOR_CONNECTIONS, sap, next);
 	}
 
 	@Override

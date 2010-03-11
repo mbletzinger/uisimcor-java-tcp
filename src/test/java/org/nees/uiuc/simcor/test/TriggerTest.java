@@ -66,26 +66,14 @@ public class TriggerTest {
 		client.connect();
 		TcpLinkDto link = listener.listen();
 		Connection c = new Connection(link);
-		ClientId id = new ClientId(sys, link.getRemoteHost());
-		cc.addClient(c, id);
+		ClientId id = new ClientId(c,sys, link.getRemoteHost());
+		cc.addClient(id);
 		clients.add(client);
 	}
 	private void broadcast() {
 		tId.setStep(tId.getStep() + 1);
 		SimCorMsg msg = tf.createCommand("trigger", "MDL-00-01", null, "Broadcast " + tf.getSystemDescription());
 		cc.broadcast(msg, tId);
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e1) {
-		}
-
-		for(TriggerConnectionsClient c : clients) {
-			c.checkForMessages();
-		}
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e1) {
-		}		
 		while(cc.areResponsesFinished() == false) {
 			try {
 				Thread.sleep(200);
