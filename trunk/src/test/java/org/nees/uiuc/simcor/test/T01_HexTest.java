@@ -6,10 +6,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.nees.uiuc.simcor.matlab.StringListUtils;
 
-public class HexTest {
+public class T01_HexTest {
 
 	private byte [] buf = new byte[100];
-	private Logger log = Logger.getLogger(HexTest.class);
+	private Logger log = Logger.getLogger(T01_HexTest.class);
 	@Before
 	public void setUp() throws Exception {
 		for (int i = 0; i < 100; i++) {

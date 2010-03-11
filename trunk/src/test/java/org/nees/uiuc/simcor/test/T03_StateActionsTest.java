@@ -13,8 +13,8 @@ import org.nees.uiuc.simcor.test.util.StateActionsResponder.LifeSpanType;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
-public class StateActionsTest {
-	private final Logger log = Logger.getLogger(StateActionsTest.class);
+public class T03_StateActionsTest {
+	private final Logger log = Logger.getLogger(T03_StateActionsTest.class);
 	private TcpParameters lparams = new TcpParameters();
 	private TcpParameters rparams = new TcpParameters();
 	private StateActionsResponder rspdr;
