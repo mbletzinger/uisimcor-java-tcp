@@ -19,7 +19,7 @@ import org.nees.uiuc.simcor.test.util.TriggerConnectionsClient;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
-public class TriggerTest {
+public class T06_TriggerTest {
 	private List<TriggerConnectionsClient> clients = new ArrayList<TriggerConnectionsClient>();
 	private ClientConnections cc = new ClientConnections();
 	private TcpListen listener = new TcpListen();
@@ -28,7 +28,7 @@ public class TriggerTest {
 	private int clientIdx = 0;
 	private TransactionFactory tf = new TransactionFactory();
 	private TransactionIdentity tId;
-	private final Logger log = Logger.getLogger(TriggerTest.class);
+	private final Logger log = Logger.getLogger(T06_TriggerTest.class);
 
 
 	@Before

@@ -17,8 +17,8 @@ import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
-public class SimCorMsgTest {
-	private final Logger log = Logger.getLogger(SimCorMsgTest.class);
+public class T02_SimCorMsgTest {
+	private final Logger log = Logger.getLogger(T02_SimCorMsgTest.class);
 
 	public class TestMsg {
 		public MsgType type;
