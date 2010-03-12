@@ -1,5 +1,6 @@
 package org.nees.uiuc.simcor.states;
 
+import org.nees.uiuc.simcor.listener.ClientId;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.Transaction;
@@ -9,6 +10,11 @@ public abstract class TransactionState {
 	protected TransactionStateNames state;
 	protected StateActionsProcessor sap;
 	protected TransactionStateNames next;
+	protected ClientId remoteClient;
+
+	public ClientId getRemoteClient() {
+		return remoteClient;
+	}
 
 	public abstract void execute(Transaction transaction);
 
