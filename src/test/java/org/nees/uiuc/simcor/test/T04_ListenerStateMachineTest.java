@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.nees.uiuc.simcor.listener.ListenerStateMachine;
 import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
@@ -18,8 +19,7 @@ public class T04_ListenerStateMachineTest {
 	private TcpParameters lparams = new TcpParameters();
 	private TcpParameters rparams = new TcpParameters();
 	private StateActionsResponder rspdr;
-	private StateActionsProcessor sap;
-	private Transaction transaction;
+	private ListenerStateMachine lsm;
 
 	private void read(TransactionStateNames current,
 			TransactionStateNames next, boolean errorExpected, boolean isCommand) {
@@ -50,21 +50,19 @@ public class T04_ListenerStateMachineTest {
 
 	@Before
 	public void setUp() throws Exception {
-		sap = new StateActionsProcessor();
+		lsm = new ListenerStateMachine(null, true);
 		rparams.setRemoteHost("127.0.0.1");
 		rparams.setRemotePort(6445);
 		rparams.setTcpTimeout(2000);
 		lparams.setLocalPort(6445);
 		lparams.setTcpTimeout(2000);
-		sap.setParams(lparams);
-		sap.setIdentity("MDL-00-00", "Connection Test");
-
-		transaction = sap.getTf().createTransaction(new SimCorMsg());
-		transaction.setTimeout(2000);
+		lsm.getSap().setParams(lparams);
+		lsm.getSap().setIdentity("MDL-00-00", "Connection Test");
 	}
 
 	private void setupConnection(LifeSpanType lfsp, boolean sendOpenSession) {
-		sap.startListening(transaction);
+		
+		lsm.start();
 
 		rspdr = new StateActionsResponder(lfsp, rparams, sendOpenSession);
 		rspdr.start();
