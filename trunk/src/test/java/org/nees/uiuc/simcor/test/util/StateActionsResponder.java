@@ -7,11 +7,11 @@ import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class StateActionsResponder extends Thread {
-	public enum LifeSpanType {
+	public enum DieBefore {
 		CLOSE_COMMAND, END, OPEN_COMMAND, OPEN_RESPONSE
 	}
 
-	private LifeSpanType lifeSpan = LifeSpanType.END;;
+	private DieBefore lifeSpan = DieBefore.END;;
 
 	private final Logger log = Logger.getLogger(StateActionsResponder.class);
 	private TcpParameters params;
@@ -19,7 +19,7 @@ public class StateActionsResponder extends Thread {
 	private boolean sendSession = false;
 	private Transaction transaction;
 
-	public StateActionsResponder(LifeSpanType lifeSpan, TcpParameters params,
+	public StateActionsResponder(DieBefore lifeSpan, TcpParameters params,
 			boolean sendOpenSession) {
 		super();
 		this.lifeSpan = lifeSpan;
@@ -29,7 +29,7 @@ public class StateActionsResponder extends Thread {
 		sap.setIdentity("MDL-00-01", "Connection Test Responder");
 	}
 
-	public LifeSpanType getLifeSpan() {
+	public DieBefore getLifeSpan() {
 		return lifeSpan;
 	}
 
@@ -120,7 +120,7 @@ public class StateActionsResponder extends Thread {
 
 		setTransaction(tr);
 
-		if (lifeSpan.equals(LifeSpanType.OPEN_COMMAND)) {
+		if (lifeSpan.equals(DieBefore.OPEN_COMMAND)) {
 			log.debug("Ending because lifespan is " + lifeSpan);
 			shutdown();
 			return;
@@ -133,7 +133,7 @@ public class StateActionsResponder extends Thread {
 				return;
 			}
 			log.debug("Current transaction after send open session command: " + getTransaction());
-			if (lifeSpan.equals(LifeSpanType.OPEN_RESPONSE)) {
+			if (lifeSpan.equals(DieBefore.OPEN_RESPONSE)) {
 				log.debug("Ending because lifespan is " + lifeSpan);
 				shutdown();
 				return;
@@ -152,7 +152,7 @@ public class StateActionsResponder extends Thread {
 				return;
 			}
 			log.debug("Current transaction: " + getTransaction());
-			if (lifeSpan.equals(LifeSpanType.OPEN_RESPONSE)) {
+			if (lifeSpan.equals(DieBefore.OPEN_RESPONSE)) {
 				log.debug("Ending because lifespan is " + lifeSpan);
 				shutdown();
 				return;
@@ -165,7 +165,7 @@ public class StateActionsResponder extends Thread {
 			}
 			log.debug("Current transaction after send open session response: " + getTransaction());
 		}
-		if (lifeSpan.equals(LifeSpanType.CLOSE_COMMAND)) {
+		if (lifeSpan.equals(DieBefore.CLOSE_COMMAND)) {
 			log.debug("Ending because lifespan is " + lifeSpan);
 			shutdown();
 			return;
@@ -248,7 +248,7 @@ public class StateActionsResponder extends Thread {
 		return true;
 	}
 
-	public void setLifeSpan(LifeSpanType lifeSpan) {
+	public void setLifeSpan(DieBefore lifeSpan) {
 		this.lifeSpan = lifeSpan;
 	}
 

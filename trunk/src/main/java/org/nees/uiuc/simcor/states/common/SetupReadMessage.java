@@ -5,16 +5,17 @@ import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
-public class TransactionDone extends TransactionState {
+public class SetupReadMessage extends TransactionState {
 
-	public TransactionDone(
-			StateActionsProcessor sap, TransactionStateNames next) {
-		super(TransactionStateNames.TRANSACTION_DONE, sap, next);
+	private boolean isCommand;
+	public SetupReadMessage(TransactionStateNames state, StateActionsProcessor sap, boolean isCommand, TransactionStateNames next) {
+		super(state, sap,next);
+		this.isCommand = isCommand;
 	}
 
 	@Override
 	public void execute(Transaction transaction) {
-		sap.recordTransaction(transaction,next);
+		sap.setUpRead(transaction, isCommand, next);
 	}
 
 }

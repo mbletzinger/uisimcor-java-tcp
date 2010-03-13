@@ -98,7 +98,7 @@ public class ConnectionPeer extends UiSimCorTcp {
 			machine.put(TransactionStateNames.SENDING_COMMAND,
 					new SendingCommand(sap));
 			machine.put(TransactionStateNames.WAIT_FOR_RESPONSE,
-					new SetupResponse(sap));
+					new SetupReadMessage(sap));
 			machine.put(TransactionStateNames.RESPONSE_AVAILABLE,
 					new ResponseAvailable(sap));
 

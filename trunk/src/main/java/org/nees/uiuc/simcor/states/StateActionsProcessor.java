@@ -3,6 +3,7 @@ package org.nees.uiuc.simcor.states;
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.factories.ConnectionFactory;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
+import org.nees.uiuc.simcor.listener.ClientId;
 import org.nees.uiuc.simcor.logging.Archiving;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.ConnectionManager;
@@ -24,6 +25,11 @@ public class StateActionsProcessor {
 	private final Logger log = Logger.getLogger(StateActionsProcessor.class);
 	private TcpParameters params;
 	private TransactionFactory tf;
+	private ClientId remoteClient;
+
+	public ClientId getRemoteClient() {
+		return remoteClient;
+	}
 
 	public StateActionsProcessor() {
 		super();
@@ -134,7 +140,7 @@ public class StateActionsProcessor {
 				TransactionStateNames.CHECK_OPEN_CONNECTION);
 	}
 
-	public void recordTransaction(Transaction transaction) {
+	public void recordTransaction(Transaction transaction, TransactionStateNames next) {
 		if (transaction.getError().getType().equals(TcpErrorTypes.NONE)) {
 			transaction.setError(cm.getSavedError()); // capture connection
 			// errors
@@ -146,8 +152,10 @@ public class StateActionsProcessor {
 			log.debug("Handling: " + transaction);
 			archive.logTransaction(transaction);
 		}
+		if(next.equals(TransactionStateNames.READY)) {
 		cm.clearError();
-		setStatus(transaction, new TcpError(), TransactionStateNames.READY);
+		}
+		setStatus(transaction, new TcpError(), next);
 	}
 
 	protected void saveStatus(Transaction transaction, TcpError error,
@@ -293,6 +301,17 @@ public class StateActionsProcessor {
 		log.debug("Sent msg:" + msg + " id: " + id);
 		saveStatus(transaction, result.getError(), next);
 
+	}
+
+	public void waitForSessionMsgRead(Transaction transaction,
+			boolean isCommand, TransactionStateNames next) {
+		waitForRead(transaction, true, next);
+		if (transaction.getState().equals(next)) {
+			Connection connection = cm.getConnection();
+			String system = transaction.getCommand().getContent();
+			remoteClient = new ClientId(connection, system, connection
+					.getRemoteHost());
+		}
 	}
 
 }

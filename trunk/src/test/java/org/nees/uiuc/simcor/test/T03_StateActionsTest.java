@@ -9,7 +9,7 @@ import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.test.util.StateActionsResponder;
-import org.nees.uiuc.simcor.test.util.StateActionsResponder.LifeSpanType;
+import org.nees.uiuc.simcor.test.util.StateActionsResponder.DieBefore;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
@@ -21,9 +21,19 @@ public class T03_StateActionsTest {
 	private StateActionsProcessor sap;
 	private Transaction transaction;
 
-	private void read(TransactionStateNames current,
-			TransactionStateNames next, boolean errorExpected, boolean isCommand) {
-		String cmdStr = isCommand ? "command" : "response";
+	private void read(boolean errorExpected, boolean isCommand) {
+		String cmdStr;
+		TransactionStateNames current;
+		TransactionStateNames next;
+		if(isCommand) {
+			cmdStr = "command";
+			current = TransactionStateNames.WAIT_FOR_OPEN_COMMAND;
+			next = TransactionStateNames.COMMAND_AVAILABLE;
+		} else {
+			cmdStr = "response";
+			current = TransactionStateNames.WAIT_FOR_RESPONSE;
+			next = TransactionStateNames.RESPONSE_AVAILABLE;			
+		}
 		sap.setUpRead(transaction, false, current);
 		while (transaction.getState().equals(current)) {
 			sap.waitForRead(transaction, isCommand, next);
@@ -63,7 +73,7 @@ public class T03_StateActionsTest {
 		transaction.setTimeout(2000);
 	}
 
-	private void setupConnection(LifeSpanType lfsp, boolean sendOpenSession) {
+	private void setupConnection(DieBefore lfsp, boolean sendOpenSession) {
 		sap.startListening(transaction);
 
 		rspdr = new StateActionsResponder(lfsp, rparams, sendOpenSession);
@@ -123,7 +133,7 @@ public class T03_StateActionsTest {
 	@Test
 	public void test01StartListenerFail() {
 		sap.startListening(transaction);
-		rspdr = new StateActionsResponder(LifeSpanType.OPEN_COMMAND, rparams,
+		rspdr = new StateActionsResponder(DieBefore.OPEN_COMMAND, rparams,
 				true); // never started
 
 		sap.checkOpenConnection(transaction,
@@ -154,29 +164,26 @@ public class T03_StateActionsTest {
 
 	@Test
 	public void test02OpenSessionReadFail() {
-		setupConnection(LifeSpanType.OPEN_COMMAND,true);
-		read(TransactionStateNames.READ_COMMAND,
-				TransactionStateNames.COMMAND_AVAILABLE, true,true);
+		setupConnection(DieBefore.OPEN_COMMAND,true);
+		read(true,true);
 		shutdown(true);
 	}
 
 	@Test
 	public void test03OpenSessionWriteFail() {
-		setupConnection(LifeSpanType.OPEN_RESPONSE,false);
+		setupConnection(DieBefore.OPEN_RESPONSE,false);
 		write(TransactionStateNames.ASSEMBLE_OPEN_COMMAND,
 				TransactionStateNames.WAIT_FOR_RESPONSE,true,true);
-		read(TransactionStateNames.READ_RESPONSE,
-				TransactionStateNames.RESPONSE_AVAILABLE, true,false);
+		read(true,false);
 		shutdown(true);
 	}
 
 	@Test
 	public void test04CloseSessionWriteFail() {
-		setupConnection(LifeSpanType.CLOSE_COMMAND,false);
+		setupConnection(DieBefore.CLOSE_COMMAND,false);
 		write(TransactionStateNames.ASSEMBLE_CLOSE_COMMAND,
 				TransactionStateNames.WAIT_FOR_RESPONSE,true,true);
-		read(TransactionStateNames.READ_RESPONSE,
-				TransactionStateNames.RESPONSE_AVAILABLE, false,false);
+		read(false,false);
 		write(TransactionStateNames.ASSEMBLE_CLOSE_COMMAND,
 				TransactionStateNames.TRANSACTION_DONE,true,false);
 		shutdown(false);
@@ -184,23 +191,20 @@ public class T03_StateActionsTest {
 
 	@Test
 	public void test05CloseSessionReadFail() {
-		setupConnection(LifeSpanType.CLOSE_COMMAND,true);
-		read(TransactionStateNames.READ_COMMAND,
-				TransactionStateNames.COMMAND_AVAILABLE, false,true);
+		setupConnection(DieBefore.CLOSE_COMMAND,true);
+		read(false,true);
 		write(TransactionStateNames.ASSEMBLE_OPEN_RESPONSE,
 				TransactionStateNames.TRANSACTION_DONE,false,true);
-		read(TransactionStateNames.READ_COMMAND,
-				TransactionStateNames.COMMAND_AVAILABLE, true,true);
+		read(true,true);
 		shutdown(true);
 	}
 
 	@Test
 	public void test06CloseSessionWritePass() {
-		setupConnection(LifeSpanType.END,false);
+		setupConnection(DieBefore.END,false);
 		write(TransactionStateNames.ASSEMBLE_OPEN_COMMAND,
 				TransactionStateNames.WAIT_FOR_RESPONSE,true,true);
-		read(TransactionStateNames.READ_RESPONSE,
-				TransactionStateNames.RESPONSE_AVAILABLE, false,false);
+		read(false,false);
 		write(TransactionStateNames.ASSEMBLE_CLOSE_COMMAND,
 				TransactionStateNames.TRANSACTION_DONE,true,false);
 		shutdown(false);
@@ -208,13 +212,11 @@ public class T03_StateActionsTest {
 
 	@Test
 	public void test07CloseSessionReadPass() {
-		setupConnection(LifeSpanType.END,true);
-		read(TransactionStateNames.READ_COMMAND,
-				TransactionStateNames.COMMAND_AVAILABLE, false,true);
+		setupConnection(DieBefore.END,true);
+		read( false,true);
 		write(TransactionStateNames.ASSEMBLE_OPEN_RESPONSE,
 				TransactionStateNames.TRANSACTION_DONE,false,true);
-		read(TransactionStateNames.READ_COMMAND,
-				TransactionStateNames.COMMAND_AVAILABLE, false,true);
+		read(false,true);
 		shutdown(false);
 	}
 	private void write(TransactionStateNames current, TransactionStateNames next, boolean isCommand, boolean isOpen) {

@@ -30,9 +30,9 @@ public class TriggerConnectionsClient {
 	
 	public void checkForMessages() {
 		Transaction transaction = sap.getTf().createTransaction(new SimCorMsg());
-		sap.setUpRead(transaction, true, TransactionStateNames.READ_COMMAND);
+		sap.setUpRead(transaction, true, TransactionStateNames.WAIT_FOR_COMMAND);
 		log.debug("After read command setup: " + sap.getCm().checkForErrors());
-		while(transaction.getState().equals(TransactionStateNames.READ_COMMAND)) {
+		while(transaction.getState().equals(TransactionStateNames.WAIT_FOR_COMMAND)) {
 			sap.waitForRead(transaction, true, TransactionStateNames.COMMAND_AVAILABLE);
 			try {
 				Thread.sleep(200);

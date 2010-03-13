@@ -10,11 +10,6 @@ public abstract class TransactionState {
 	protected TransactionStateNames state;
 	protected StateActionsProcessor sap;
 	protected TransactionStateNames next;
-	protected ClientId remoteClient;
-
-	public ClientId getRemoteClient() {
-		return remoteClient;
-	}
 
 	public abstract void execute(Transaction transaction);
 
