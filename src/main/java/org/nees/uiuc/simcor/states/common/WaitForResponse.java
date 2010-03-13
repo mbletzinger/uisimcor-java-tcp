@@ -5,16 +5,15 @@ import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
-public class SetupResponse extends TransactionState {
+public class WaitForResponse extends TransactionState {
 
-	public SetupResponse(StateActionsProcessor sap) {
-		super(TransactionStateNames.WAIT_FOR_RESPONSE, sap,
-				TransactionStateNames.READ_RESPONSE);
+	public WaitForResponse( StateActionsProcessor sap) {
+		super(TransactionStateNames.WAIT_FOR_RESPONSE, sap, TransactionStateNames.RESPONSE_AVAILABLE);
 	}
 
 	@Override
 	public void execute(Transaction transaction) {
-		sap.setUpRead(transaction, false, next);
+		sap.waitForRead(transaction, true, next);
 	}
 
 }

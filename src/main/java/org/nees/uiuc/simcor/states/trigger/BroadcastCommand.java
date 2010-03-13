@@ -9,7 +9,7 @@ public class BroadcastCommand extends TriggeringState {
 
 	public BroadcastCommand(TransactionStateNames state,
 			StateActionsProcessor sap, ClientConnections cc) {
-		super(state, sap, cc, TransactionStateNames.WAIT_FOR_TRIGER_RESPONSES);
+		super(state, sap, cc, TransactionStateNames.WAIT_FOR_TRIGGER_RESPONSES);
 	}
 
 	@Override
