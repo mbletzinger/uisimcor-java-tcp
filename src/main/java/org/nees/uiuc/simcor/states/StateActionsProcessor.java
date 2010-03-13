@@ -1,7 +1,7 @@
 package org.nees.uiuc.simcor.states;
 
 import org.apache.log4j.Logger;
-import org.nees.uiuc.simcor.factories.ConnectionFactory;
+import org.nees.uiuc.simcor.factories.ListenerConnectionFactory;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.listener.ClientId;
 import org.nees.uiuc.simcor.logging.Archiving;
@@ -20,10 +20,10 @@ import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
 public class StateActionsProcessor {
 	private Archiving archive;
-	private ConnectionFactory cf;
-	private ConnectionManager cm;
+	protected ListenerConnectionFactory cf;
+	protected ConnectionManager cm;
 	private final Logger log = Logger.getLogger(StateActionsProcessor.class);
-	private TcpParameters params;
+	protected TcpParameters params;
 	private TransactionFactory tf;
 	private ClientId remoteClient;
 
@@ -33,13 +33,13 @@ public class StateActionsProcessor {
 
 	public StateActionsProcessor() {
 		super();
-		cf = new ConnectionFactory();
+		cf = new ListenerConnectionFactory();
 		tf = new TransactionFactory();
 		cm = new ConnectionManager();
 		archive = new Archiving();
 	}
 
-	public StateActionsProcessor(ConnectionFactory cf, TransactionFactory tf,
+	public StateActionsProcessor(ListenerConnectionFactory cf, TransactionFactory tf,
 			ConnectionManager cm, Archiving archive) {
 		super();
 		this.cf = cf;
@@ -97,7 +97,7 @@ public class StateActionsProcessor {
 		return archive;
 	}
 
-	public ConnectionFactory getCf() {
+	public ListenerConnectionFactory getCf() {
 		return cf;
 	}
 
@@ -173,7 +173,7 @@ public class StateActionsProcessor {
 		this.archive = archive;
 	}
 
-	public void setCf(ConnectionFactory cf) {
+	public void setCf(ListenerConnectionFactory cf) {
 		this.cf = cf;
 	}
 
