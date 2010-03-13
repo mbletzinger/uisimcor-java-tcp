@@ -5,7 +5,7 @@ import org.nees.uiuc.simcor.listener.ListenerStateMachine;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
-public class StateActionsProcessorWithLsm extends StateActionsProcessor {
+public class StateActionsProcessorWithLsm extends StateActionsProcessorWithLcf {
 	private ListenerStateMachine lsm;
 
 	public StateActionsProcessorWithLsm(ListenerStateMachine lsm) {

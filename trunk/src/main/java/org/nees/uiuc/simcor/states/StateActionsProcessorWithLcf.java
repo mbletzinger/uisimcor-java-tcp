@@ -18,11 +18,11 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
-public class StateActionsProcessor {
+public class StateActionsProcessorWithLcf {
 	private Archiving archive;
 	protected ListenerConnectionFactory cf;
 	protected ConnectionManager cm;
-	private final Logger log = Logger.getLogger(StateActionsProcessor.class);
+	private final Logger log = Logger.getLogger(StateActionsProcessorWithLcf.class);
 	protected TcpParameters params;
 	private TransactionFactory tf;
 	private ClientId remoteClient;
@@ -31,7 +31,7 @@ public class StateActionsProcessor {
 		return remoteClient;
 	}
 
-	public StateActionsProcessor() {
+	public StateActionsProcessorWithLcf() {
 		super();
 		cf = new ListenerConnectionFactory();
 		tf = new TransactionFactory();
@@ -39,7 +39,7 @@ public class StateActionsProcessor {
 		archive = new Archiving();
 	}
 
-	public StateActionsProcessor(ListenerConnectionFactory cf, TransactionFactory tf,
+	public StateActionsProcessorWithLcf(ListenerConnectionFactory cf, TransactionFactory tf,
 			ConnectionManager cm, Archiving archive) {
 		super();
 		this.cf = cf;
@@ -113,7 +113,7 @@ public class StateActionsProcessor {
 		return tf;
 	}
 
-	public void ListenerForConnection(Transaction transaction,
+	public void listenForConnection(Transaction transaction,
 			TransactionStateNames next) {
 		TcpError er = new TcpError();
 		Connection connection = null;
