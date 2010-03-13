@@ -7,10 +7,10 @@ import org.nees.uiuc.simcor.tcp.TcpLinkDto;
 import org.nees.uiuc.simcor.tcp.TcpListen;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 
-public class ConnectionFactory {
+public class ListenerConnectionFactory {
 
 	private TcpListen listener;
-	private final Logger log = Logger.getLogger(ConnectionFactory.class);
+	private final Logger log = Logger.getLogger(ListenerConnectionFactory.class);
 	private TcpParameters params;
 	private TcpError savedError = new TcpError();
 

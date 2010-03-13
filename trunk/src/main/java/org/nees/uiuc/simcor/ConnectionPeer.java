@@ -1,7 +1,7 @@
 package org.nees.uiuc.simcor;
 
 import org.apache.log4j.Logger;
-import org.nees.uiuc.simcor.factories.ConnectionFactory;
+import org.nees.uiuc.simcor.factories.ListenerConnectionFactory;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.logging.ExitTransaction;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
@@ -180,7 +180,7 @@ public class ConnectionPeer extends UiSimCorTcp {
 	 * start the listener. However the listener will need to be monitored to get
 	 * an incoming connection request.
 	 * 
-	 * @see {@link ConnectionFactory#getConnection()}
+	 * @see {@link ListenerConnectionFactory#getConnection()}
 	 */
 	@Override
 	public void startup(TcpParameters params) {
