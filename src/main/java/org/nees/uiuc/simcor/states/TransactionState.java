@@ -8,12 +8,12 @@ import org.nees.uiuc.simcor.transaction.Transaction;
 public abstract class TransactionState {
 
 	protected TransactionStateNames state;
-	protected StateActionsProcessor sap;
+	protected StateActionsProcessorWithLcf sap;
 	protected TransactionStateNames next;
 
 	public abstract void execute(Transaction transaction);
 
-	public TransactionState(TransactionStateNames state, StateActionsProcessor sap, TransactionStateNames next) {
+	public TransactionState(TransactionStateNames state, StateActionsProcessorWithLcf sap, TransactionStateNames next) {
 		this.state = state;
 		this.sap = sap;
 		this.next = next;

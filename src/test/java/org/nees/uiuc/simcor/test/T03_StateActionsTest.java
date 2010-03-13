@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.nees.uiuc.simcor.states.StateActionsProcessor;
+import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
@@ -18,7 +18,7 @@ public class T03_StateActionsTest {
 	private TcpParameters lparams = new TcpParameters();
 	private TcpParameters rparams = new TcpParameters();
 	private StateActionsResponder rspdr;
-	private StateActionsProcessor sap;
+	private StateActionsProcessorWithLcf sap;
 	private Transaction transaction;
 
 	private void read(boolean errorExpected, boolean isCommand) {
@@ -60,7 +60,7 @@ public class T03_StateActionsTest {
 
 	@Before
 	public void setUp() throws Exception {
-		sap = new StateActionsProcessor();
+		sap = new StateActionsProcessorWithLcf();
 		rparams.setRemoteHost("127.0.0.1");
 		rparams.setRemotePort(6445);
 		rparams.setTcpTimeout(2000);

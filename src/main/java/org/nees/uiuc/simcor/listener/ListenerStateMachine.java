@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.nees.uiuc.simcor.states.StateActionsProcessor;
+import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.states.common.AssembleCommand;
@@ -30,7 +30,7 @@ public class ListenerStateMachine extends Thread {
 	private boolean isRunning;
 	protected Map<TransactionStateNames, TransactionState> machine = new HashMap<TransactionStateNames, TransactionState>();
 	private ClientId oneClient = null;
-	private StateActionsProcessor sap = new StateActionsProcessor();
+	private StateActionsProcessorWithLcf sap = new StateActionsProcessorWithLcf();
 	private final Logger log = Logger.getLogger(ListenerStateMachine.class);
 
 	public ListenerStateMachine(ClientConnections cc, boolean isP2P) {
@@ -52,7 +52,7 @@ public class ListenerStateMachine extends Thread {
 		return oneClient;
 	}
 
-	public StateActionsProcessor getSap() {
+	public StateActionsProcessorWithLcf getSap() {
 		return sap;
 	}
 
