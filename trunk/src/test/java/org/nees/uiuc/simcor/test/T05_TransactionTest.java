@@ -24,6 +24,7 @@ import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.test.util.TransactionMsgs;
 import org.nees.uiuc.simcor.test.util.TransactionResponder;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
@@ -74,7 +75,7 @@ public class T05_TransactionTest {
 		TransactionFactory tf = simcor.getSap().getTf();
 		checkResponder();
 		for(Iterator<SimpleTransaction> t = data.cmdList.iterator(); t.hasNext();) {
-			SimpleTransaction transO = t.next();
+			Transaction transO = t.next();
 			log.debug("Original command " + transO);
 			TransactionIdentity id = transO.getId();
 			tf.setId(id);

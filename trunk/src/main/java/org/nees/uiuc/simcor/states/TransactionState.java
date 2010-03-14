@@ -3,6 +3,7 @@ package org.nees.uiuc.simcor.states;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.Transaction;
 
 public abstract class TransactionState {
 
@@ -23,7 +24,7 @@ public abstract class TransactionState {
 		return state.toString();
 	}
 
-	protected void setStatus(SimpleTransaction transaction, TcpError error) {
+	protected void setStatus(Transaction transaction, TcpError error) {
 		TcpError err = error;
 		transaction.setError(error);
 		if(err.getType() != TcpErrorTypes.NONE) {

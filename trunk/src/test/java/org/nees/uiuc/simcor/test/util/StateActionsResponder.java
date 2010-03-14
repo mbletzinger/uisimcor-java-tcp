@@ -6,6 +6,7 @@ import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class StateActionsResponder extends Thread {
 	public enum DieBefore {
@@ -269,7 +270,7 @@ public class StateActionsResponder extends Thread {
 		this.transaction = transaction;
 	}
 	private void shutdown() {
-		SimpleTransaction tr = getTransaction();
+		Transaction tr = getTransaction();
 		sap.closingConnection(tr, TransactionStateNames.TRANSACTION_DONE);
 	}
 }
