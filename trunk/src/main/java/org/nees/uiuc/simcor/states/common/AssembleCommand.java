@@ -3,7 +3,7 @@ package org.nees.uiuc.simcor.states.common;
 import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 
 public class AssembleCommand extends TransactionState {
 	public enum AssembleCommandType { OPEN, CLOSE, OTHER };
@@ -15,7 +15,7 @@ public class AssembleCommand extends TransactionState {
 	}
 
 	@Override
-	public void execute(Transaction transaction) {
+	public void execute(SimpleTransaction transaction) {
 		if(cmdType.equals(AssembleCommandType.OPEN)) {
 			sap.assembleSessionMessage(transaction, true, true, next);
 			return;

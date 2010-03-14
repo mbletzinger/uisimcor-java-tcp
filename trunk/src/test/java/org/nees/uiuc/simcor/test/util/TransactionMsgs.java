@@ -7,26 +7,26 @@ import java.util.List;
 import org.nees.uiuc.simcor.transaction.Address;
 import org.nees.uiuc.simcor.transaction.SimCorCompoundMsg;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
 public class TransactionMsgs {
-	public List<Transaction> cmdList;
-	public HashMap<String, Transaction> transactions;
-	public Transaction openTransaction;
-	public Transaction closeTransaction;
-	public Transaction triggerTransaction;
+	public List<SimpleTransaction> cmdList;
+	public HashMap<String, SimpleTransaction> transactions;
+	public SimpleTransaction openTransaction;
+	public SimpleTransaction closeTransaction;
+	public SimpleTransaction triggerTransaction;
 
 	public TransactionMsgs() {
-		this.cmdList = new ArrayList<Transaction>();
-		this.transactions = new HashMap<String,Transaction>();
+		this.cmdList = new ArrayList<SimpleTransaction>();
+		this.transactions = new HashMap<String,SimpleTransaction>();
 
 	}
 
 	public void setUp() throws Exception {
 
-		Transaction transaction = new Transaction();
+		SimpleTransaction transaction = new SimpleTransaction();
 		SimCorMsg msg = new SimCorMsg();
 		msg.setCommand("open-session");
 		msg.setContent("dummySession");
@@ -39,7 +39,7 @@ public class TransactionMsgs {
 		cmdList.add(transaction);
 		openTransaction = transaction;
 	
-		transaction = new Transaction();
+		transaction = new SimpleTransaction();
 		msg = new SimCorMsg();
 		msg.setCommand("set-parameter");
 		msg.setContent("dummySetParam	nstep	0");
@@ -52,7 +52,7 @@ public class TransactionMsgs {
 		transactions.put(msg.toString(),transaction);
 		cmdList.add(transaction);
 	
-		transaction = new Transaction();
+		transaction = new SimpleTransaction();
 		msg = new SimCorMsg();
 		TransactionIdentity id = new TransactionIdentity();
 		msg.setCommand("get-control-point");
@@ -80,7 +80,7 @@ public class TransactionMsgs {
 		transactions.put(msg.toString(),transaction);
 		cmdList.add(transaction);
 	
-		transaction = new Transaction();
+		transaction = new SimpleTransaction();
 		id = new TransactionIdentity();
 		msg = new SimCorMsg();
 		msg.setCommand("get-control-point");
@@ -102,7 +102,7 @@ public class TransactionMsgs {
 		transactions.put(msg.toString(),transaction);
 		cmdList.add(transaction);
 	
-		transaction = new Transaction();
+		transaction = new SimpleTransaction();
 		id = new TransactionIdentity();
 		msg = new SimCorMsg();
 		msg.setCommand("get-control-point");
@@ -124,7 +124,7 @@ public class TransactionMsgs {
 		transactions.put(msg.toString(),transaction);
 		cmdList.add(transaction);
 
-		transaction = new Transaction();
+		transaction = new SimpleTransaction();
 		id = new TransactionIdentity();
 		SimCorCompoundMsg cmsg = new SimCorCompoundMsg();
 		cmsg.setCommand("propose");
@@ -143,7 +143,7 @@ public class TransactionMsgs {
 		transactions.put(cmsg.toString(),transaction);
 		cmdList.add(transaction);
 	
-		transaction = new Transaction();
+		transaction = new SimpleTransaction();
 		id = new TransactionIdentity();
 		msg = new SimCorMsg();
 		msg.setCommand("execute");
@@ -161,7 +161,7 @@ public class TransactionMsgs {
 		transactions.put(msg.toString(),transaction);
 		cmdList.add(transaction);
 	
-		transaction = new Transaction();
+		transaction = new SimpleTransaction();
 		id = new TransactionIdentity();
 		msg = new SimCorMsg();
 		msg.setCommand("trigger");
@@ -180,7 +180,7 @@ public class TransactionMsgs {
 		cmdList.add(transaction);
 		triggerTransaction = transaction;
 	
-		transaction = new Transaction();
+		transaction = new SimpleTransaction();
 		cmsg = new SimCorCompoundMsg();
 		cmsg.setCommand("propose");
 		id = new TransactionIdentity();
@@ -200,7 +200,7 @@ public class TransactionMsgs {
 		transactions.put(cmsg.toString(),transaction);
 		cmdList.add(transaction);
 	
-		transaction = new Transaction();
+		transaction = new SimpleTransaction();
 		msg = new SimCorMsg();
 		msg.setCommand("close-session");
 		msg.setContent("dummy");

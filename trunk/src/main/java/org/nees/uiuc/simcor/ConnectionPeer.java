@@ -24,8 +24,8 @@ import org.nees.uiuc.simcor.states.old.TransactionDone;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
-import org.nees.uiuc.simcor.transaction.Transaction;
-import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
 
 /**
  * 
@@ -141,8 +141,8 @@ public class ConnectionPeer extends UiSimCorTcp {
 	 *         that the message has been offloaded
 	 */
 	@Override
-	public Transaction pickupTransaction() {
-		Transaction result = new Transaction(transaction);
+	public SimpleTransaction pickupTransaction() {
+		SimpleTransaction result = new SimpleTransaction(transaction);
 		transaction.setPickedUp(true);
 		return result;
 	}
@@ -155,7 +155,7 @@ public class ConnectionPeer extends UiSimCorTcp {
 	 *            with the transactionFactory.
 	 */
 	@Override
-	public void startTransaction(Transaction command) {
+	public void startTransaction(SimpleTransaction command) {
 
 		transaction = command;
 		transaction.setPosted(true);

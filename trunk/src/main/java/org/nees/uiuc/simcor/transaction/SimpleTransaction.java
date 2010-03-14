@@ -3,16 +3,10 @@ package org.nees.uiuc.simcor.transaction;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpError;
 
-public class Transaction {
-	public enum ActionType {
-		CONNECT, DISCONNECT, NONE, START_TRANSACTION
-	};
-
+public class SimpleTransaction {
 	public enum DirectionType {
 		NONE, RECEIVE_COMMAND, SEND_COMMAND
 	};
-
-	private ActionType action = ActionType.NONE;
 
 	private SimCorMsg command = null;
 	private DirectionType direction = DirectionType.NONE;
@@ -25,11 +19,10 @@ public class Transaction {
 	private TransactionStateNames state = TransactionStateNames.READY;
 	private int timeout = 3000;
 
-	public Transaction() {
+	public SimpleTransaction() {
 	}
 
-	public Transaction(Transaction t) {
-		action = t.action;
+	public SimpleTransaction(SimpleTransaction t) {
 		direction = t.direction;
 		error = new TcpError(t.error);
 		if (t.id != null) {
@@ -52,10 +45,6 @@ public class Transaction {
 				response = new SimCorMsg(t.response);
 			}
 		}
-	}
-
-	public ActionType getAction() {
-		return action;
 	}
 
 	public SimCorMsg getCommand() {
@@ -92,10 +81,6 @@ public class Transaction {
 
 	public boolean isPosted() {
 		return posted;
-	}
-
-	public void setAction(ActionType action) {
-		this.action = action;
 	}
 
 	public void setCommand(SimCorMsg command) {

@@ -13,7 +13,7 @@ import org.nees.uiuc.simcor.test.util.TransactionMsgs;
 import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 import org.nees.uiuc.simcor.transaction.SimCorCompoundMsg;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
@@ -159,8 +159,8 @@ public class T02_SimCorMsgTest {
 		TransactionMsgs data = new TransactionMsgs();
 		data.setUp();
 		Msg2Tcp m2t = new Msg2Tcp();
-		for (Iterator<Transaction> t = data.cmdList.iterator(); t.hasNext();) {
-			Transaction trns = t.next();
+		for (Iterator<SimpleTransaction> t = data.cmdList.iterator(); t.hasNext();) {
+			SimpleTransaction trns = t.next();
 			log.debug("Checking " + trns);
 			SimCorMsg cmd = trns.getCommand();
 			SimCorMsg rsp = trns.getResponse();

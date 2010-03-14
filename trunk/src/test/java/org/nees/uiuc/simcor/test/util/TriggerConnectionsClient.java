@@ -7,7 +7,7 @@ import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 
 public class TriggerConnectionsClient {
 	private final StateActionsProcessor sap = new StateActionsProcessor();
@@ -29,7 +29,7 @@ public class TriggerConnectionsClient {
 	}
 	
 	public void checkForMessages() {
-		Transaction transaction = sap.getTf().createTransaction(new SimCorMsg());
+		SimpleTransaction transaction = sap.getTf().createTransaction(new SimCorMsg());
 		sap.setUpRead(transaction, true, TransactionStateNames.WAIT_FOR_COMMAND);
 		log.debug("After read command setup: " + sap.getCm().checkForErrors());
 		while(transaction.getState().equals(TransactionStateNames.WAIT_FOR_COMMAND)) {
@@ -58,7 +58,7 @@ public class TriggerConnectionsClient {
 		log.debug("After write response: " + sap.getCm().checkForErrors());
 	}
 	public void closeConnection() {
-		Transaction transaction = sap.getTf().createTransaction(new SimCorMsg());
+		SimpleTransaction transaction = sap.getTf().createTransaction(new SimCorMsg());
 		sap.closingConnection(transaction, TransactionStateNames.TRANSACTION_DONE);
 		log.debug("After close connection: " + sap.getCm().checkForErrors());
 

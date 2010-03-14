@@ -13,8 +13,8 @@ import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
-import org.nees.uiuc.simcor.transaction.Transaction;
-import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity.StepTypes;
 
 public abstract class UiSimCorTcp {
@@ -31,7 +31,7 @@ public abstract class UiSimCorTcp {
 	
 	protected ListenerStateMachine lsm;
 
-	protected Transaction transaction;
+	protected SimpleTransaction transaction;
 
 	public UiSimCorTcp() {
 		sap = new StateActionsProcessorWithLcf();
@@ -62,7 +62,7 @@ public abstract class UiSimCorTcp {
 	 * 
 	 * @return - returns the current transaction as a reference
 	 */
-	public Transaction getTransaction() {
+	public SimpleTransaction getTransaction() {
 		return transaction;
 	}
 
@@ -78,7 +78,7 @@ public abstract class UiSimCorTcp {
 		return transaction.getState();
 	}
 
-	public abstract Transaction pickupTransaction();
+	public abstract SimpleTransaction pickupTransaction();
 
 	public void setArchiveFilename(String filename) {
 		archive.setFilename(filename);
@@ -95,7 +95,7 @@ public abstract class UiSimCorTcp {
 		sap.getTf().setStep(s, type);
 	}
 
-	public void setTransaction(Transaction transaction) {
+	public void setTransaction(SimpleTransaction transaction) {
 		this.transaction = transaction;
 	}
 
@@ -103,7 +103,7 @@ public abstract class UiSimCorTcp {
 
 	public abstract void startTransaction();
 
-	public abstract void startTransaction(Transaction command);
+	public abstract void startTransaction(SimpleTransaction command);
 
 	public abstract void startup(TcpParameters params);
 
