@@ -2,7 +2,7 @@ package org.nees.uiuc.simcor.states;
 
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
-import org.nees.uiuc.simcor.listener.ClientId;
+import org.nees.uiuc.simcor.listener.ClientIdWithConnection;
 import org.nees.uiuc.simcor.logging.Archiving;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.ConnectionManager;
@@ -15,6 +15,7 @@ import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
 public class StateActionsProcessor {
@@ -23,7 +24,7 @@ public class StateActionsProcessor {
 	protected ConnectionManager cm;
 	protected final Logger log = Logger.getLogger(StateActionsProcessorWithLcf.class);
 	protected TcpParameters params;
-	private ClientId remoteClient;
+	private ClientIdWithConnection remoteClient;
 	protected TransactionFactory tf;
 
 	public StateActionsProcessor() {
@@ -54,7 +55,7 @@ public class StateActionsProcessor {
 				setUpWrite(transaction, isCommand, next);
 			}
 
-	public void checkOpenConnection(SimpleTransaction transaction, TransactionStateNames next) {
+	public void checkOpenConnection(Transaction transaction, TransactionStateNames next) {
 		TcpError er = new TcpError();
 		Connection connection = null;
 		connection = cm.getConnection();
@@ -70,7 +71,7 @@ public class StateActionsProcessor {
 		saveStatus(transaction, er, next);
 	}
 
-	public void closingConnection(SimpleTransaction transaction, TransactionStateNames next) {
+	public void closingConnection(Transaction transaction, TransactionStateNames next) {
 		boolean closed = cm.closeConnection();
 		TcpError er = new TcpError();
 		TransactionStateNames state = TransactionStateNames.CLOSING_CONNECTION;
@@ -96,7 +97,7 @@ public class StateActionsProcessor {
 		return params;
 	}
 
-	public ClientId getRemoteClient() {
+	public ClientIdWithConnection getRemoteClient() {
 		return remoteClient;
 	}
 
@@ -104,7 +105,7 @@ public class StateActionsProcessor {
 		return tf;
 	}
 
-	public void openConnection(SimpleTransaction transaction) {
+	public void openConnection(Transaction transaction) {
 		log.debug("Starting connection");
 		cm.setParams(params);
 		cm.openConnection();
@@ -127,7 +128,7 @@ public class StateActionsProcessor {
 		setStatus(transaction, new TcpError(), next);
 	}
 
-	protected void saveStatus(SimpleTransaction transaction, TcpError error, TransactionStateNames state) {
+	protected void saveStatus(Transaction transaction, TcpError error, TransactionStateNames state) {
 		transaction.setError(error);
 		if (error.getType().equals(TcpErrorTypes.NONE) == false) {
 			cm.saveError();
@@ -154,7 +155,7 @@ public class StateActionsProcessor {
 		this.params = params;
 	}
 
-	protected void setStatus(SimpleTransaction transaction, TcpError error, TransactionStateNames state) {
+	protected void setStatus(Transaction transaction, TcpError error, TransactionStateNames state) {
 		TcpError err = error;
 		transaction.setError(error);
 		if (err.getType() != TcpErrorTypes.NONE) {
@@ -168,7 +169,7 @@ public class StateActionsProcessor {
 		this.tf = tf;
 	}
 
-	public void setUpRead(SimpleTransaction transaction, boolean isCommand, TransactionStateNames next) {
+	public void setUpRead(Transaction transaction, boolean isCommand, TransactionStateNames next) {
 		Connection c = cm.getConnection();
 		TcpActionsDto action = new TcpActionsDto();
 		action.setAction(ActionsType.READ);
@@ -230,7 +231,7 @@ public class StateActionsProcessor {
 		transaction.setPickedUp(false);
 	}
 
-	public void waitForSend(SimpleTransaction transaction, TransactionStateNames next) {
+	public void waitForSend(Transaction transaction, TransactionStateNames next) {
 		Connection connection = cm.getConnection();
 		// Check if command has been sent
 		if (connection.getConnectionState() == ConnectionStatus.BUSY) {
@@ -249,7 +250,7 @@ public class StateActionsProcessor {
 		if (transaction.getState().equals(next)) {
 			Connection connection = cm.getConnection();
 			String system = transaction.getCommand().getContent();
-			remoteClient = new ClientId(connection, system, connection
+			remoteClient = new ClientIdWithConnection(connection, system, connection
 					.getRemoteHost());
 		}
 	}

@@ -14,20 +14,20 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
 public class ClientConnections {
-	private final ArrayList<ClientId> clients = new ArrayList<ClientId>();
+	private final ArrayList<ClientIdWithConnection> clients = new ArrayList<ClientIdWithConnection>();
 	private String message;
 	private int msgTimeout = 3000;
-	private final ArrayList<ClientId> newClients = new ArrayList<ClientId>();
+	private final ArrayList<ClientIdWithConnection> newClients = new ArrayList<ClientIdWithConnection>();
 	public ClientConnections() {
 	}
 
-	public synchronized void addClient(ClientId client) {
+	public synchronized void addClient(ClientIdWithConnection client) {
 		newClients.add(client);
 	}
 
 	public synchronized void assembleTriggerMessages(SimCorMsg msg, TransactionIdentity id) {
 		mergeClients();
-		for (ClientId c : clients) {
+		for (ClientIdWithConnection c : clients) {
 			sendMsg(c.connection, msg, id);
 		}
 	}
@@ -55,7 +55,7 @@ public class ClientConnections {
 	private void mergeClients() {
 		clients.addAll(newClients);
 		message = "";
-		for (ClientId c : newClients) {
+		for (ClientIdWithConnection c : newClients) {
 			message = message + c.system + " at " + c.remoteHost
 					+ " is connected.\n";
 		}
@@ -85,13 +85,13 @@ public class ClientConnections {
 	}
 
 	public void setupResponsesCheck() {
-		for (ClientId c : clients) {
+		for (ClientIdWithConnection c : clients) {
 			readMsg(c.connection);
 		}		
 	}
 
 	public synchronized boolean waitForBroadcastFinished() {
-		for (ClientId c : clients) {
+		for (ClientIdWithConnection c : clients) {
 			if (c.connection.getConnectionState() == ConnectionStatus.BUSY) {
 				return false;
 			}
@@ -102,7 +102,7 @@ public class ClientConnections {
 		boolean result = true;
 		message = "";
 		List<Integer> lostClientsIdx = new ArrayList<Integer>();
-		for (ClientId c : clients) {
+		for (ClientIdWithConnection c : clients) {
 			TcpError er = checkResponse(c.connection);
 			if (er == null) {
 				result = false;

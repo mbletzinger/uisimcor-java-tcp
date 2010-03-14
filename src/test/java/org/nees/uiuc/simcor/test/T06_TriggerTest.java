@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.listener.ClientConnections;
-import org.nees.uiuc.simcor.listener.ClientId;
+import org.nees.uiuc.simcor.listener.ClientIdWithConnection;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.TcpLinkDto;
 import org.nees.uiuc.simcor.tcp.TcpListen;
@@ -66,7 +66,7 @@ public class T06_TriggerTest {
 		client.connect();
 		TcpLinkDto link = listener.listen();
 		Connection c = new Connection(link);
-		ClientId id = new ClientId(c,sys, link.getRemoteHost());
+		ClientIdWithConnection id = new ClientIdWithConnection(c,sys, link.getRemoteHost());
 		cc.addClient(id);
 		clients.add(client);
 	}

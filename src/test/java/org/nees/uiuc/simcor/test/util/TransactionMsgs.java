@@ -8,15 +8,16 @@ import org.nees.uiuc.simcor.transaction.Address;
 import org.nees.uiuc.simcor.transaction.SimCorCompoundMsg;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
 public class TransactionMsgs {
 	public List<SimpleTransaction> cmdList;
 	public HashMap<String, SimpleTransaction> transactions;
-	public SimpleTransaction openTransaction;
-	public SimpleTransaction closeTransaction;
-	public SimpleTransaction triggerTransaction;
+	public Transaction openTransaction;
+	public Transaction closeTransaction;
+	public Transaction triggerTransaction;
 
 	public TransactionMsgs() {
 		this.cmdList = new ArrayList<SimpleTransaction>();

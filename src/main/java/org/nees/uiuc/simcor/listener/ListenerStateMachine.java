@@ -22,6 +22,7 @@ import org.nees.uiuc.simcor.states.listener.ListenForConnections;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class ListenerStateMachine extends Thread {
 	private final ClientConnections cc;
@@ -30,7 +31,7 @@ public class ListenerStateMachine extends Thread {
 	private final boolean isP2P;
 	private boolean isRunning;
 	protected Map<TransactionStateNames, TransactionState> machine = new HashMap<TransactionStateNames, TransactionState>();
-	private ClientId oneClient = null;
+	private ClientIdWithConnection oneClient = null;
 	private StateActionsProcessorWithLcf sap = new StateActionsProcessorWithLcf();
 	private final Logger log = Logger.getLogger(ListenerStateMachine.class);
 
@@ -53,7 +54,7 @@ public class ListenerStateMachine extends Thread {
 		return error;
 	}
 
-	public synchronized ClientId getOneClient() {
+	public synchronized ClientIdWithConnection getOneClient() {
 		return oneClient;
 	}
 
@@ -110,8 +111,8 @@ public class ListenerStateMachine extends Thread {
 		return isRunning;
 	}
 
-	public synchronized ClientId pickupOneClient() {
-		ClientId result = oneClient;
+	public synchronized ClientIdWithConnection pickupOneClient() {
+		ClientIdWithConnection result = oneClient;
 		oneClient = null;
 		return result;
 	}
@@ -146,7 +147,7 @@ public class ListenerStateMachine extends Thread {
 		sap.stopListening(transaction);
 	}
 
-	private void updateClient(SimpleTransaction transaction) {
+	private void updateClient(Transaction transaction) {
 		setError(transaction.getError());
 		if (isP2P) {
 			oneClient = sap.getRemoteClient();
@@ -163,7 +164,7 @@ public class ListenerStateMachine extends Thread {
 		this.error = error;
 	}
 
-	public synchronized void setOneClient(ClientId oneClient) {
+	public synchronized void setOneClient(ClientIdWithConnection oneClient) {
 		this.oneClient = oneClient;
 	}
 

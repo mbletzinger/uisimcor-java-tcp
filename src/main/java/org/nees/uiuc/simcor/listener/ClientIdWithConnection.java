@@ -2,13 +2,13 @@ package org.nees.uiuc.simcor.listener;
 
 import org.nees.uiuc.simcor.tcp.Connection;
 
-public class ClientId {
+public class ClientIdWithConnection {
 	public final Connection connection;
 
 	public final String remoteHost;
 
 	public final String system;
-	public ClientId(Connection connection, String system,
+	public ClientIdWithConnection(Connection connection, String system,
 			String remoteHost) {
 		this.system = system;
 		this.remoteHost = remoteHost;
