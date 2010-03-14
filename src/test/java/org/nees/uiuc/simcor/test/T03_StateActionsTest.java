@@ -11,7 +11,7 @@ import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.test.util.StateActionsResponder;
 import org.nees.uiuc.simcor.test.util.StateActionsResponder.DieBefore;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 
 public class T03_StateActionsTest {
 	private final Logger log = Logger.getLogger(T03_StateActionsTest.class);
@@ -19,7 +19,7 @@ public class T03_StateActionsTest {
 	private TcpParameters rparams = new TcpParameters();
 	private StateActionsResponder rspdr;
 	private StateActionsProcessorWithLcf sap;
-	private Transaction transaction;
+	private SimpleTransaction transaction;
 
 	private void read(boolean errorExpected, boolean isCommand) {
 		String cmdStr;

@@ -9,7 +9,7 @@ import org.nees.uiuc.simcor.tcp.TcpActionsDto;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 
 public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 	private ListenerConnectionFactory lcf;
@@ -28,7 +28,7 @@ public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 		return lcf;
 	}
 
-	public void listenForConnection(Transaction transaction,
+	public void listenForConnection(SimpleTransaction transaction,
 			TransactionStateNames next) {
 		TcpError er = new TcpError();
 		Connection connection = null;
@@ -48,7 +48,7 @@ public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 	}
 
 	@Override
-	public void recordTransaction(Transaction transaction, TransactionStateNames next) {
+	public void recordTransaction(SimpleTransaction transaction, TransactionStateNames next) {
 		if (transaction.getError().getType().equals(TcpErrorTypes.NONE)) {
 			transaction.setError(cm.getSavedError()); // capture connection
 			// errors
@@ -70,7 +70,7 @@ public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 		this.lcf = cf;
 	}
 
-	public void startListening(Transaction transaction) {
+	public void startListening(SimpleTransaction transaction) {
 		log.debug("Start listening");
 		cm.setParams(params);
 		lcf.setParams(params);
@@ -79,7 +79,7 @@ public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 				TransactionStateNames.OPENING_CONNECTION);
 	}
 	
-	public void stopListening(Transaction transaction) {
+	public void stopListening(SimpleTransaction transaction) {
 		lcf.stopListener();
 		TcpError er = lcf.checkForErrors();
 		TransactionStateNames state = TransactionStateNames.STOP_LISTENER;

@@ -23,10 +23,10 @@ import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.test.util.TransactionMsgs;
 import org.nees.uiuc.simcor.test.util.TransactionResponder;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
-import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
 public class T05_TransactionTest {
 	private final Logger log = Logger.getLogger(T05_TransactionTest.class);
 	private TcpParameters params = new TcpParameters();
@@ -73,12 +73,12 @@ public class T05_TransactionTest {
 		
 		TransactionFactory tf = simcor.getSap().getTf();
 		checkResponder();
-		for(Iterator<Transaction> t = data.cmdList.iterator(); t.hasNext();) {
-			Transaction transO = t.next();
+		for(Iterator<SimpleTransaction> t = data.cmdList.iterator(); t.hasNext();) {
+			SimpleTransaction transO = t.next();
 			log.debug("Original command " + transO);
 			TransactionIdentity id = transO.getId();
 			tf.setId(id);
-			Transaction trans = tf.createTransaction(transO.getCommand());
+			SimpleTransaction trans = tf.createTransaction(transO.getCommand());
 			if (id != null) {
 				trans.getId().setTransId(id.getTransId());
 			}
@@ -96,7 +96,7 @@ public class T05_TransactionTest {
 				}
 			}
 			log.debug("Pick up response state " + state);
-			Transaction transaction = simcor.pickupTransaction();
+			SimpleTransaction transaction = simcor.pickupTransaction();
 			log.debug("Received response " + transaction.getResponse());
 			if(transaction.getError().getType() != TcpErrorTypes.NONE) {
 				log.error("Transaction error " + transaction.getError());

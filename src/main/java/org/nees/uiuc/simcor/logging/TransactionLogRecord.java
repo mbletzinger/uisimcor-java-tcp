@@ -8,15 +8,15 @@ import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
-import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
 
 public class TransactionLogRecord {
 	SimpleDateFormat format = new SimpleDateFormat("dd-MMMM-yyyy HH:mm:ss.SSS");
 	private Logger log = Logger.getLogger(TransactionLogRecord.class);
-	public String toString(Transaction t) {
+	public String toString(SimpleTransaction t) {
 		log.debug("Logging: " + t);
 		String result;
 		if (t.getDirection().equals(DirectionType.SEND_COMMAND)) {

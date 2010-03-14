@@ -11,12 +11,12 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import org.apache.log4j.Logger;
-import org.nees.uiuc.simcor.transaction.Transaction;
-import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
 
 public class Archiving extends Thread {
 	private boolean archivingEnabled = false;
-	private BlockingQueue<Transaction> buffer = new ArrayBlockingQueue<Transaction>(100);
+	private BlockingQueue<SimpleTransaction> buffer = new ArrayBlockingQueue<SimpleTransaction>(100);
 	private boolean exit = false;
 	private String filename;
 	private Logger log = Logger.getLogger(Archiving.class);
@@ -33,7 +33,7 @@ public class Archiving extends Thread {
 		return exit;
 	}
 	
-	public synchronized void logTransaction(Transaction t) {
+	public synchronized void logTransaction(SimpleTransaction t) {
 		try {
 			buffer.put(t);
 		} catch (InterruptedException e) {
@@ -43,7 +43,7 @@ public class Archiving extends Thread {
 
 	@Override
 	public void run() {
-		List<Transaction> records = new ArrayList<Transaction>();
+		List<SimpleTransaction> records = new ArrayList<SimpleTransaction>();
 		if(archivingEnabled == false) {
 			log.info("Archiving has not been enabled");
 			return;
@@ -65,8 +65,8 @@ public class Archiving extends Thread {
 			}
 
 			TransactionLogRecord tlr = new TransactionLogRecord();
-			for (Iterator<Transaction> r = records.iterator(); r.hasNext();) {
-				Transaction t = r.next();
+			for (Iterator<SimpleTransaction> r = records.iterator(); r.hasNext();) {
+				SimpleTransaction t = r.next();
 				if (t instanceof ExitTransaction) {
 					setExit(true);
 					continue;

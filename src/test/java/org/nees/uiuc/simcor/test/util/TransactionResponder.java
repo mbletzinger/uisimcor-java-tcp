@@ -11,8 +11,8 @@ import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
-import org.nees.uiuc.simcor.transaction.Transaction;
-import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
 
 public class TransactionResponder extends Thread {
 	public boolean connected;
@@ -86,14 +86,14 @@ public class TransactionResponder extends Thread {
 				}
 			}
 			log.debug("Current state: " + state);
-			Transaction transaction = simcor.pickupTransaction();
+			SimpleTransaction transaction = simcor.pickupTransaction();
 			log.debug("Received command" + transaction.getCommand());
 			if (transaction.getError().getType() != TcpErrorTypes.NONE) {
 				log.error("Transaction error " + transaction.getError());
 			}
 			org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction.getError().getType());
 //			org.junit.Assert.assertNotNull(transaction.getCommand().getContent());
-			Transaction expected = data.transactions.get(transaction
+			SimpleTransaction expected = data.transactions.get(transaction
 					.getCommand().toString());
 			if(expected == null) {
 				String hash = "";

@@ -4,10 +4,10 @@ import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.transaction.Address;
 import org.nees.uiuc.simcor.transaction.SimCorCompoundMsg;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
-import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity.StepTypes;
 
 public class TransactionFactory {
@@ -86,8 +86,8 @@ public class TransactionFactory {
 	public SimCorMsg createSessionResponse(SimCorMsg cmd) {
 		return createResponse(mdl,null, (systemDescription + " " + cmd.getCommand() + " done"), false);
 	}
-	public Transaction createTransaction(SimCorMsg msg) {
-		Transaction result = new Transaction();
+	public SimpleTransaction createTransaction(SimCorMsg msg) {
+		SimpleTransaction result = new SimpleTransaction();
 		if (direction == DirectionType.SEND_COMMAND) {
 			result.setCommand(msg);
 			result.setId(id);

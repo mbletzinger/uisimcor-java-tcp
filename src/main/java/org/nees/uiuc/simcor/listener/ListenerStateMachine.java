@@ -21,7 +21,7 @@ import org.nees.uiuc.simcor.states.common.AssembleCommand.AssembleCommandType;
 import org.nees.uiuc.simcor.states.listener.ListenForConnections;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 
 public class ListenerStateMachine extends Thread {
 	private final ClientConnections cc;
@@ -61,7 +61,7 @@ public class ListenerStateMachine extends Thread {
 		return sap;
 	}
 
-	public Transaction initialize() {
+	public SimpleTransaction initialize() {
 		if (isP2P) {
 			machine.put(TransactionStateNames.LISTEN_FOR_CONNECTIONS,
 					new ListenForConnections(sap,
@@ -101,7 +101,7 @@ public class ListenerStateMachine extends Thread {
 						TransactionStateNames.LISTEN_FOR_CONNECTIONS));
 		machine.put(TransactionStateNames.CLOSING_CONNECTION,
 				new CloseConnection(sap));
-		Transaction transaction = sap.getTf().createTransaction(null);
+		SimpleTransaction transaction = sap.getTf().createTransaction(null);
 		sap.startListening(transaction);
 		return transaction;
 	}
@@ -118,7 +118,7 @@ public class ListenerStateMachine extends Thread {
 
 	@Override
 	public void run() {
-		Transaction transaction = initialize();
+		SimpleTransaction transaction = initialize();
 		setError(transaction.getError());
 		transaction.setState(TransactionStateNames.LISTEN_FOR_CONNECTIONS);
 		setCurrentState(transaction.getState());
@@ -146,7 +146,7 @@ public class ListenerStateMachine extends Thread {
 		sap.stopListening(transaction);
 	}
 
-	private void updateClient(Transaction transaction) {
+	private void updateClient(SimpleTransaction transaction) {
 		setError(transaction.getError());
 		if (isP2P) {
 			oneClient = sap.getRemoteClient();

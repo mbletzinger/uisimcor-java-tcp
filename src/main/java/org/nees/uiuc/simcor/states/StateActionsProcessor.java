@@ -14,7 +14,7 @@ import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
 public class StateActionsProcessor {
@@ -41,7 +41,7 @@ public class StateActionsProcessor {
 		this.tf = tf;
 	}
 
-	public void assembleSessionMessage(Transaction transaction, boolean isOpen,
+	public void assembleSessionMessage(SimpleTransaction transaction, boolean isOpen,
 			boolean isCommand, TransactionStateNames next) {
 				SimCorMsg cnt;
 				if (isCommand) {
@@ -54,7 +54,7 @@ public class StateActionsProcessor {
 				setUpWrite(transaction, isCommand, next);
 			}
 
-	public void checkOpenConnection(Transaction transaction, TransactionStateNames next) {
+	public void checkOpenConnection(SimpleTransaction transaction, TransactionStateNames next) {
 		TcpError er = new TcpError();
 		Connection connection = null;
 		connection = cm.getConnection();
@@ -70,7 +70,7 @@ public class StateActionsProcessor {
 		saveStatus(transaction, er, next);
 	}
 
-	public void closingConnection(Transaction transaction, TransactionStateNames next) {
+	public void closingConnection(SimpleTransaction transaction, TransactionStateNames next) {
 		boolean closed = cm.closeConnection();
 		TcpError er = new TcpError();
 		TransactionStateNames state = TransactionStateNames.CLOSING_CONNECTION;
@@ -104,7 +104,7 @@ public class StateActionsProcessor {
 		return tf;
 	}
 
-	public void openConnection(Transaction transaction) {
+	public void openConnection(SimpleTransaction transaction) {
 		log.debug("Starting connection");
 		cm.setParams(params);
 		cm.openConnection();
@@ -112,7 +112,7 @@ public class StateActionsProcessor {
 				TransactionStateNames.CHECK_OPEN_CONNECTION);
 	}
 
-	public void recordTransaction(Transaction transaction, TransactionStateNames next) {
+	public void recordTransaction(SimpleTransaction transaction, TransactionStateNames next) {
 		if (transaction.getError().getType().equals(TcpErrorTypes.NONE)) {
 			transaction.setError(cm.getSavedError()); // capture connection
 			// errors
@@ -127,7 +127,7 @@ public class StateActionsProcessor {
 		setStatus(transaction, new TcpError(), next);
 	}
 
-	protected void saveStatus(Transaction transaction, TcpError error, TransactionStateNames state) {
+	protected void saveStatus(SimpleTransaction transaction, TcpError error, TransactionStateNames state) {
 		transaction.setError(error);
 		if (error.getType().equals(TcpErrorTypes.NONE) == false) {
 			cm.saveError();
@@ -154,7 +154,7 @@ public class StateActionsProcessor {
 		this.params = params;
 	}
 
-	protected void setStatus(Transaction transaction, TcpError error, TransactionStateNames state) {
+	protected void setStatus(SimpleTransaction transaction, TcpError error, TransactionStateNames state) {
 		TcpError err = error;
 		transaction.setError(error);
 		if (err.getType() != TcpErrorTypes.NONE) {
@@ -168,7 +168,7 @@ public class StateActionsProcessor {
 		this.tf = tf;
 	}
 
-	public void setUpRead(Transaction transaction, boolean isCommand, TransactionStateNames next) {
+	public void setUpRead(SimpleTransaction transaction, boolean isCommand, TransactionStateNames next) {
 		Connection c = cm.getConnection();
 		TcpActionsDto action = new TcpActionsDto();
 		action.setAction(ActionsType.READ);
@@ -177,7 +177,7 @@ public class StateActionsProcessor {
 		transaction.setState(next);
 	}
 
-	public void setUpWrite(Transaction transaction, boolean isCommand, TransactionStateNames next) {
+	public void setUpWrite(SimpleTransaction transaction, boolean isCommand, TransactionStateNames next) {
 		Connection connection = cm.getConnection();
 		TcpActionsDto action = new TcpActionsDto();
 		action.setAction(ActionsType.WRITE);
@@ -195,7 +195,7 @@ public class StateActionsProcessor {
 	
 	}
 
-	public void waitForPickUp(Transaction transaction, TransactionStateNames next) {
+	public void waitForPickUp(SimpleTransaction transaction, TransactionStateNames next) {
 		if (transaction.isPickedUp() == false) {// Still waiting
 			return;
 		}
@@ -203,7 +203,7 @@ public class StateActionsProcessor {
 		transaction.setPickedUp(false);
 	}
 
-	public void waitForPosted(Transaction transaction, TransactionStateNames next) {
+	public void waitForPosted(SimpleTransaction transaction, TransactionStateNames next) {
 		if (transaction.isPosted() == false) {// Still waiting
 			return;
 		}
@@ -211,7 +211,7 @@ public class StateActionsProcessor {
 		transaction.setPosted(false);
 	}
 
-	public void waitForRead(Transaction transaction, boolean isCommand, TransactionStateNames next) {
+	public void waitForRead(SimpleTransaction transaction, boolean isCommand, TransactionStateNames next) {
 		Connection connection = cm.getConnection();
 		if (connection.getConnectionState().equals(ConnectionStatus.BUSY)) {
 			return;
@@ -230,7 +230,7 @@ public class StateActionsProcessor {
 		transaction.setPickedUp(false);
 	}
 
-	public void waitForSend(Transaction transaction, TransactionStateNames next) {
+	public void waitForSend(SimpleTransaction transaction, TransactionStateNames next) {
 		Connection connection = cm.getConnection();
 		// Check if command has been sent
 		if (connection.getConnectionState() == ConnectionStatus.BUSY) {
@@ -244,7 +244,7 @@ public class StateActionsProcessor {
 	
 	}
 
-	public void waitForSessionMsgRead(Transaction transaction, boolean isCommand, TransactionStateNames next) {
+	public void waitForSessionMsgRead(SimpleTransaction transaction, boolean isCommand, TransactionStateNames next) {
 		waitForRead(transaction, true, next);
 		if (transaction.getState().equals(next)) {
 			Connection connection = cm.getConnection();

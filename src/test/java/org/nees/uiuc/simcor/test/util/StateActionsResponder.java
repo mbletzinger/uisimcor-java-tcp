@@ -5,7 +5,7 @@ import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 
 public class StateActionsResponder extends Thread {
 	public enum DieBefore {
@@ -18,7 +18,7 @@ public class StateActionsResponder extends Thread {
 	private TcpParameters params;
 	private StateActionsProcessor sap;
 	private boolean sendSession = false;
-	private Transaction transaction;
+	private SimpleTransaction transaction;
 
 	public StateActionsResponder(DieBefore lifeSpan, TcpParameters params,
 			boolean sendOpenSession) {
@@ -42,7 +42,7 @@ public class StateActionsResponder extends Thread {
 		return sap;
 	}
 
-	public synchronized Transaction getTransaction() {
+	public synchronized SimpleTransaction getTransaction() {
 		return transaction;
 	}
 
@@ -52,7 +52,7 @@ public class StateActionsResponder extends Thread {
 
 	private boolean receiveSessionCommand() {
 		int count = 0;
-		Transaction tr = getTransaction();
+		SimpleTransaction tr = getTransaction();
 		sap.setUpRead(tr, true, TransactionStateNames.WAIT_FOR_COMMAND);
 		while ((tr.getState().equals(TransactionStateNames.WAIT_FOR_COMMAND))
 				&& (count < 50)) {
@@ -74,7 +74,7 @@ public class StateActionsResponder extends Thread {
 
 	private boolean receiveSessionResponse() {
 		int count = 0;
-		Transaction tr = getTransaction();
+		SimpleTransaction tr = getTransaction();
 		sap.setUpRead(tr, false, TransactionStateNames.WAIT_FOR_RESPONSE);
 		while ((tr.getState().equals(TransactionStateNames.WAIT_FOR_RESPONSE))
 				&& (count < 50)) {
@@ -97,7 +97,7 @@ public class StateActionsResponder extends Thread {
 	@Override
 	public void run() {
 		sap.setParams(params);
-		Transaction tr = getTransaction();
+		SimpleTransaction tr = getTransaction();
 		tr = sap.getTf().createTransaction(null);
 		tr.setPosted(true);
 		tr.setState(TransactionStateNames.OPENING_CONNECTION);
@@ -205,7 +205,7 @@ public class StateActionsResponder extends Thread {
 
 	private boolean sendSessionCommand(boolean isOpen) {
 		int count = 0;
-		Transaction tr = getTransaction();
+		SimpleTransaction tr = getTransaction();
 		sap.assembleSessionMessage(tr, isOpen, true,
 				TransactionStateNames.SENDING_COMMAND);
 		while ((tr.getState().equals(TransactionStateNames.SENDING_COMMAND))
@@ -228,7 +228,7 @@ public class StateActionsResponder extends Thread {
 
 	private boolean sendSessionResponse(boolean isOpen) {
 		int count = 0;
-		Transaction tr = getTransaction();
+		SimpleTransaction tr = getTransaction();
 		sap.assembleSessionMessage(tr, isOpen, false,
 				TransactionStateNames.SENDING_RESPONSE);
 		while ((tr.getState().equals(TransactionStateNames.SENDING_RESPONSE))
@@ -265,11 +265,11 @@ public class StateActionsResponder extends Thread {
 		this.sendSession = sendSession;
 	}
 
-	public synchronized void setTransaction(Transaction transaction) {
+	public synchronized void setTransaction(SimpleTransaction transaction) {
 		this.transaction = transaction;
 	}
 	private void shutdown() {
-		Transaction tr = getTransaction();
+		SimpleTransaction tr = getTransaction();
 		sap.closingConnection(tr, TransactionStateNames.TRANSACTION_DONE);
 	}
 }
