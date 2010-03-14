@@ -1,7 +1,7 @@
 package org.nees.uiuc.simcor.test.util;
 
 import org.apache.log4j.Logger;
-import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
+import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
@@ -10,7 +10,7 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class TriggerConnectionsClient {
-	private final StateActionsProcessorWithLcf sap = new StateActionsProcessorWithLcf();
+	private final StateActionsProcessor sap = new StateActionsProcessor();
 	private final Logger log = Logger.getLogger(TriggerConnectionsClient.class);
 	public TriggerConnectionsClient(TcpParameters params, String systemDescription) {
 		sap.setParams(params);

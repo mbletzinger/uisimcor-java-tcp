@@ -1,6 +1,7 @@
 package org.nees.uiuc.simcor.test.util;
 
 import org.apache.log4j.Logger;
+import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
@@ -15,7 +16,7 @@ public class StateActionsResponder extends Thread {
 
 	private final Logger log = Logger.getLogger(StateActionsResponder.class);
 	private TcpParameters params;
-	private StateActionsProcessorWithLcf sap;
+	private StateActionsProcessor sap;
 	private boolean sendSession = false;
 	private Transaction transaction;
 
@@ -37,7 +38,7 @@ public class StateActionsResponder extends Thread {
 		return params;
 	}
 
-	public StateActionsProcessorWithLcf getSap() {
+	public StateActionsProcessor getSap() {
 		return sap;
 	}
 
@@ -256,7 +257,7 @@ public class StateActionsResponder extends Thread {
 		this.params = params;
 	}
 
-	public void setSap(StateActionsProcessorWithLcf sap) {
+	public void setSap(StateActionsProcessor sap) {
 		this.sap = sap;
 	}
 

@@ -13,7 +13,8 @@ public class ListenForConnections extends TransactionState {
 
 	@Override
 	public void execute(Transaction transaction) {
-		sap.listenForConnection(transaction, next);
+		StateActionsProcessorWithLcf sapwl = (StateActionsProcessorWithLcf) sap;
+		sapwl.listenForConnection(transaction, next);
 	}
 
 }

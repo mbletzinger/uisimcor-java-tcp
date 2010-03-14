@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
@@ -40,6 +41,10 @@ public class ListenerStateMachine extends Thread {
 		setRunning(false);
 	}
 
+	public synchronized ClientConnections getCc() {
+		return cc;
+	}
+
 	public synchronized TransactionStateNames getCurrentState() {
 		return currentState;
 	}
@@ -52,7 +57,7 @@ public class ListenerStateMachine extends Thread {
 		return oneClient;
 	}
 
-	public StateActionsProcessorWithLcf getSap() {
+	public StateActionsProcessor getSap() {
 		return sap;
 	}
 

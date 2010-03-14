@@ -73,8 +73,9 @@ public class T06_TriggerTest {
 	private void broadcast() {
 		tId.setStep(tId.getStep() + 1);
 		SimCorMsg msg = tf.createCommand("trigger", "MDL-00-01", null, "Broadcast " + tf.getSystemDescription());
-		cc.broadcast(msg, tId);
-		while(cc.areResponsesFinished() == false) {
+		cc.assembleTriggerMessages(msg, tId);
+		cc.waitForBroadcastFinished();
+		while(cc.waitForResponsesFinished() == false) {
 			try {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {

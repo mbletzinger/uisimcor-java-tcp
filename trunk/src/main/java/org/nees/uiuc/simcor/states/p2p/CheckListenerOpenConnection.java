@@ -1,4 +1,4 @@
-package org.nees.uiuc.simcor.states.common;
+package org.nees.uiuc.simcor.states.p2p;
 
 import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.StateActionsProcessorWithLsm;

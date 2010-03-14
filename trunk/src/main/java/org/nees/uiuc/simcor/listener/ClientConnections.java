@@ -25,7 +25,80 @@ public class ClientConnections {
 		newClients.add(client);
 	}
 
-	public synchronized boolean areResponsesFinished() {
+	public synchronized void assembleTriggerMessages(SimCorMsg msg, TransactionIdentity id) {
+		mergeClients();
+		for (ClientId c : clients) {
+			sendMsg(c.connection, msg, id);
+		}
+	}
+
+	private  TcpError checkResponse(Connection client) {
+		if (client.getConnectionState().equals(ConnectionStatus.BUSY)) {
+			return null;
+		}
+		return client.getFromRemoteMsg().getError();
+	}
+	
+	private void closeClient(Connection client) {
+		TcpActionsDto cmd = new TcpActionsDto();
+		cmd.setAction(ActionsType.CLOSE);
+		client.setToRemoteMsg(cmd);
+	}
+
+	public String getMessage() {
+		return message;
+	}
+	public int getMsgTimeout() {
+		return msgTimeout;
+	}
+
+	private void mergeClients() {
+		clients.addAll(newClients);
+		message = "";
+		for (ClientId c : newClients) {
+			message = message + c.system + " at " + c.remoteHost
+					+ " is connected.\n";
+		}
+		newClients.clear();
+	}
+
+	private void readMsg(Connection c) {
+		TcpActionsDto action = new TcpActionsDto();
+		action.setAction(ActionsType.READ);
+		c.setMsgTimeout(msgTimeout);
+		c.setToRemoteMsg(action);
+	}
+
+	private void sendMsg(Connection client, SimCorMsg msg,
+			TransactionIdentity id) {
+		client.setMsgTimeout(msgTimeout);
+		TcpActionsDto action = new TcpActionsDto();
+		action.setAction(ActionsType.WRITE);
+		Msg2Tcp m2t = action.getMsg();
+		m2t.setId(id);
+		m2t.setMsg(msg);
+		client.setToRemoteMsg(action);
+	}
+
+	public void setMsgTimeout(int msgTimeout) {
+		this.msgTimeout = msgTimeout;
+	}
+
+	public void setupResponsesCheck() {
+		for (ClientId c : clients) {
+			readMsg(c.connection);
+		}		
+	}
+
+	public synchronized boolean waitForBroadcastFinished() {
+		for (ClientId c : clients) {
+			if (c.connection.getConnectionState() == ConnectionStatus.BUSY) {
+				return false;
+			}
+		}	
+		return true;
+	}
+	public synchronized boolean waitForResponsesFinished() {
 		boolean result = true;
 		message = "";
 		List<Integer> lostClientsIdx = new ArrayList<Integer>();
@@ -48,57 +121,5 @@ public class ClientConnections {
 			clients.remove(idx);
 		}
 		return result;
-	}
-
-	public synchronized void broadcast(SimCorMsg msg, TransactionIdentity id) {
-		mergeClients();
-		for (ClientId c : clients) {
-			sendMsg(c.connection, msg, id);
-		}
-	}
-
-	private  TcpError checkResponse(Connection client) {
-		if (client.getConnectionState().equals(ConnectionStatus.BUSY)) {
-			return null;
-		}
-		return client.getFromRemoteMsg().getError();
-	}
-
-	public String getMessage() {
-		return message;
-	}
-
-	public int getMsgTimeout() {
-		return msgTimeout;
-	}
-
-	private void mergeClients() {
-		clients.addAll(newClients);
-		message = "";
-		for (ClientId c : newClients) {
-			message = message + c.system + " at " + c.remoteHost
-					+ " is connected.\n";
-		}
-		newClients.clear();
-	}
-
-	private void sendMsg(Connection client, SimCorMsg msg,
-			TransactionIdentity id) {
-		client.setMsgTimeout(msgTimeout);
-		TcpActionsDto action = new TcpActionsDto();
-		action.setAction(ActionsType.WRITE);
-		Msg2Tcp m2t = action.getMsg();
-		m2t.setId(id);
-		m2t.setMsg(msg);
-		client.setToRemoteMsg(action);
-	}
-
-	public void setMsgTimeout(int msgTimeout) {
-		this.msgTimeout = msgTimeout;
-	}
-	private void closeClient(Connection client) {
-		TcpActionsDto cmd = new TcpActionsDto();
-		cmd.setAction(ActionsType.CLOSE);
-		client.setToRemoteMsg(cmd);
 	}
 }
