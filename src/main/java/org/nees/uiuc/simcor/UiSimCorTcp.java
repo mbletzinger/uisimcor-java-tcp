@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.listener.ListenerStateMachine;
 import org.nees.uiuc.simcor.logging.Archiving;
+import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
@@ -26,7 +27,7 @@ public abstract class UiSimCorTcp {
 
 	protected Map<TransactionStateNames, TransactionState> machine = new HashMap<TransactionStateNames, TransactionState>();
 
-	protected StateActionsProcessorWithLcf sap;
+	protected StateActionsProcessor sap;
 	
 	protected ListenerStateMachine lsm;
 
@@ -54,7 +55,7 @@ public abstract class UiSimCorTcp {
 		return errors;
 	}
 
-	public StateActionsProcessorWithLcf getSap() {
+	public StateActionsProcessor getSap() {
 		return sap;
 	}
 	/**

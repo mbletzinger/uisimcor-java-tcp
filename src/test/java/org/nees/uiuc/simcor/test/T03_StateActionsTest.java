@@ -79,7 +79,7 @@ public class T03_StateActionsTest {
 		rspdr = new StateActionsResponder(lfsp, rparams, sendOpenSession);
 		rspdr.start();
 
-		sap.checkOpenConnection(transaction,
+		sap.listenForConnection(transaction,
 				TransactionStateNames.TRANSACTION_DONE);
 		log.debug("Local Transaction after open connection: " + transaction);
 		org.junit.Assert.assertEquals(TransactionStateNames.TRANSACTION_DONE,
@@ -136,7 +136,7 @@ public class T03_StateActionsTest {
 		rspdr = new StateActionsResponder(DieBefore.OPEN_COMMAND, rparams,
 				true); // never started
 
-		sap.checkOpenConnection(transaction,
+		sap.listenForConnection(transaction,
 				TransactionStateNames.TRANSACTION_DONE);
 		log.debug("Local Transaction after open connection: " + transaction);
 		org.junit.Assert.assertEquals(TransactionStateNames.OPENING_CONNECTION,
