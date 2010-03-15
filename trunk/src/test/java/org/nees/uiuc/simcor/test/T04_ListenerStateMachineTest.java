@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.nees.uiuc.simcor.listener.ClientIdWithConnection;
+import org.nees.uiuc.simcor.listener.ClientId;
 import org.nees.uiuc.simcor.listener.ListenerStateMachine;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpError;
@@ -76,7 +76,7 @@ public class T04_ListenerStateMachineTest {
 //			log.debug("LSM Current State: " + state);
 		}
 		error = lsm.getError();
-		ClientIdWithConnection id = lsm.pickupOneClient();
+		ClientId id = lsm.pickupOneClient();
 		log.debug("Result state " + state + " error: " + error + " client: " + id);
 		Assert.assertEquals(TcpErrorTypes.IO_ERROR, error.getType());
 	}
@@ -95,7 +95,7 @@ public class T04_ListenerStateMachineTest {
 //			log.debug("LSM Current State: " + state);
 		}
 		error = lsm.getError();
-		ClientIdWithConnection id = lsm.pickupOneClient();
+		ClientId id = lsm.pickupOneClient();
 		log.debug("Result state " + state + " error: " + error + " client: " + id);
 		Assert.assertEquals(TcpErrorTypes.IO_ERROR, error.getType());
 	}
@@ -104,7 +104,7 @@ public class T04_ListenerStateMachineTest {
 		setupConnection(DieBefore.END,true);
 		TransactionStateNames state = null;
 		TcpError error = lsm.getError();
-		ClientIdWithConnection id = lsm.pickupOneClient();
+		ClientId id = lsm.pickupOneClient();
 		int count = 0;
 		while(id == null && count < 100) {
 			try {

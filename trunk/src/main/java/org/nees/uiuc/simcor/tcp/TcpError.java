@@ -8,7 +8,9 @@ public class TcpError {
 		NONE,
 		TIMEOUT,
 		UNKNOWN_REMOTE_HOST,
-		THREAD_DIED
+		THREAD_DIED,
+		BROADCAST_CLIENTS_LOST,
+		BROADCAST_CLIENTS_ADDED,
 	}
 
 	private String text = "";

@@ -52,10 +52,11 @@ public class StateActionsProcessor {
 					cnt = tf.createSessionResponse(transaction.getCommand());
 					transaction.setResponse(cnt);
 				}
+				log.debug("Assembled " + transaction);
 				setUpWrite(transaction, isCommand, next);
 			}
 
-	public void checkOpenConnection(Transaction transaction, TransactionStateNames next) {
+	public void checkOpenConnection(SimpleTransaction transaction, TransactionStateNames next) {
 		TcpError er = new TcpError();
 		Connection connection = null;
 		connection = cm.getConnection();
@@ -64,14 +65,11 @@ public class StateActionsProcessor {
 			return;
 		}
 		er = cm.checkForErrors();
-		TcpActionsDto action = new TcpActionsDto();
-		action.setAction(ActionsType.READ);
 		connection.setMsgTimeout(transaction.getTimeout());
-		connection.setToRemoteMsg(action);
 		saveStatus(transaction, er, next);
 	}
 
-	public void closingConnection(Transaction transaction, TransactionStateNames next) {
+	public void closingConnection(SimpleTransaction transaction, TransactionStateNames next) {
 		boolean closed = cm.closeConnection();
 		TcpError er = new TcpError();
 		TransactionStateNames state = TransactionStateNames.CLOSING_CONNECTION;
@@ -105,7 +103,7 @@ public class StateActionsProcessor {
 		return tf;
 	}
 
-	public void openConnection(Transaction transaction) {
+	public void openConnection(SimpleTransaction transaction) {
 		log.debug("Starting connection");
 		cm.setParams(params);
 		cm.openConnection();
@@ -128,7 +126,7 @@ public class StateActionsProcessor {
 		setStatus(transaction, new TcpError(), next);
 	}
 
-	protected void saveStatus(Transaction transaction, TcpError error, TransactionStateNames state) {
+	protected void saveStatus(SimpleTransaction transaction, TcpError error, TransactionStateNames state) {
 		transaction.setError(error);
 		if (error.getType().equals(TcpErrorTypes.NONE) == false) {
 			cm.saveError();
@@ -155,14 +153,19 @@ public class StateActionsProcessor {
 		this.params = params;
 	}
 
-	protected void setStatus(Transaction transaction, TcpError error, TransactionStateNames state) {
+	protected void setStatus(Transaction transaction, TcpError error, TransactionStateNames state, TransactionStateNames errstate) {
 		TcpError err = error;
-		transaction.setError(error);
+		if(transaction instanceof SimpleTransaction) {
+			((SimpleTransaction)transaction).setError(error);
+		}
 		if (err.getType() != TcpErrorTypes.NONE) {
-			transaction.setState(TransactionStateNames.TRANSACTION_DONE);
+			transaction.setState(errstate);
 		} else {
 			transaction.setState(state);
 		}
+	}
+	protected void setStatus(Transaction transaction, TcpError error, TransactionStateNames state) {
+		setStatus(transaction, error, state,TransactionStateNames.TRANSACTION_DONE);
 	}
 
 	public void setTf(TransactionFactory tf) {
@@ -187,7 +190,7 @@ public class StateActionsProcessor {
 		if (isCommand) {
 			msg.setMsg(transaction.getCommand());
 		} else {
-			msg.setMsg(transaction.getCommand());
+			msg.setMsg(transaction.getResponse());
 		}
 		log.debug("Sending: " + transaction);
 		connection.setToRemoteMsg(action);
@@ -231,7 +234,7 @@ public class StateActionsProcessor {
 		transaction.setPickedUp(false);
 	}
 
-	public void waitForSend(Transaction transaction, TransactionStateNames next) {
+	public void waitForSend(SimpleTransaction transaction, TransactionStateNames next) {
 		Connection connection = cm.getConnection();
 		// Check if command has been sent
 		if (connection.getConnectionState() == ConnectionStatus.BUSY) {

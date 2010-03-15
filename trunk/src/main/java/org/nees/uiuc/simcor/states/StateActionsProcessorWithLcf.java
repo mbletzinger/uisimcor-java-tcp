@@ -29,7 +29,7 @@ public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 		return lcf;
 	}
 
-	public void listenForConnection(Transaction transaction,
+	public void listenForConnection(SimpleTransaction transaction,
 			TransactionStateNames next) {
 		TcpError er = new TcpError();
 		Connection connection = null;
@@ -41,10 +41,7 @@ public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 		}
 		er = lcf.checkForErrors();
 		cm.setConnection(connection);
-		TcpActionsDto action = new TcpActionsDto();
-		action.setAction(ActionsType.READ);
 		connection.setMsgTimeout(transaction.getTimeout());
-		connection.setToRemoteMsg(action);
 		saveStatus(transaction, er, next);
 	}
 
@@ -71,7 +68,7 @@ public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 		this.lcf = cf;
 	}
 
-	public void startListening(Transaction transaction) {
+	public void startListening(SimpleTransaction transaction) {
 		log.debug("Start listening");
 		cm.setParams(params);
 		lcf.setParams(params);
@@ -80,7 +77,7 @@ public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 				TransactionStateNames.OPENING_CONNECTION);
 	}
 	
-	public void stopListening(Transaction transaction) {
+	public void stopListening(SimpleTransaction transaction) {
 		lcf.stopListener();
 		TcpError er = lcf.checkForErrors();
 		TransactionStateNames state = TransactionStateNames.STOP_LISTENER;

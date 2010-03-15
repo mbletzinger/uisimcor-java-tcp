@@ -27,7 +27,7 @@ import org.nees.uiuc.simcor.transaction.Transaction;
 public class ListenerStateMachine extends Thread {
 	private final ClientConnections cc;
 	private TransactionStateNames currentState = TransactionStateNames.START_LISTENING;
-	private TcpError error;
+	private TcpError error = new TcpError();
 	private final boolean isP2P;
 	private boolean isRunning;
 	protected Map<TransactionStateNames, TransactionState> machine = new HashMap<TransactionStateNames, TransactionState>();
@@ -89,12 +89,12 @@ public class ListenerStateMachine extends Thread {
 							AssembleCommandType.OPEN));
 			machine.put(TransactionStateNames.SENDING_COMMAND,
 					new SendingCommand(sap,
-							TransactionStateNames.WAIT_FOR_RESPONSE));
+							TransactionStateNames.SETUP_READ_RESPONSE));
 			machine.put(TransactionStateNames.SETUP_READ_RESPONSE,
 					new SetupReadMessage(
 							TransactionStateNames.SETUP_READ_RESPONSE, sap,
-							false, TransactionStateNames.TRANSACTION_DONE));
-			machine.put(TransactionStateNames.SETUP_READ_RESPONSE,
+							false, TransactionStateNames.WAIT_FOR_OPEN_RESPONSE));
+			machine.put(TransactionStateNames.WAIT_FOR_OPEN_RESPONSE,
 					new WaitForOpenResponse(sap));
 		}
 		machine.put(TransactionStateNames.TRANSACTION_DONE,
@@ -102,7 +102,7 @@ public class ListenerStateMachine extends Thread {
 						TransactionStateNames.LISTEN_FOR_CONNECTIONS));
 		machine.put(TransactionStateNames.CLOSING_CONNECTION,
 				new CloseConnection(sap));
-		SimpleTransaction transaction = sap.getTf().createTransaction(null);
+		SimpleTransaction transaction = sap.getTf().createSimpleTransaction(null);
 		sap.startListening(transaction);
 		return transaction;
 	}
@@ -111,8 +111,8 @@ public class ListenerStateMachine extends Thread {
 		return isRunning;
 	}
 
-	public synchronized ClientIdWithConnection pickupOneClient() {
-		ClientIdWithConnection result = oneClient;
+	public synchronized ClientId pickupOneClient() {
+		ClientId result = oneClient;
 		oneClient = null;
 		return result;
 	}
@@ -127,10 +127,14 @@ public class ListenerStateMachine extends Thread {
 			return;
 		}
 		setRunning(true);
+		TransactionStateNames prevState = TransactionStateNames.READY;
 		while (isRunning()) {
-			log.debug("LSM state:" + transaction.getState() + " client "
-					+ sap.getRemoteClient() + "  error "
-					+ transaction.getError());
+			if(transaction.getState().equals(prevState) == false) {
+				log.debug("LSM state:" + transaction.getState() + " client "
+						+ sap.getRemoteClient() + "  transaction "
+						+ transaction);
+				prevState = transaction.getState();
+			}
 			machine.get(getCurrentState()).execute(transaction);
 			if(transaction.getState().equals(TransactionStateNames.TRANSACTION_DONE)) {
 				updateClient(transaction);
@@ -147,7 +151,7 @@ public class ListenerStateMachine extends Thread {
 		sap.stopListening(transaction);
 	}
 
-	private void updateClient(Transaction transaction) {
+	private void updateClient(SimpleTransaction transaction) {
 		setError(transaction.getError());
 		if (isP2P) {
 			oneClient = sap.getRemoteClient();
