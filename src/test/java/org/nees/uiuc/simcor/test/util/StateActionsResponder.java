@@ -99,7 +99,7 @@ public class StateActionsResponder extends Thread {
 	public void run() {
 		sap.setParams(params);
 		SimpleTransaction tr = getTransaction();
-		tr = sap.getTf().createTransaction(null);
+		tr = sap.getTf().createSimpleTransaction(null);
 		tr.setPosted(true);
 		tr.setState(TransactionStateNames.OPENING_CONNECTION);
 		tr.setTimeout(2000);
@@ -270,7 +270,7 @@ public class StateActionsResponder extends Thread {
 		this.transaction = transaction;
 	}
 	private void shutdown() {
-		Transaction tr = getTransaction();
+		SimpleTransaction tr = getTransaction();
 		sap.closingConnection(tr, TransactionStateNames.TRANSACTION_DONE);
 	}
 }

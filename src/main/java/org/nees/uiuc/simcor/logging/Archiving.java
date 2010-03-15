@@ -12,7 +12,7 @@ import java.util.concurrent.BlockingQueue;
 
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
-import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
+import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
 
 public class Archiving extends Thread {
 	private boolean archivingEnabled = false;

@@ -6,6 +6,7 @@ public class SimpleTransaction extends Transaction {
 	boolean pickedUp = false;
 	boolean posted = false;
 	SimCorMsg response = null;
+	protected TcpError error;
 	public SimpleTransaction() {
 	}
 
@@ -13,6 +14,7 @@ public class SimpleTransaction extends Transaction {
 		super(t);
 		pickedUp = t.pickedUp;
 		posted = t.posted;
+		error = new TcpError(t.error);
 		if (t.response != null) {
 			if (t.response instanceof SimCorCompoundMsg) {
 				response = new SimCorCompoundMsg((SimCorCompoundMsg) t.response);
@@ -53,5 +55,13 @@ public class SimpleTransaction extends Transaction {
 		result += "/command=" + command;
 		result += "/response=" + response;
 		return result;
+	}
+
+	public TcpError getError() {
+		return error;
+	}
+
+	public void setError(TcpError error) {
+		this.error = error;
 	}
 }

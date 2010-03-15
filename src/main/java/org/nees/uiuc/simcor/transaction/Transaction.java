@@ -1,7 +1,6 @@
 package org.nees.uiuc.simcor.transaction;
 
 import org.nees.uiuc.simcor.states.TransactionStateNames;
-import org.nees.uiuc.simcor.tcp.TcpError;
 
 public class Transaction {
 
@@ -11,17 +10,14 @@ public class Transaction {
 
 	protected SimCorMsg command = null;
 	protected DirectionType direction = DirectionType.NONE;
-	protected TcpError error;
 	protected TransactionIdentity id;
 	protected TransactionStateNames state = TransactionStateNames.READY;
 	private int timeout = 3000;
-
 	public Transaction() {
 		super();
 	}
 	public Transaction(Transaction t) {
 		direction = t.direction;
-		error = new TcpError(t.error);
 		if (t.id != null) {
 			id = new TransactionIdentity(t.id);
 		}
@@ -43,10 +39,6 @@ public class Transaction {
 		return direction;
 	}
 
-	public TcpError getError() {
-		return error;
-	}
-
 	public TransactionIdentity getId() {
 		return id;
 	}
@@ -65,10 +57,6 @@ public class Transaction {
 
 	public void setDirection(DirectionType direction) {
 		this.direction = direction;
-	}
-
-	public void setError(TcpError error) {
-		this.error = error;
 	}
 
 	public void setId(TransactionIdentity id) {

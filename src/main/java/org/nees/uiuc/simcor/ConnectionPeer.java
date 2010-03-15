@@ -114,7 +114,7 @@ public class ConnectionPeer extends UiSimCorTcp {
 				new ReadCommand(sap));
 		machine.put(TransactionStateNames.READ_RESPONSE,
 				new WaitForOpenResponse(sap));
-		transaction = sap.getTf().createTransaction(null);
+		transaction = sap.getTf().createSimpleTransaction(null);
 		transaction.setState(TransactionStateNames.TRANSACTION_DONE);
 		sap.getTf().setMdl(mdl);
 
@@ -190,7 +190,7 @@ public class ConnectionPeer extends UiSimCorTcp {
 		} else {
 			transactionFactory.setDirection(DirectionType.SEND_COMMAND);			
 		}
-		transaction = transactionFactory.createTransaction(null);
+		transaction = transactionFactory.createSimpleTransaction(null);
 		transaction.setPosted(true);
 		if (params.isListener()) {
 			transaction.setState(TransactionStateNames.START_LISTENING);

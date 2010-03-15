@@ -218,7 +218,7 @@ public class TcpActions {
 			long time = (System.currentTimeMillis() - start);
 			if (time > msgTimeout) {
 				String msg = "Reading message from "
-						+ remoteHost + " timed out";
+						+ remoteHost + " timed out > " + msgTimeout;
 				log.error(msg);
 				TcpError error = new TcpError();
 				error.setText(msg);

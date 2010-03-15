@@ -2,12 +2,13 @@ package org.nees.uiuc.simcor.factories;
 
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.transaction.Address;
+import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.SimCorCompoundMsg;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
-import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
+import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity.StepTypes;
 
 public class TransactionFactory {
@@ -86,13 +87,22 @@ public class TransactionFactory {
 	public SimCorMsg createSessionResponse(SimCorMsg cmd) {
 		return createResponse(mdl,null, (systemDescription + " " + cmd.getCommand() + " done"), false);
 	}
-	public SimpleTransaction createTransaction(SimCorMsg msg) {
+	public SimpleTransaction createSimpleTransaction(SimCorMsg msg) {
 		SimpleTransaction result = new SimpleTransaction();
 		if (direction == DirectionType.SEND_COMMAND) {
 			result.setCommand(msg);
 			result.setId(id);
 		}
 		result.setDirection(direction);
+		result.setTimeout(transactionTimeout);
+		log.debug("Created transaction: " + result);
+		return result;
+	}
+	public BroadcastTransaction createBroadcastTransaction(SimCorMsg msg) {
+		BroadcastTransaction result = new BroadcastTransaction();
+			result.setCommand(msg);
+			result.setId(id);
+		result.setDirection(DirectionType.SEND_COMMAND);
 		result.setTimeout(transactionTimeout);
 		log.debug("Created transaction: " + result);
 		return result;

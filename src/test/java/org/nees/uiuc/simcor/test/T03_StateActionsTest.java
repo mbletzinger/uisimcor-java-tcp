@@ -69,7 +69,7 @@ public class T03_StateActionsTest {
 		sap.setParams(lparams);
 		sap.setIdentity("MDL-00-00", "Connection Test");
 
-		transaction = sap.getTf().createTransaction(new SimCorMsg());
+		transaction = sap.getTf().createSimpleTransaction(new SimCorMsg());
 		transaction.setTimeout(2000);
 	}
 

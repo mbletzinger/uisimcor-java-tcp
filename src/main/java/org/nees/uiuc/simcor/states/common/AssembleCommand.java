@@ -1,13 +1,16 @@
 package org.nees.uiuc.simcor.states.common;
 
+import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class AssembleCommand extends TransactionState {
 	public enum AssembleCommandType { OPEN, CLOSE, OTHER };
 	private AssembleCommandType cmdType;
+	private final Logger log = Logger.getLogger(AssembleCommand.class);
 	public AssembleCommand(TransactionStateNames state,
 			StateActionsProcessorWithLcf sap, AssembleCommandType cmdType) {
 		super(state, sap, TransactionStateNames.SENDING_COMMAND);
@@ -15,17 +18,20 @@ public class AssembleCommand extends TransactionState {
 	}
 
 	@Override
-	public void execute(SimpleTransaction transaction) {
+	public void execute(Transaction transaction) {
+		if(transaction instanceof SimpleTransaction == false) {
+			log.fatal("Transaction not simple",new Exception());
+		}
 		if(cmdType.equals(AssembleCommandType.OPEN)) {
-			sap.assembleSessionMessage(transaction, true, true, next);
+			sap.assembleSessionMessage((SimpleTransaction) transaction, true, true, next);
 			return;
 		}
 		if(cmdType.equals(AssembleCommandType.CLOSE)) {
-			sap.assembleSessionMessage(transaction, false, true, next);
+			sap.assembleSessionMessage((SimpleTransaction) transaction, false, true, next);
 			return;
 		}
 		if(cmdType.equals(AssembleCommandType.OTHER)) {
-			sap.setUpWrite(transaction, true, next);
+			sap.setUpWrite((SimpleTransaction) transaction, true, next);
 		}
 	}
 

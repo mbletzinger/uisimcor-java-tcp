@@ -9,15 +9,17 @@ import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.Connection.ConnectionStatus;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
+import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
+import org.nees.uiuc.simcor.transaction.TriggerResponse;
 
 public class ClientConnections {
 	private final ArrayList<ClientIdWithConnection> clients = new ArrayList<ClientIdWithConnection>();
-	private String message;
 	private int msgTimeout = 3000;
 	private final ArrayList<ClientIdWithConnection> newClients = new ArrayList<ClientIdWithConnection>();
+
 	public ClientConnections() {
 	}
 
@@ -25,40 +27,46 @@ public class ClientConnections {
 		newClients.add(client);
 	}
 
-	public synchronized void assembleTriggerMessages(SimCorMsg msg, TransactionIdentity id) {
-		mergeClients();
+	public synchronized void assembleTriggerMessages(
+			BroadcastTransaction transaction) {
+		mergeClients(transaction);
 		for (ClientIdWithConnection c : clients) {
-			sendMsg(c.connection, msg, id);
+			sendMsg(c.connection, transaction.getCommand(), transaction.getId());
 		}
 	}
 
-	private  TcpError checkResponse(Connection client) {
+	private TriggerResponse checkResponse(ClientIdWithConnection cid) {
+		Connection client = cid.connection;
 		if (client.getConnectionState().equals(ConnectionStatus.BUSY)) {
 			return null;
 		}
-		return client.getFromRemoteMsg().getError();
+		TriggerResponse result = new TriggerResponse(client.getFromRemoteMsg()
+				.getMsg());
+		result.setRemoteId(new ClientId(cid));
+		result.setError(client.getFromRemoteMsg().getError());
+		return result;
 	}
-	
+
 	private void closeClient(Connection client) {
 		TcpActionsDto cmd = new TcpActionsDto();
 		cmd.setAction(ActionsType.CLOSE);
 		client.setToRemoteMsg(cmd);
 	}
 
-	public String getMessage() {
-		return message;
-	}
 	public int getMsgTimeout() {
 		return msgTimeout;
 	}
 
-	private void mergeClients() {
+	private void mergeClients(BroadcastTransaction transaction) {
 		clients.addAll(newClients);
-		message = "";
-		for (ClientIdWithConnection c : newClients) {
-			message = message + c.system + " at " + c.remoteHost
-					+ " is connected.\n";
+		String message = null;
+		for (ClientId c : newClients) {
+			if (message == null) {
+				message = "";
+			}
+			message += c.system + " at " + c.remoteHost + " is connected.\n";
 		}
+		transaction.setBroadcastMsg(message);
 		newClients.clear();
 	}
 
@@ -87,7 +95,7 @@ public class ClientConnections {
 	public void setupResponsesCheck() {
 		for (ClientIdWithConnection c : clients) {
 			readMsg(c.connection);
-		}		
+		}
 	}
 
 	public synchronized boolean waitForBroadcastFinished() {
@@ -95,28 +103,36 @@ public class ClientConnections {
 			if (c.connection.getConnectionState() == ConnectionStatus.BUSY) {
 				return false;
 			}
-		}	
+		}
 		return true;
 	}
-	public synchronized boolean waitForResponsesFinished() {
+
+	public synchronized boolean waitForResponsesFinished(
+			BroadcastTransaction transaction) {
 		boolean result = true;
-		message = "";
+		String message = null;
 		List<Integer> lostClientsIdx = new ArrayList<Integer>();
 		for (ClientIdWithConnection c : clients) {
-			TcpError er = checkResponse(c.connection);
-			if (er == null) {
+			TriggerResponse rsp = checkResponse(c);
+			if (rsp == null) {
 				result = false;
 				continue;
 			}
-			if (er.getType().equals(TcpErrorTypes.NONE) == false) {
+			if (rsp.getError().getType().equals(TcpErrorTypes.NONE) == false) {
 				int idx = clients.indexOf(c);
-				message = message + "Lost contact with " + c.system + " at "
-						+ c.remoteHost + " because " + er.getText() + "\n";
+				if (message == null) {
+					message = "";
+				}
+				message += "Lost contact with " + c.system + " at "
+						+ c.remoteHost + " because " + rsp.getError().getText()
+						+ "\n";
 				lostClientsIdx.add(new Integer(idx));
 				closeClient(c.connection);
 			}
+			transaction.getResponses().add(rsp);
 		}
-		for(Integer i : lostClientsIdx) {
+
+		for (Integer i : lostClientsIdx) {
 			int idx = i.intValue();
 			clients.remove(idx);
 		}
