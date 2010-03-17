@@ -1,7 +1,7 @@
 package org.nees.uiuc.simcor.states.common;
 
 import org.apache.log4j.Logger;
-import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
+import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
@@ -12,7 +12,7 @@ public class AssembleCommand extends TransactionState {
 	private AssembleCommandType cmdType;
 	private final Logger log = Logger.getLogger(AssembleCommand.class);
 	public AssembleCommand(TransactionStateNames state,
-			StateActionsProcessorWithLcf sap, AssembleCommandType cmdType) {
+			StateActionsProcessor sap, AssembleCommandType cmdType) {
 		super(state, sap, TransactionStateNames.SENDING_COMMAND);
 		this.cmdType = cmdType;
 	}

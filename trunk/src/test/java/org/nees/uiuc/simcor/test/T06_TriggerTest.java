@@ -45,7 +45,7 @@ public class T06_TriggerTest {
 		while (transaction.getState().equals(
 				TransactionStateNames.BROADCAST_COMMAND)) {
 			sap.broadcastCommands(transaction,
-					TransactionStateNames.SETUP_TRIGGER_READ_COMMANDS);
+					TransactionStateNames.SETUP_TRIGGER_READ_RESPONSES);
 			try {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
