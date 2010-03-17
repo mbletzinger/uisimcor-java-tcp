@@ -38,7 +38,7 @@ public class TransactionResponder extends Thread {
 
 	private List<TransactionStateNames> readyStates = new ArrayList<TransactionStateNames>();
 
-	private ConnectionPeer simcor;
+	private UiSimCorTcp simcor;
 	public TransactionResponder() {
 		readyStates.add(TransactionStateNames.TRANSACTION_DONE);
 		readyStates.add(TransactionStateNames.READY);
@@ -170,7 +170,7 @@ public class TransactionResponder extends Thread {
 	public void setParams(TcpParameters rparams) {
 		this.params = rparams;
 	}
-	public void setSimcor(ConnectionPeer simcor) {
+	public void setSimcor(UiSimCorTcp simcor) {
 		this.simcor = simcor;
 	}
 
