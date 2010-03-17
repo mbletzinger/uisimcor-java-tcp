@@ -22,6 +22,16 @@ public class TransactionFactory {
 	private String systemDescription;
 	private int transactionTimeout = 3000;
 
+	public BroadcastTransaction createBroadcastTransaction(SimCorMsg msg) {
+		BroadcastTransaction result = new BroadcastTransaction();
+		result.setCommand(msg);
+		result.setId(id);
+		result.setDirection(DirectionType.SEND_COMMAND);
+		result.setTimeout(transactionTimeout);
+		log.debug("Created transaction: " + result);
+		return result;
+	}
+
 	public SimCorMsg createCommand(String cmd, String mdl, String cps,
 			String cnt) {
 		SimCorMsg result;
@@ -73,6 +83,14 @@ public class TransactionFactory {
 		return result;
 	}
 
+	public SimpleTransaction createReceiveCommandTransaction(int msgTimeout) {
+		SimpleTransaction result = new SimpleTransaction();
+		result.setDirection(direction);
+		result.setTimeout(msgTimeout);
+		log.debug("Created transaction: " + result);
+		return result;
+	}
+
 	public SimCorMsg createResponse(String mdl, String cps, String cnt,
 			boolean notOk) {
 		SimCorMsg result = new SimCorMsg();
@@ -87,16 +105,6 @@ public class TransactionFactory {
 		return result;
 	}
 
-	public SimCorMsg createSessionCommand(boolean isOpen) {
-		return createCommand((isOpen ? "open-session" : "close-session"), mdl,
-				null, systemDescription);
-	}
-
-	public SimCorMsg createSessionResponse(SimCorMsg cmd) {
-		return createResponse(mdl, null, ("[" + systemDescription + "] "
-				+ cmd.getCommand() + " done"), false);
-	}
-
 	public SimpleTransaction createSendCommandTransaction(SimCorMsg msg) {
 		SimpleTransaction result = new SimpleTransaction();
 		result.setCommand(msg);
@@ -107,22 +115,14 @@ public class TransactionFactory {
 		return result;
 	}
 
-	public SimpleTransaction createReceiveCommandTransaction(int msgTimeout) {
-		SimpleTransaction result = new SimpleTransaction();
-		result.setDirection(direction);
-		result.setTimeout(msgTimeout);
-		log.debug("Created transaction: " + result);
-		return result;
+	public SimCorMsg createSessionCommand(boolean isOpen) {
+		return createCommand((isOpen ? "open-session" : "close-session"), mdl,
+				null, systemDescription);
 	}
 
-	public BroadcastTransaction createBroadcastTransaction(SimCorMsg msg) {
-		BroadcastTransaction result = new BroadcastTransaction();
-		result.setCommand(msg);
-		result.setId(id);
-		result.setDirection(DirectionType.SEND_COMMAND);
-		result.setTimeout(transactionTimeout);
-		log.debug("Created transaction: " + result);
-		return result;
+	public SimCorMsg createSessionResponse(SimCorMsg cmd) {
+		return createResponse(mdl, null, ("[" + systemDescription + "] "
+				+ cmd.getCommand() + " done"), false);
 	}
 
 	public TransactionIdentity createTransactionId(int step, int subStep,

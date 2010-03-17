@@ -6,27 +6,27 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
 public class TriggerResponse extends SimCorMsg {
 
-	private ClientId remoteId;
 	protected TcpError error;
+	private ClientId remoteId;
 
 	public TriggerResponse(Msg2Tcp msg) {
 		super(msg.getMsg());
-	}
-
-	public synchronized ClientId getRemoteId() {
-		return remoteId;
-	}
-
-	public synchronized void setRemoteId(ClientId cid) {
-		this.remoteId = cid;
 	}
 
 	public TcpError getError() {
 		return error;
 	}
 
+	public synchronized ClientId getRemoteId() {
+		return remoteId;
+	}
+
 	public void setError(TcpError error) {
 		this.error = error;
+	}
+
+	public synchronized void setRemoteId(ClientId cid) {
+		this.remoteId = cid;
 	}
 	@Override
 	public String toString() {

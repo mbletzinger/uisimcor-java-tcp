@@ -5,16 +5,16 @@ public class ClientId {
 	public final String remoteHost;
 	public final String system;
 
-	public ClientId(String system,
-			String remoteHost) {
-		this.system = system;
-		this.remoteHost = remoteHost;
-	}
-
 	public ClientId(ClientId other) {
 		this.system = other.system;
 		this.remoteHost = other.remoteHost;
 		
+	}
+
+	public ClientId(String system,
+			String remoteHost) {
+		this.system = system;
+		this.remoteHost = remoteHost;
 	}
 	@Override
 	public int hashCode() {

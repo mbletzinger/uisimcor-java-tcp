@@ -73,10 +73,15 @@ public class Msg2Tcp {
 		}
 		return result;
 	}
+	public void clear() {
+		msg = null;
+		id = null;
+	}
+	
 	public TransactionIdentity getId() {
 		return id;
 	}
-	
+
 	public SimCorMsg getMsg() {
 		return msg;
 	}
@@ -114,7 +119,6 @@ public class Msg2Tcp {
 		}
 			
 	}
-
 	private void parseCommand(List<String> tokens) {
 		String command = tokens.get(0);
 		msg.setCommand(command);
@@ -135,6 +139,7 @@ public class Msg2Tcp {
 		List<String> sub = tokens.subList(1, tokens.size());
 		parseContent(tokens.subList(1, tokens.size()));
 	}
+
 	private void parseContent(List<String> tokens) {
 		String content = null;
 		String address = null;
@@ -212,17 +217,12 @@ public class Msg2Tcp {
 		}
 	
 	}
-
+	
 	public void setId(TransactionIdentity id) {
 		this.id = id;
 	}
-	
+
 	public void setMsg(SimCorMsg msg) {
 		this.msg = msg;
-	}
-
-	public void clear() {
-		msg = null;
-		id = null;
 	}
 }

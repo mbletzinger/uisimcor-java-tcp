@@ -13,10 +13,10 @@ import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
 public class TransactionMsgs {
-	public List<SimpleTransaction> cmdList;
-	public HashMap<String, SimpleTransaction> transactions;
-	public Transaction openTransaction;
 	public Transaction closeTransaction;
+	public List<SimpleTransaction> cmdList;
+	public Transaction openTransaction;
+	public HashMap<String, SimpleTransaction> transactions;
 	public Transaction triggerTransaction;
 
 	public TransactionMsgs() {

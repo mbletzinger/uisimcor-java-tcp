@@ -7,11 +7,16 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 
 public class UiSimCorDateFormat extends GenericDataFormat {
-	private final int millisecDigits = 3;
 	private SimpleDateFormat formatDf = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss.SSS");
-private final Logger log = Logger.getLogger(UiSimCorDateFormat.class);	
+	private final Logger log = Logger.getLogger(UiSimCorDateFormat.class);
+private final int millisecDigits = 3;	
 	public UiSimCorDateFormat() {
 		super("dd-MMM-yyyy HH:mm:ss");
+	}
+
+	@Override
+	public String format(Date date) {
+		return formatDf.format(date);
 	}
 
 	@Override
@@ -27,11 +32,6 @@ private final Logger log = Logger.getLogger(UiSimCorDateFormat.class);
 		cal.setTime(date);
 		cal.set(Calendar.MILLISECOND, millisec);
 		return cal.getTime();
-	}
-
-	@Override
-	public String format(Date date) {
-		return formatDf.format(date);
 	}
 
 }

@@ -16,6 +16,18 @@ import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
 
 public class TransactionResponder extends Thread {
+	public static void main(String[] args) {
+		TransactionResponder responder = new TransactionResponder();
+		TransactionMsgs data = new TransactionMsgs();
+		try {
+			data.setUp();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		responder.setData(data);
+		responder.start();
+	}
+
 	public boolean connected;
 
 	private TransactionMsgs data;
@@ -27,7 +39,6 @@ public class TransactionResponder extends Thread {
 	private List<TransactionStateNames> readyStates = new ArrayList<TransactionStateNames>();
 
 	private ConnectionPeer simcor;
-
 	public TransactionResponder() {
 		readyStates.add(TransactionStateNames.TRANSACTION_DONE);
 		readyStates.add(TransactionStateNames.READY);
@@ -38,10 +49,11 @@ public class TransactionResponder extends Thread {
 	public TcpParameters getParams() {
 		return params;
 	}
+	
 	public UiSimCorTcp getSimcor() {
 		return simcor;
 	}
-	
+
 	public boolean isConnected() {
 		return connected;
 	}
@@ -158,20 +170,8 @@ public class TransactionResponder extends Thread {
 	public void setParams(TcpParameters rparams) {
 		this.params = rparams;
 	}
-
 	public void setSimcor(ConnectionPeer simcor) {
 		this.simcor = simcor;
-	}
-	public static void main(String[] args) {
-		TransactionResponder responder = new TransactionResponder();
-		TransactionMsgs data = new TransactionMsgs();
-		try {
-			data.setUp();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		responder.setData(data);
-		responder.start();
 	}
 
 }

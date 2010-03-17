@@ -7,11 +7,16 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 
 public class ExcelDateFormat extends GenericDataFormat {
-	private final int millisecDigits = 3;
-	private final Logger log = Logger.getLogger(ExcelDateFormat.class);
 	private SimpleDateFormat formatDf = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss.SSS a");
+	private final Logger log = Logger.getLogger(ExcelDateFormat.class);
+	private final int millisecDigits = 3;
 	public ExcelDateFormat() {
 		super("MM/dd/yyyy hh:mm:ss a");
+	}
+
+	@Override
+	public String format(Date date) {
+		return formatDf.format(date);
 	}
 
 	@Override
@@ -28,11 +33,6 @@ public class ExcelDateFormat extends GenericDataFormat {
 		cal.setTime(date);
 		cal.set(Calendar.MILLISECOND, Integer.parseInt(millisecString));
 		return cal.getTime();
-	}
-
-	@Override
-	public String format(Date date) {
-		return formatDf.format(date);
 	}
 
 }

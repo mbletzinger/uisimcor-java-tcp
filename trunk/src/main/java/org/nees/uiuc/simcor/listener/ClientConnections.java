@@ -17,9 +17,9 @@ import org.nees.uiuc.simcor.transaction.TriggerResponse;
 
 public class ClientConnections {
 	private final List<ClientIdWithConnection> clients = new ArrayList<ClientIdWithConnection>();
+	private final Logger log = Logger.getLogger(ClientConnections.class);
 	private int msgTimeout = 3000;
 	private final List<ClientIdWithConnection> newClients = new ArrayList<ClientIdWithConnection>();
-	private final Logger log = Logger.getLogger(ClientConnections.class);
 	private final List<ClientIdWithConnection> waitingForResponse = new ArrayList<ClientIdWithConnection>();
 
 	public ClientConnections() {
@@ -115,8 +115,8 @@ public class ClientConnections {
 			BroadcastTransaction transaction) {
 		boolean result = true;
 		String message = transaction.getResponseMsg();
-		List<Integer> lostClientsIdx = new ArrayList<Integer>();
-		List<Integer> responseReceivedIdx = new ArrayList<Integer>();
+		List<ClientIdWithConnection> lostClients = new ArrayList<ClientIdWithConnection>();
+		List<ClientIdWithConnection> responseReceived = new ArrayList<ClientIdWithConnection>();
 		for (ClientIdWithConnection c : waitingForResponse) {
 			log.debug("Checking Client: " + c.system);
 			TriggerResponse rsp = checkResponse(c);
@@ -133,23 +133,21 @@ public class ClientConnections {
 						+ c.remoteHost + " because " + rsp.getError().getText()
 						+ "\n";
 				transaction.setResponseMsg(message);
-				lostClientsIdx.add(new Integer(idx));
+				lostClients.add(c);
 				closeClient(c.connection);
 			} else {
 				transaction.getResponses().add(rsp);				
 			}
 			int ridx = waitingForResponse.indexOf(c);
 			log.debug("Response received from " + c.system);
-			responseReceivedIdx.add(new Integer(ridx));
+			responseReceived.add(c);
 		}
 
-		for (Integer i : lostClientsIdx) {
-			int idx = i.intValue();
-			clients.remove(idx);
+		for (ClientIdWithConnection i : lostClients) {
+			clients.remove(i);
 		}
-		for (Integer i : responseReceivedIdx) {
-			int idx = i.intValue();
-			waitingForResponse.remove(idx);
+		for (ClientIdWithConnection i : responseReceived) {
+			waitingForResponse.remove(i);
 		}
 		return result;
 	}

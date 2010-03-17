@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 
 public class SimCorMsg {
 	public enum MsgType {
-		COMMAND, NOT_OK_RESPONSE, OK_RESPONSE, ERROR
+		COMMAND, ERROR, NOT_OK_RESPONSE, OK_RESPONSE
 	}
 
 	// address is null if not used

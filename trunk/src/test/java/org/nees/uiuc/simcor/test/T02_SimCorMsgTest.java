@@ -18,12 +18,10 @@ import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
 public class T02_SimCorMsgTest {
-	private final Logger log = Logger.getLogger(T02_SimCorMsgTest.class);
-
 	public class TestMsg {
-		public MsgType type;
 		public boolean isCompoundMsg = false;
 		public String text;
+		public MsgType type;
 
 		public TestMsg(MsgType type, boolean isCompoundMsg, String text) {
 			this.type = type;
@@ -32,6 +30,8 @@ public class T02_SimCorMsgTest {
 		}
 
 	}
+
+	private final Logger log = Logger.getLogger(T02_SimCorMsgTest.class);
 
 	private ArrayList<TestMsg> testMsgs = new ArrayList<TestMsg>();
 

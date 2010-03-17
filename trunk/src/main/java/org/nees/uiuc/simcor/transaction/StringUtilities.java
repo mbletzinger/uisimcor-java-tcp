@@ -5,6 +5,13 @@ import java.util.List;
 
 public class StringUtilities {
 
+	static List<String> array2List(String [] array) {
+		List<String> result = new ArrayList<String>();
+		for(int i = 0; i < array.length; i++) {
+			result.add(array[i]);
+		}
+		return result;
+	}
 	static public boolean equals(String a, String b) {
 		if (a == null && b != null) {
 			return false;
@@ -22,12 +29,5 @@ public class StringUtilities {
 			return 0;
 		}
 		return a.hashCode();
-	}
-	static List<String> array2List(String [] array) {
-		List<String> result = new ArrayList<String>();
-		for(int i = 0; i < array.length; i++) {
-			result.add(array[i]);
-		}
-		return result;
 	}
 }

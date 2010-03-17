@@ -13,21 +13,6 @@ public class StateActionsProcessorWithLsm extends StateActionsProcessor {
 		super();
 		this.lsm = lsm;
 	}
-	public void startListener(SimpleTransaction transaction, TransactionStateNames next) {
-		lsm.getSap().setParams(params);
-		lsm.start();
-		TcpError error = lsm.getError();
-		setStatus(transaction, error, next);
-	}
-	
-	public void stopListener(SimpleTransaction transaction, TransactionStateNames next) {
-		lsm.setRunning(false);
-		if(lsm.isAlive()) {
-			return;
-		}
-		TcpError error = lsm.getError();
-		setStatus(transaction, error, next);
-	}
 	public void checkListenerForConnection(SimpleTransaction transaction, TransactionStateNames next) {
 		ClientIdWithConnection id = lsm.getOneClient();
 		TcpError error = lsm.getError();
@@ -38,6 +23,21 @@ public class StateActionsProcessorWithLsm extends StateActionsProcessor {
 			cm.setConnection(id.connection);
 		}
 		setStatus(transaction, error,next);
+	}
+	
+	public void startListener(SimpleTransaction transaction, TransactionStateNames next) {
+		lsm.getSap().setParams(params);
+		lsm.start();
+		TcpError error = lsm.getError();
+		setStatus(transaction, error, next);
+	}
+	public void stopListener(SimpleTransaction transaction, TransactionStateNames next) {
+		lsm.setRunning(false);
+		if(lsm.isAlive()) {
+			return;
+		}
+		TcpError error = lsm.getError();
+		setStatus(transaction, error, next);
 	}
 
 }

@@ -4,39 +4,35 @@ package org.nees.uiuc.simcor.tcp;
 public class TcpError {
 
 	public enum TcpErrorTypes {
+		BROADCAST_CLIENTS_ADDED,
+		BROADCAST_CLIENTS_LOST,
 		IO_ERROR,
 		NONE,
+		THREAD_DIED,
 		TIMEOUT,
 		UNKNOWN_REMOTE_HOST,
-		THREAD_DIED,
-		BROADCAST_CLIENTS_LOST,
-		BROADCAST_CLIENTS_ADDED,
 	}
 
-	private String text = "";
 	private String remoteHost;
-
-	public String getRemoteHost() {
-		return remoteHost;
-	}
-
-	public void setRemoteHost(String remoteHost) {
-		this.remoteHost = remoteHost;
-	}
+	private String text = "";
 
 	private TcpErrorTypes type = TcpErrorTypes.NONE;
+
+	public TcpError() {
+		super();
+	}
+
 	public TcpError(TcpError e) {
 		type = e.type;
 		text = new String(e.text);
 	}
-
 	public void clearError() {
 		type = TcpErrorTypes.NONE;
 		text = "";
 	}
 
-	public TcpError() {
-		super();
+	public String getRemoteHost() {
+		return remoteHost;
 	}
 
 	public  String getText() {
@@ -45,6 +41,10 @@ public class TcpError {
 
 	public  TcpErrorTypes getType() {
 		return type;
+	}
+
+	public void setRemoteHost(String remoteHost) {
+		this.remoteHost = remoteHost;
 	}
 
 	public  void setText(String errorMsg) {

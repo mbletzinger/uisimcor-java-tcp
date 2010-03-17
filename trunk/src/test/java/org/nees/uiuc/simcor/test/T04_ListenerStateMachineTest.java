@@ -18,9 +18,9 @@ import org.nees.uiuc.simcor.test.util.StateActionsResponder.DieBefore;
 public class T04_ListenerStateMachineTest {
 	private final Logger log = Logger.getLogger(T04_ListenerStateMachineTest.class);
 	private TcpParameters lparams = new TcpParameters();
+	private ListenerStateMachine lsm;
 	private TcpParameters rparams = new TcpParameters();
 	private StateActionsResponder rspdr;
-	private ListenerStateMachine lsm;
 
 	@Before
 	public void setUp() throws Exception {

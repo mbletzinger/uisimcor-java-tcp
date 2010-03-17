@@ -5,9 +5,9 @@ import java.util.Set;
 
 
 public class BroadcastTransaction extends Transaction {
-	private final Set<TriggerResponse> responses = new HashSet<TriggerResponse>();
 	private String broadcastMsg = null;
 	private String responseMsg = null;
+	private final Set<TriggerResponse> responses = new HashSet<TriggerResponse>();
 	public void addResponse(TriggerResponse msg) {
 		responses.add(msg);
 	}
@@ -17,17 +17,17 @@ public class BroadcastTransaction extends Transaction {
 	public synchronized String getBroadcastMsg() {
 		return broadcastMsg;
 	}
-	public synchronized void setBroadcastMsg(String broadcastMsg) {
-		this.broadcastMsg = broadcastMsg;
-	}
 	public synchronized String getResponseMsg() {
 		return responseMsg;
 	}
-	public synchronized void setResponseMsg(String responseMsg) {
-		this.responseMsg = responseMsg;
-	}
 	public Set<TriggerResponse> getResponses() {
 		return responses;
+	}
+	public synchronized void setBroadcastMsg(String broadcastMsg) {
+		this.broadcastMsg = broadcastMsg;
+	}
+	public synchronized void setResponseMsg(String responseMsg) {
+		this.responseMsg = responseMsg;
 	}
 	@Override
 	public String toString() {
