@@ -19,6 +19,10 @@ public abstract class GenericDataFormat {
 		return format.format(date);
 	}
 	
+	protected SimpleDateFormat getFormat() {
+		return format;
+	}
+
 	public Date parse(String string) {
 		try {
 			return format.parse(string);
@@ -26,10 +30,6 @@ public abstract class GenericDataFormat {
 			log.error("String [" + string + "] cannot be parsed",e);
 			return null;
 		}
-	}
-
-	protected SimpleDateFormat getFormat() {
-		return format;
 	}
 
 	protected void setFormat(SimpleDateFormat format) {

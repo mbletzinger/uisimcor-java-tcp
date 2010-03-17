@@ -43,16 +43,16 @@ public class TcpActionsDto {
 		this.msg = msg;
 	}
 
+	public void timestamp() {
+		msg.getMsg().setTimestamp(new Date());
+	}
+	
 	@Override
 	public String toString() {
 		String result = "/msg=" + msg.assemble();
 		result += "/action=" + action;
 		result += "/error=" + error;
 		return result;
-	}
-	
-	public void timestamp() {
-		msg.getMsg().setTimestamp(new Date());
 	}
 	
 }

@@ -11,10 +11,10 @@ public class Transaction {
 
 	protected SimCorMsg command = null;
 	protected DirectionType direction = DirectionType.NONE;
+	protected TcpError error;
 	protected TransactionIdentity id;
 	protected TransactionStateNames state = TransactionStateNames.READY;
 	private int timeout = 3000;
-	protected TcpError error;
 	public Transaction() {
 		super();
 	}
@@ -41,6 +41,10 @@ public class Transaction {
 		return direction;
 	}
 
+	public TcpError getError() {
+		return error;
+	}
+
 	public TransactionIdentity getId() {
 		return id;
 	}
@@ -61,22 +65,18 @@ public class Transaction {
 		this.direction = direction;
 	}
 
+	public void setError(TcpError error) {
+		this.error = error;
+	}
+
 	public void setId(TransactionIdentity id) {
 		this.id = id;
 	}
-
 	public void setState(TransactionStateNames status) {
 		this.state = status;
 	}
-
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
-	}
-	public TcpError getError() {
-		return error;
-	}
-	public void setError(TcpError error) {
-		this.error = error;
 	}
 
 

@@ -30,10 +30,10 @@ public class ListenerStateMachine extends Thread {
 	private TcpError error = new TcpError();
 	private final boolean isP2P;
 	private boolean isRunning;
+	private final Logger log = Logger.getLogger(ListenerStateMachine.class);
 	protected Map<TransactionStateNames, TransactionState> machine = new HashMap<TransactionStateNames, TransactionState>();
 	private ClientIdWithConnection oneClient = null;
 	private StateActionsProcessorWithLcf sap = new StateActionsProcessorWithLcf();
-	private final Logger log = Logger.getLogger(ListenerStateMachine.class);
 
 	public ListenerStateMachine(ClientConnections cc, boolean isP2P) {
 		super();
@@ -151,19 +151,9 @@ public class ListenerStateMachine extends Thread {
 		sap.stopListening(transaction);
 	}
 
-	private void updateClient(SimpleTransaction transaction) {
-		setError(transaction.getError());
-		if (isP2P) {
-			oneClient = sap.getRemoteClient();
-		} else {
-			cc.addClient(sap.getRemoteClient());
-		}
-
-	}
 	public synchronized void setCurrentState(TransactionStateNames currentState) {
 		this.currentState = currentState;
 	}
-
 	public synchronized void setError(TcpError error) {
 		this.error = error;
 	}
@@ -174,5 +164,15 @@ public class ListenerStateMachine extends Thread {
 
 	public synchronized void setRunning(boolean isRunning) {
 		this.isRunning = isRunning;
+	}
+
+	private void updateClient(SimpleTransaction transaction) {
+		setError(transaction.getError());
+		if (isP2P) {
+			oneClient = sap.getRemoteClient();
+		} else {
+			cc.addClient(sap.getRemoteClient());
+		}
+
 	}
 }

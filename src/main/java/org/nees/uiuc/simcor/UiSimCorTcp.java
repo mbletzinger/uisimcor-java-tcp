@@ -25,11 +25,11 @@ public abstract class UiSimCorTcp {
 
 	private final Logger log = Logger.getLogger(UiSimCorTcp.class);
 
-	protected Map<TransactionStateNames, TransactionState> machine = new HashMap<TransactionStateNames, TransactionState>();
-
-	protected StateActionsProcessor sap;
-	
 	protected ListenerStateMachine lsm;
+
+	protected Map<TransactionStateNames, TransactionState> machine = new HashMap<TransactionStateNames, TransactionState>();
+	
+	protected StateActionsProcessor sap;
 
 	protected SimpleTransaction transaction;
 

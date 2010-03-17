@@ -6,16 +6,16 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 
 public class DateCalculations {
-	private  int millisecWindow = 500;
 	private Logger log = Logger.getLogger(DateCalculations.class);
+	private  int millisecWindow = 500;
+
+	public DateCalculations() {
+		super();
+	}
 
 	public DateCalculations(int millisecWindow) {
 		super();
 		this.millisecWindow = millisecWindow;
-	}
-
-	public DateCalculations() {
-		super();
 	}
 
 	public int compareWithWindow(Date myDate, Date otherDate) {

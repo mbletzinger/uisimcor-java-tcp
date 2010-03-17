@@ -68,6 +68,21 @@ public class ConnectionPeer extends UiSimCorTcp {
 		initialize(DirectionType.valueOf(dirS), mdl);
 	}
 
+	/**
+	 * For the receive command direction. This is called when a response is
+	 * ready to be sent.
+	 * 
+	 * @param response
+	 */
+	@Override
+	public void continueTransaction(SimCorMsg response) {
+		transaction.setResponse(response);
+		transaction.setPosted(true);
+		transaction.setState(TransactionStateNames.WAIT_FOR_RESPONSE);
+		execute();
+
+	}
+
 	@Override
 	protected void initialize(DirectionType dir,String mdl) {
 		if (dir == DirectionType.RECEIVE_COMMAND) {
@@ -112,21 +127,6 @@ public class ConnectionPeer extends UiSimCorTcp {
 	}
 
 	/**
-	 * For the receive command direction. This is called when a response is
-	 * ready to be sent.
-	 * 
-	 * @param response
-	 */
-	@Override
-	public void continueTransaction(SimCorMsg response) {
-		transaction.setResponse(response);
-		transaction.setPosted(true);
-		transaction.setState(TransactionStateNames.WAIT_FOR_RESPONSE);
-		execute();
-
-	}
-
-	/**
 	 * 
 	 * @return returns a copy of the transaction and tells the state machine
 	 *         that the message has been offloaded
@@ -136,6 +136,31 @@ public class ConnectionPeer extends UiSimCorTcp {
 		SimpleTransaction result = new SimpleTransaction(transaction);
 		transaction.setPickedUp(true);
 		return result;
+	}
+
+	@Override
+	public void shutdown() {
+		TransactionFactory transactionFactory = sap.getTf();
+		transaction = new ExitTransaction();
+		transaction.setDirection(transactionFactory.getDirection());
+		transaction.setPosted(true);
+		transaction.setState(TransactionStateNames.CLOSING_CONNECTION);
+		log.info("Closing connection");
+//		Connection connection = connectionManager.getConnection();
+//		if (connection != null) {
+//			connectionManager.closeConnection();
+//		}
+		log.info("Shutting down network logger");
+		archive.logTransaction(transaction);
+	}
+
+	/**
+	 * Starts a Receive command transaction.
+	 */
+	@Override
+	public void startTransaction() {
+		transaction.setState(TransactionStateNames.READ_COMMAND);
+		execute();
 	}
 
 	/**
@@ -154,14 +179,6 @@ public class ConnectionPeer extends UiSimCorTcp {
 		execute();
 	}
 
-	/**
-	 * Starts a Receive command transaction.
-	 */
-	@Override
-	public void startTransaction() {
-		transaction.setState(TransactionStateNames.READ_COMMAND);
-		execute();
-	}
 
 	/**
 	 * Sets up the connection used for transactions. For connections that
@@ -191,22 +208,5 @@ public class ConnectionPeer extends UiSimCorTcp {
 		if (archive.isAlive() == false) {
 			archive.start();
 		}
-	}
-
-
-	@Override
-	public void shutdown() {
-		TransactionFactory transactionFactory = sap.getTf();
-		transaction = new ExitTransaction();
-		transaction.setDirection(transactionFactory.getDirection());
-		transaction.setPosted(true);
-		transaction.setState(TransactionStateNames.CLOSING_CONNECTION);
-		log.info("Closing connection");
-//		Connection connection = connectionManager.getConnection();
-//		if (connection != null) {
-//			connectionManager.closeConnection();
-//		}
-		log.info("Shutting down network logger");
-		archive.logTransaction(transaction);
 	}
 }

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DateFormats {
-	public enum TimeStampType { UISIMCOR,NEES,EXCEL, TRANSSIMCOR, OM };
+	public enum TimeStampType { EXCEL,NEES,OM, TRANSSIMCOR, UISIMCOR };
 	Map<TimeStampType, GenericDataFormat> formats;
 	public DateFormats() {
 		super();
@@ -16,11 +16,11 @@ public class DateFormats {
 		formats.put(TimeStampType.TRANSSIMCOR, new TransSimCorDateFormat());
 		formats.put(TimeStampType.OM, new OmDateFormat());
 	}
-	public Date parse(String string, TimeStampType type) {
-		return formats.get(type).parse(string);
-	}
-
 	public String format(Date date, TimeStampType type) {
 		return formats.get(type).format(date);
+	}
+
+	public Date parse(String string, TimeStampType type) {
+		return formats.get(type).parse(string);
 	}
 }

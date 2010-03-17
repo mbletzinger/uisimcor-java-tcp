@@ -11,18 +11,10 @@ import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 
 public class TcpListen {
+	private TcpError error = new TcpError();
 	private final Logger log = Logger.getLogger(TcpListen.class);
 	private TcpParameters params;
 	private ServerSocket server = null;
-	private TcpError error = new TcpError();
-
-	public TcpError getError() {
-		return error;
-	}
-
-	public void setError(TcpError error) {
-		this.error = error;
-	}
 
 	public TcpListen() {
 		super();
@@ -33,26 +25,12 @@ public class TcpListen {
 		this.params = p;
 	}
 
-	public TcpParameters getParams() {
-		return params;
+	public TcpError getError() {
+		return error;
 	}
 
-	public boolean startListening() {
-		try {
-			server = new ServerSocket(params.getLocalPort());
-			server.setSoTimeout(params.getTcpTimeout());
-			server.setReuseAddress(true);
-		} catch (IOException e) {
-			log.error("Listening at " + ":" + params.getLocalPort()
-					+ " failed because", e);
-			String msg = "Listen " + ":" + params.getLocalPort()
-					+ " returned an I/O error";
-			error = new TcpError();
-			error.setText(msg);
-			error.setType(TcpErrorTypes.IO_ERROR);
-			return false;
-		}
-		return true;
+	public TcpParameters getParams() {
+		return params;
 	}
 
 	public TcpLinkDto listen() {
@@ -81,6 +59,32 @@ public class TcpListen {
 		return clientConnection;
 	}
 
+	public void setError(TcpError error) {
+		this.error = error;
+	}
+
+	public void setParams(TcpParameters params) throws Exception {
+		this.params = params;
+	}
+
+	public boolean startListening() {
+		try {
+			server = new ServerSocket(params.getLocalPort());
+			server.setSoTimeout(params.getTcpTimeout());
+			server.setReuseAddress(true);
+		} catch (IOException e) {
+			log.error("Listening at " + ":" + params.getLocalPort()
+					+ " failed because", e);
+			String msg = "Listen " + ":" + params.getLocalPort()
+					+ " returned an I/O error";
+			error = new TcpError();
+			error.setText(msg);
+			error.setType(TcpErrorTypes.IO_ERROR);
+			return false;
+		}
+		return true;
+	}
+
 	public boolean stopListening() {
 		try {
 			server.close();
@@ -95,10 +99,6 @@ public class TcpListen {
 		}
 		log.info("Listener signing off");
 		return true;
-	}
-
-	public void setParams(TcpParameters params) throws Exception {
-		this.params = params;
 	}
 
 }

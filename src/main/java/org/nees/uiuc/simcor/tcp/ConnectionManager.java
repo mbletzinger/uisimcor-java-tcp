@@ -9,10 +9,6 @@ public class ConnectionManager {
 	private Connection connection;
 	private final Logger log = Logger.getLogger(ConnectionManager.class);
 	private TcpParameters params;
-	public void setConnection(Connection connection) {
-		this.connection = connection;
-	}
-
 	private TcpError savedError = new TcpError();
 
 	public TcpError checkForErrors() {
@@ -22,10 +18,10 @@ public class ConnectionManager {
 		}
 		return result;
 	}
+
 	public TcpError checkForErrors(Connection c) {
 		return c.getFromRemoteMsg().getError();
 	}
-
 	public void clearError() {
 		savedError = new TcpError();
 	}
@@ -95,6 +91,10 @@ public class ConnectionManager {
 
 	public void saveError() {
 		savedError = checkForErrors();
+	}
+
+	public void setConnection(Connection connection) {
+		this.connection = connection;
 	}
 
 	public void setParams(TcpParameters params) {

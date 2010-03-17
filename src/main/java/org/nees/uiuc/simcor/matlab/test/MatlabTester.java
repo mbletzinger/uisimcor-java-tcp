@@ -15,25 +15,25 @@ public class MatlabTester {
 		stringData.add("Dumpy on test 1");
 	}
 
-	public String [] getStringArrayData() {
-		return stringData.toArray(new String[0]);
-	}
-	public List<String> getStringData() {
-		return stringData;
-	}
-	
-	public String getString(int i) {
-		return stringData.get(i);
-	}
-
 	public int getLength() {
 		return stringData.size();
 	}
-	public void setStringArray(List<String> array) {
-		stringData = array;
+	public String getString(int i) {
+		return stringData.get(i);
 	}
 	
+	public String [] getStringArrayData() {
+		return stringData.toArray(new String[0]);
+	}
+
+	public List<String> getStringData() {
+		return stringData;
+	}
 	public void setString(String s, int i) {
 		stringData.set(i, s);
+	}
+	
+	public void setStringArray(List<String> array) {
+		stringData = array;
 	}
 }

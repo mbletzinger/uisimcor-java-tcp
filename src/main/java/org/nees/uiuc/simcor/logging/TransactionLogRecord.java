@@ -16,6 +16,23 @@ import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
 public class TransactionLogRecord {
 	SimpleDateFormat format = new SimpleDateFormat("dd-MMMM-yyyy HH:mm:ss.SSS");
 	private Logger log = Logger.getLogger(TransactionLogRecord.class);
+	private String msgToString(SimCorMsg msg, TransactionIdentity id,
+			String dstring) {
+		if(msg == null) {
+			return null;
+		}
+		if(msg.getType() == MsgType.ERROR) {
+			return null;
+		}
+		Msg2Tcp m2t = new Msg2Tcp();
+		m2t.setId(id);
+		m2t.setMsg(msg);
+		Date ts = msg.getTimestamp() != null ? msg.getTimestamp() : new Date();
+		String result = format.format(ts);
+		result += '\t' + dstring + "\t" + m2t.assemble();
+		return result;
+	}
+
 	public String toString(SimpleTransaction t) {
 		log.debug("Logging: " + t);
 		String result;
@@ -31,23 +48,6 @@ public class TransactionLogRecord {
 			return result;
 		}
 		result += "ERROR:\t"  + e.getText() + "\n";
-		return result;
-	}
-
-	private String msgToString(SimCorMsg msg, TransactionIdentity id,
-			String dstring) {
-		if(msg == null) {
-			return null;
-		}
-		if(msg.getType() == MsgType.ERROR) {
-			return null;
-		}
-		Msg2Tcp m2t = new Msg2Tcp();
-		m2t.setId(id);
-		m2t.setMsg(msg);
-		Date ts = msg.getTimestamp() != null ? msg.getTimestamp() : new Date();
-		String result = format.format(ts);
-		result += '\t' + dstring + "\t" + m2t.assemble();
 		return result;
 	}
 }

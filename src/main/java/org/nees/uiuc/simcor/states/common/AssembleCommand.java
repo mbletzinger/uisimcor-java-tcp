@@ -8,7 +8,7 @@ import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class AssembleCommand extends TransactionState {
-	public enum AssembleCommandType { OPEN, CLOSE, OTHER };
+	public enum AssembleCommandType { CLOSE, OPEN, OTHER };
 	private AssembleCommandType cmdType;
 	private final Logger log = Logger.getLogger(AssembleCommand.class);
 	public AssembleCommand(TransactionStateNames state,

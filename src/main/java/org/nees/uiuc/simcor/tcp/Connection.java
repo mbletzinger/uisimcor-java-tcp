@@ -13,17 +13,9 @@ public class Connection extends Thread {
 	private ConnectionStatus connectionState = ConnectionStatus.CLOSED;
 	private TcpActionsDto fromRemoteMsg = new TcpActionsDto();
 	private final Logger log = Logger.getLogger(Connection.class);
+	private int msgTimeout = 3000;
 	private String remoteHost;
 	private boolean running = false;
-	private int msgTimeout = 3000;
-
-	public synchronized int getMsgTimeout() {
-		return msgTimeout;
-	}
-
-	public synchronized void setMsgTimeout(int msgTimeout) {
-		this.msgTimeout = msgTimeout;
-	}
 
 	private TcpActionsDto toRemoteMsg = new TcpActionsDto();
 
@@ -50,6 +42,10 @@ public class Connection extends Thread {
 
 	public synchronized TcpLinkDto getLink() {
 		return actions.getLink();
+	}
+
+	public synchronized int getMsgTimeout() {
+		return msgTimeout;
 	}
 
 	public String getRemoteHost() {
@@ -162,6 +158,10 @@ public class Connection extends Thread {
 			throw e;
 		}
 		actions.setLink(link);
+	}
+
+	public synchronized void setMsgTimeout(int msgTimeout) {
+		this.msgTimeout = msgTimeout;
 	}
 
 	public void setParams(TcpParameters params) throws Exception {

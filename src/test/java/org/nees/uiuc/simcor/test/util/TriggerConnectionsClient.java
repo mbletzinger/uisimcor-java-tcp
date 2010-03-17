@@ -10,14 +10,10 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 
 public class TriggerConnectionsClient {
-	private final StateActionsProcessor sap = new StateActionsProcessor();
-	private final Logger log = Logger.getLogger(TriggerConnectionsClient.class);
 	private String clientId;
 	private boolean done = false;
-
-	public synchronized boolean isDone() {
-		return done;
-	}
+	private final Logger log = Logger.getLogger(TriggerConnectionsClient.class);
+	private final StateActionsProcessor sap = new StateActionsProcessor();
 
 	public TriggerConnectionsClient(TcpParameters params,
 			String systemDescription) {
@@ -26,8 +22,51 @@ public class TriggerConnectionsClient {
 		sap.getTf().setSystemDescription(systemDescription);
 	}
 
-	public synchronized String getClientId() {
-		return clientId;
+	public void checkForMessages() {
+		log.debug("Before read command: ");
+		SimpleTransaction transaction = sap.getTf().createReceiveCommandTransaction(6000);
+		sap
+				.setUpRead(transaction, true,
+						TransactionStateNames.WAIT_FOR_COMMAND);
+		while (transaction.getState().equals(
+				TransactionStateNames.WAIT_FOR_COMMAND)) {
+			sap.waitForRead(transaction, true,
+					TransactionStateNames.COMMAND_AVAILABLE);
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+			}
+		}
+		log.debug("After trigger command: " + transaction);
+		if (transaction.getError().getType().equals(TcpErrorTypes.NONE) == false) {
+			log.error("Transaction error: " + transaction);
+			return;
+		}
+		SimCorMsg rsp = sap.getTf().createResponse("MDL-00-01", null,
+				sap.getTf().getSystemDescription(), false);
+		transaction.setResponse(rsp);
+		sap.setUpWrite(transaction, false,
+				TransactionStateNames.SENDING_RESPONSE);
+//		log.debug("After setup write: " + sap.getCm().checkForErrors());
+		while (transaction.getState().equals(
+				TransactionStateNames.SENDING_RESPONSE)) {
+			sap.waitForSend(transaction, TransactionStateNames.TRANSACTION_DONE);
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+			}
+		}
+		log.debug("After write trigger response: " + transaction);
+	}
+
+	public void closeConnection() {
+		SimpleTransaction transaction = sap.getTf().createSendCommandTransaction(
+				new SimCorMsg());
+		sap.closingConnection(transaction,
+				TransactionStateNames.TRANSACTION_DONE);
+		log.debug("Client " + sap.getTf().getSystemDescription() + " is down" + sap.getCm().checkForErrors());
+		done = true;
+
 	}
 
 	public void connect() {
@@ -92,54 +131,15 @@ public class TriggerConnectionsClient {
 		log.debug("After open session response sent: " + transaction);
 	}
 
+	public synchronized String getClientId() {
+		return clientId;
+	}
+
 	public TcpError getError() {
 		return sap.getCm().checkForErrors();
 	}
 
-	public void checkForMessages() {
-		log.debug("Before read command: ");
-		SimpleTransaction transaction = sap.getTf().createReceiveCommandTransaction(6000);
-		sap
-				.setUpRead(transaction, true,
-						TransactionStateNames.WAIT_FOR_COMMAND);
-		while (transaction.getState().equals(
-				TransactionStateNames.WAIT_FOR_COMMAND)) {
-			sap.waitForRead(transaction, true,
-					TransactionStateNames.COMMAND_AVAILABLE);
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-			}
-		}
-		log.debug("After trigger command: " + transaction);
-		if (transaction.getError().getType().equals(TcpErrorTypes.NONE) == false) {
-			log.error("Transaction error: " + transaction);
-			return;
-		}
-		SimCorMsg rsp = sap.getTf().createResponse("MDL-00-01", null,
-				sap.getTf().getSystemDescription(), false);
-		transaction.setResponse(rsp);
-		sap.setUpWrite(transaction, false,
-				TransactionStateNames.SENDING_RESPONSE);
-//		log.debug("After setup write: " + sap.getCm().checkForErrors());
-		while (transaction.getState().equals(
-				TransactionStateNames.SENDING_RESPONSE)) {
-			sap.waitForSend(transaction, TransactionStateNames.TRANSACTION_DONE);
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-			}
-		}
-		log.debug("After write trigger response: " + transaction);
-	}
-
-	public void closeConnection() {
-		SimpleTransaction transaction = sap.getTf().createSendCommandTransaction(
-				new SimCorMsg());
-		sap.closingConnection(transaction,
-				TransactionStateNames.TRANSACTION_DONE);
-		log.debug("Client " + sap.getTf().getSystemDescription() + " is down" + sap.getCm().checkForErrors());
-		done = true;
-
+	public synchronized boolean isDone() {
+		return done;
 	}
 }

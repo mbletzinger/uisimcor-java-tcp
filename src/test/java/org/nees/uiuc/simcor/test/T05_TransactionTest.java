@@ -29,13 +29,19 @@ import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
 public class T05_TransactionTest {
+	TransactionMsgs data = new TransactionMsgs();
 	private final Logger log = Logger.getLogger(T05_TransactionTest.class);
 	private TcpParameters params = new TcpParameters();
+	private List<TransactionStateNames> readyStates = new ArrayList<TransactionStateNames>();
 	private TransactionResponder responder;
 	private UiSimCorTcp simcor;
-	private List<TransactionStateNames> readyStates = new ArrayList<TransactionStateNames>();
-	TransactionMsgs data = new TransactionMsgs();
 
+	private void checkResponder() {
+		if(responder.isAlive() == false) {
+			fail();
+		}
+	}
+ 
 	@Before
 	public void setUp() throws Exception {
 		responder = new TransactionResponder();
@@ -44,14 +50,13 @@ public class T05_TransactionTest {
 		readyStates.add(TransactionStateNames.TRANSACTION_DONE);
 		readyStates.add(TransactionStateNames.READY);
 	}
- 
+
 	@After
 	public void shutdown() {
 		responder.connected = false;
 		responder.getSimcor().shutdown();
 		simcor.shutdown();
 	}
-
 	@Test
 	public void testSendTransactions() throws Exception {
 		responder.start();
@@ -137,10 +142,5 @@ public class T05_TransactionTest {
 			log.debug("Transaction completing state is " + state);					
 		}
 		assertNull(simcor.getSap().getCm().getConnection());
-	}
-	private void checkResponder() {
-		if(responder.isAlive() == false) {
-			fail();
-		}
 	}
 }

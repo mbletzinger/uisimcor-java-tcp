@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StringListUtils {
-	public String [] sl2a(List<String> l) {
-		return l.toArray(new String [0]);
-	}
-
 	public List<String> a2sl(String [] a) {
 		List<String> result = new ArrayList<String>();
 		for (int i = 0; i < a.length; i++) {
@@ -15,6 +11,7 @@ public class StringListUtils {
 		}
 		return result;
 	}
+
 	public String Byte2HexString(byte [] buf) {
 		String str = "";
 		for (int i = 0; i < buf.length; i++) {
@@ -22,5 +19,8 @@ public class StringListUtils {
 			str += prefix + Integer.toHexString(buf[i]);
 		}
 		return str;
+	}
+	public String [] sl2a(List<String> l) {
+		return l.toArray(new String [0]);
 	}
 }

@@ -142,6 +142,12 @@ public class StateActionsProcessor {
 	}
 
 	protected void setStatus(Transaction transaction, TcpError error,
+			TransactionStateNames state) {
+		setStatus(transaction, error, state,
+				TransactionStateNames.TRANSACTION_DONE);
+	}
+
+	protected void setStatus(Transaction transaction, TcpError error,
 			TransactionStateNames state, TransactionStateNames errstate) {
 		TcpError err = error;
 		if (transaction instanceof SimpleTransaction) {
@@ -152,12 +158,6 @@ public class StateActionsProcessor {
 		} else {
 			transaction.setState(state);
 		}
-	}
-
-	protected void setStatus(Transaction transaction, TcpError error,
-			TransactionStateNames state) {
-		setStatus(transaction, error, state,
-				TransactionStateNames.TRANSACTION_DONE);
 	}
 
 	public void setTf(TransactionFactory tf) {

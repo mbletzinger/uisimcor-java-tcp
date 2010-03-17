@@ -21,11 +21,6 @@ public class TcpLinkDto {
 	}
 
 	@Override
-	public int hashCode() {
-		return id;
-	}
-
-	@Override
 	public boolean equals(Object obj) {
 		if(obj instanceof TcpLinkDto) {
 			return ((TcpLinkDto)obj).id == id;
@@ -37,17 +32,22 @@ public class TcpLinkDto {
 		InetAddress address = socket.getInetAddress();
 		remoteHost = address.getCanonicalHostName();
 	}
+
 	public String getRemoteHost() {
 		return remoteHost;
 	}
 	public Socket getSocket() {
 		return socket;
 	}
-	public void setSocket(Socket socket) {
-		this.socket = socket;
+	@Override
+	public int hashCode() {
+		return id;
 	}
-
 	public void setRemoteHost(String remoteHost) {
 		this.remoteHost = remoteHost;
+	}
+
+	public void setSocket(Socket socket) {
+		this.socket = socket;
 	}
 }

@@ -9,7 +9,38 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 public class SimCorCompoundMsg extends SimCorMsg {
+	private List<Address> addresses = new ArrayList<Address>();
+
+	private Map<Address, String> contents = new HashMap<Address, String>();
+
+//	@Override
+//	public int hashCode() {
+//		int result = super.hashCode();
+//		for (Iterator<Address> i = addresses.iterator(); i.hasNext();) {
+//			Address a = i.next();
+//			result += a.hashCode();
+//			result += contents.get(a).hashCode();
+//		}
+//		log.debug("Message: " + this + " has hash " + result);
+//		return result;
+//	}
+
 	private final Logger log = Logger.getLogger(SimCorCompoundMsg.class);
+	public SimCorCompoundMsg() {
+	}
+
+	public SimCorCompoundMsg(SimCorCompoundMsg m) {
+		super(m);
+		for (Iterator<Address> i = m.addresses.iterator(); i.hasNext();) {
+			Address a = i.next();
+			setContent(a, m.contents.get(a));
+		}
+	}
+
+	public void clearContents() {
+		contents.clear();
+		addresses.clear();
+	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -34,37 +65,6 @@ public class SimCorCompoundMsg extends SimCorMsg {
 			}
 		}
 		return true;
-	}
-
-//	@Override
-//	public int hashCode() {
-//		int result = super.hashCode();
-//		for (Iterator<Address> i = addresses.iterator(); i.hasNext();) {
-//			Address a = i.next();
-//			result += a.hashCode();
-//			result += contents.get(a).hashCode();
-//		}
-//		log.debug("Message: " + this + " has hash " + result);
-//		return result;
-//	}
-
-	private List<Address> addresses = new ArrayList<Address>();
-	private Map<Address, String> contents = new HashMap<Address, String>();
-
-	public SimCorCompoundMsg() {
-	}
-
-	public SimCorCompoundMsg(SimCorCompoundMsg m) {
-		super(m);
-		for (Iterator<Address> i = m.addresses.iterator(); i.hasNext();) {
-			Address a = i.next();
-			setContent(a, m.contents.get(a));
-		}
-	}
-
-	public void clearContents() {
-		contents.clear();
-		addresses.clear();
 	}
 
 	@Override

@@ -8,8 +8,8 @@ import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class SetupReadMessage extends TransactionState {
-	private final Logger log = Logger.getLogger(SetupReadMessage.class);
 	private boolean isCommand;
+	private final Logger log = Logger.getLogger(SetupReadMessage.class);
 
 	public SetupReadMessage(TransactionStateNames state,
 			StateActionsProcessorWithLcf sap, boolean isCommand,
