@@ -22,7 +22,8 @@ public class StateActionsProcessor {
 
 	protected Archiving archive;
 	protected ConnectionManager cm;
-	protected final Logger log = Logger.getLogger(StateActionsProcessorWithLcf.class);
+	protected final Logger log = Logger
+			.getLogger(StateActionsProcessorWithLcf.class);
 	protected TcpParameters params;
 	private ClientIdWithConnection remoteClient;
 	protected TransactionFactory tf;
@@ -34,29 +35,30 @@ public class StateActionsProcessor {
 		archive = new Archiving();
 	}
 
-	public StateActionsProcessor(TransactionFactory tf,
-			ConnectionManager cm, Archiving archive) {
+	public StateActionsProcessor(TransactionFactory tf, ConnectionManager cm,
+			Archiving archive) {
 		super();
 		this.archive = archive;
 		this.cm = cm;
 		this.tf = tf;
 	}
 
-	public void assembleSessionMessage(SimpleTransaction transaction, boolean isOpen,
-			boolean isCommand, TransactionStateNames next) {
-				SimCorMsg cnt;
-				if (isCommand) {
-					cnt = tf.createSessionCommand(isOpen);
-					transaction.setCommand(cnt);
-				} else {
-					cnt = tf.createSessionResponse(transaction.getCommand());
-					transaction.setResponse(cnt);
-				}
-				log.debug("Assembled " + transaction);
-				setUpWrite(transaction, isCommand, next);
-			}
+	public void assembleSessionMessage(SimpleTransaction transaction,
+			boolean isOpen, boolean isCommand, TransactionStateNames next) {
+		SimCorMsg cnt;
+		if (isCommand) {
+			cnt = tf.createSessionCommand(isOpen);
+			transaction.setCommand(cnt);
+		} else {
+			cnt = tf.createSessionResponse(transaction.getCommand());
+			transaction.setResponse(cnt);
+		}
+		log.debug("Assembled " + transaction);
+		setUpWrite(transaction, isCommand, next);
+	}
 
-	public void checkOpenConnection(SimpleTransaction transaction, TransactionStateNames next) {
+	public void checkOpenConnection(SimpleTransaction transaction,
+			TransactionStateNames next) {
 		TcpError er = new TcpError();
 		Connection connection = null;
 		connection = cm.getConnection();
@@ -65,22 +67,21 @@ public class StateActionsProcessor {
 			return;
 		}
 		er = cm.checkForErrors();
-		connection.setMsgTimeout(transaction.getTimeout());
-		saveStatus(transaction, er, next);
+		cm.saveError();
+		setStatus(transaction, er, next);
 	}
 
-	public void closingConnection(SimpleTransaction transaction, TransactionStateNames next) {
+	public void closingConnection(SimpleTransaction transaction,
+			TransactionStateNames next) {
 		boolean closed = cm.closeConnection();
-		TcpError er = new TcpError();
-		TransactionStateNames state = TransactionStateNames.CLOSING_CONNECTION;
-		if (closed) {
-			state = next;
-			er = cm.checkForErrors();
-			if (er.getType().equals(TcpErrorTypes.NONE)) {
-				er = cm.getSavedError();
-			}
+		if (closed == false) {
+			return;
 		}
-		setStatus(transaction, er, state);
+		TcpError er = cm.checkForErrors();
+		if (er.getType().equals(TcpErrorTypes.NONE)) {
+			er = cm.getSavedError();
+		}
+		setStatus(transaction, er, next);
 	}
 
 	public Archiving getArchive() {
@@ -107,33 +108,20 @@ public class StateActionsProcessor {
 		log.debug("Starting connection");
 		cm.setParams(params);
 		cm.openConnection();
-		saveStatus(transaction, new TcpError(),
+		setStatus(transaction, new TcpError(),
 				TransactionStateNames.CHECK_OPEN_CONNECTION);
 	}
 
-	public void recordTransaction(SimpleTransaction transaction, TransactionStateNames next) {
-		if (transaction.getError().getType().equals(TcpErrorTypes.NONE)) {
-			transaction.setError(cm.getSavedError()); // capture connection
-			// errors
-		}
+	public void recordTransaction(SimpleTransaction transaction,
+			TransactionStateNames next) {
 		if (archive.isArchivingEnabled()) {
 			log.debug("Handling: " + transaction);
 			archive.logTransaction(transaction);
 		}
-		if(next.equals(TransactionStateNames.READY)) {
-		cm.clearError();
+		if (next.equals(TransactionStateNames.READY)) {
+			cm.clearError();
 		}
 		setStatus(transaction, new TcpError(), next);
-	}
-
-	protected void saveStatus(SimpleTransaction transaction, TcpError error, TransactionStateNames state) {
-		transaction.setError(error);
-		if (error.getType().equals(TcpErrorTypes.NONE) == false) {
-			cm.saveError();
-			transaction.setState(TransactionStateNames.CLOSING_CONNECTION);
-		} else {
-			transaction.setState(state);
-		}
 	}
 
 	public void setArchive(Archiving archive) {
@@ -153,10 +141,11 @@ public class StateActionsProcessor {
 		this.params = params;
 	}
 
-	protected void setStatus(Transaction transaction, TcpError error, TransactionStateNames state, TransactionStateNames errstate) {
+	protected void setStatus(Transaction transaction, TcpError error,
+			TransactionStateNames state, TransactionStateNames errstate) {
 		TcpError err = error;
-		if(transaction instanceof SimpleTransaction) {
-			((SimpleTransaction)transaction).setError(error);
+		if (transaction instanceof SimpleTransaction) {
+			((SimpleTransaction) transaction).setError(error);
 		}
 		if (err.getType() != TcpErrorTypes.NONE) {
 			transaction.setState(errstate);
@@ -164,15 +153,19 @@ public class StateActionsProcessor {
 			transaction.setState(state);
 		}
 	}
-	protected void setStatus(Transaction transaction, TcpError error, TransactionStateNames state) {
-		setStatus(transaction, error, state,TransactionStateNames.TRANSACTION_DONE);
+
+	protected void setStatus(Transaction transaction, TcpError error,
+			TransactionStateNames state) {
+		setStatus(transaction, error, state,
+				TransactionStateNames.TRANSACTION_DONE);
 	}
 
 	public void setTf(TransactionFactory tf) {
 		this.tf = tf;
 	}
 
-	public void setUpRead(Transaction transaction, boolean isCommand, TransactionStateNames next) {
+	public void setUpRead(Transaction transaction, boolean isCommand,
+			TransactionStateNames next) {
 		Connection c = cm.getConnection();
 		TcpActionsDto action = new TcpActionsDto();
 		action.setAction(ActionsType.READ);
@@ -181,7 +174,8 @@ public class StateActionsProcessor {
 		transaction.setState(next);
 	}
 
-	public void setUpWrite(SimpleTransaction transaction, boolean isCommand, TransactionStateNames next) {
+	public void setUpWrite(SimpleTransaction transaction, boolean isCommand,
+			TransactionStateNames next) {
 		Connection connection = cm.getConnection();
 		TcpActionsDto action = new TcpActionsDto();
 		action.setAction(ActionsType.WRITE);
@@ -196,10 +190,11 @@ public class StateActionsProcessor {
 		connection.setToRemoteMsg(action);
 		transaction.setPosted(false);
 		transaction.setState(next);
-	
+
 	}
 
-	public void waitForPickUp(SimpleTransaction transaction, TransactionStateNames next) {
+	public void waitForPickUp(SimpleTransaction transaction,
+			TransactionStateNames next) {
 		if (transaction.isPickedUp() == false) {// Still waiting
 			return;
 		}
@@ -207,7 +202,8 @@ public class StateActionsProcessor {
 		transaction.setPickedUp(false);
 	}
 
-	public void waitForPosted(SimpleTransaction transaction, TransactionStateNames next) {
+	public void waitForPosted(SimpleTransaction transaction,
+			TransactionStateNames next) {
 		if (transaction.isPosted() == false) {// Still waiting
 			return;
 		}
@@ -215,7 +211,8 @@ public class StateActionsProcessor {
 		transaction.setPosted(false);
 	}
 
-	public void waitForRead(SimpleTransaction transaction, boolean isCommand, TransactionStateNames next) {
+	public void waitForRead(SimpleTransaction transaction, boolean isCommand,
+			TransactionStateNames next) {
 		Connection connection = cm.getConnection();
 		if (connection.getConnectionState().equals(ConnectionStatus.BUSY)) {
 			return;
@@ -230,11 +227,13 @@ public class StateActionsProcessor {
 			transaction.setResponse(msg);
 		}
 		transaction.setId(id);
-		saveStatus(transaction, cm.checkForErrors(), next);
+		cm.saveError();
+		setStatus(transaction, cm.checkForErrors(), next);
 		transaction.setPickedUp(false);
 	}
 
-	public void waitForSend(SimpleTransaction transaction, TransactionStateNames next) {
+	public void waitForSend(SimpleTransaction transaction,
+			TransactionStateNames next) {
 		Connection connection = cm.getConnection();
 		// Check if command has been sent
 		if (connection.getConnectionState() == ConnectionStatus.BUSY) {
@@ -244,17 +243,33 @@ public class StateActionsProcessor {
 		SimCorMsg msg = result.getMsg().getMsg();
 		TransactionIdentity id = result.getMsg().getId();
 		log.debug("Sent msg:" + msg + " id: " + id);
-		saveStatus(transaction, result.getError(), next);
-	
+		cm.saveError();
+		setStatus(transaction, result.getError(), next);
+
 	}
 
-	public void waitForSessionMsgRead(SimpleTransaction transaction, boolean isCommand, TransactionStateNames next) {
-		waitForRead(transaction, true, next);
+	public void waitForSessionMsgRead(SimpleTransaction transaction,
+			boolean isCommand, TransactionStateNames next) {
+		waitForRead(transaction, isCommand, next);
 		if (transaction.getState().equals(next)) {
+			log.debug("Open session transaction: " + transaction);
 			Connection connection = cm.getConnection();
-			String system = transaction.getCommand().getContent();
-			remoteClient = new ClientIdWithConnection(connection, system, connection
-					.getRemoteHost());
+			String system;
+			if(isCommand) {
+				system = transaction.getCommand().getContent();
+			} else {
+				String rstrng = transaction.getResponse().getContent();
+				int bidx = rstrng.indexOf("[");
+				int eudx = rstrng.indexOf("]");
+				if(bidx < 0 || eudx < 0) {
+					log.error("system description not found in \"" + rstrng + "\"");
+					system = "NOT RECOGNIZED";
+				} else {
+					system = rstrng.substring(bidx + 1, eudx);
+				}
+			}
+			remoteClient = new ClientIdWithConnection(connection, system,
+					connection.getRemoteHost());
 		}
 	}
 

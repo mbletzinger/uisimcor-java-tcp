@@ -102,7 +102,7 @@ public class ListenerStateMachine extends Thread {
 						TransactionStateNames.LISTEN_FOR_CONNECTIONS));
 		machine.put(TransactionStateNames.CLOSING_CONNECTION,
 				new CloseConnection(sap));
-		SimpleTransaction transaction = sap.getTf().createSimpleTransaction(null);
+		SimpleTransaction transaction = sap.getTf().createSendCommandTransaction(null);
 		sap.startListening(transaction);
 		return transaction;
 	}

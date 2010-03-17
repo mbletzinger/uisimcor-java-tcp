@@ -1,6 +1,7 @@
 package org.nees.uiuc.simcor.transaction;
 
 import org.nees.uiuc.simcor.states.TransactionStateNames;
+import org.nees.uiuc.simcor.tcp.TcpError;
 
 public class Transaction {
 
@@ -13,6 +14,7 @@ public class Transaction {
 	protected TransactionIdentity id;
 	protected TransactionStateNames state = TransactionStateNames.READY;
 	private int timeout = 3000;
+	protected TcpError error;
 	public Transaction() {
 		super();
 	}
@@ -69,6 +71,12 @@ public class Transaction {
 
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
+	}
+	public TcpError getError() {
+		return error;
+	}
+	public void setError(TcpError error) {
+		this.error = error;
 	}
 
 

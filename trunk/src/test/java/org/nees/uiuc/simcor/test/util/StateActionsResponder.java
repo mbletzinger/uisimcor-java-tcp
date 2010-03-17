@@ -99,7 +99,7 @@ public class StateActionsResponder extends Thread {
 	public void run() {
 		sap.setParams(params);
 		SimpleTransaction tr = getTransaction();
-		tr = sap.getTf().createSimpleTransaction(null);
+		tr = sap.getTf().createSendCommandTransaction(null);
 		tr.setPosted(true);
 		tr.setState(TransactionStateNames.OPENING_CONNECTION);
 		tr.setTimeout(2000);

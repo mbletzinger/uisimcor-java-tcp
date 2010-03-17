@@ -3,9 +3,9 @@ package org.nees.uiuc.simcor.listener;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto;
-import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.Connection.ConnectionStatus;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
@@ -16,9 +16,11 @@ import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.TriggerResponse;
 
 public class ClientConnections {
-	private final ArrayList<ClientIdWithConnection> clients = new ArrayList<ClientIdWithConnection>();
+	private final List<ClientIdWithConnection> clients = new ArrayList<ClientIdWithConnection>();
 	private int msgTimeout = 3000;
-	private final ArrayList<ClientIdWithConnection> newClients = new ArrayList<ClientIdWithConnection>();
+	private final List<ClientIdWithConnection> newClients = new ArrayList<ClientIdWithConnection>();
+	private final Logger log = Logger.getLogger(ClientConnections.class);
+	private final List<ClientIdWithConnection> waitingForResponse = new ArrayList<ClientIdWithConnection>();
 
 	public ClientConnections() {
 	}
@@ -92,10 +94,12 @@ public class ClientConnections {
 		this.msgTimeout = msgTimeout;
 	}
 
-	public void setupResponsesCheck() {
+	public void setupResponsesCheck(BroadcastTransaction transaction) {
 		for (ClientIdWithConnection c : clients) {
 			readMsg(c.connection);
 		}
+		waitingForResponse.addAll(clients);
+		transaction.getResponses().clear();
 	}
 
 	public synchronized boolean waitForBroadcastFinished() {
@@ -110,9 +114,11 @@ public class ClientConnections {
 	public synchronized boolean waitForResponsesFinished(
 			BroadcastTransaction transaction) {
 		boolean result = true;
-		String message = null;
+		String message = transaction.getResponseMsg();
 		List<Integer> lostClientsIdx = new ArrayList<Integer>();
-		for (ClientIdWithConnection c : clients) {
+		List<Integer> responseReceivedIdx = new ArrayList<Integer>();
+		for (ClientIdWithConnection c : waitingForResponse) {
+			log.debug("Checking Client: " + c.system);
 			TriggerResponse rsp = checkResponse(c);
 			if (rsp == null) {
 				result = false;
@@ -126,15 +132,24 @@ public class ClientConnections {
 				message += "Lost contact with " + c.system + " at "
 						+ c.remoteHost + " because " + rsp.getError().getText()
 						+ "\n";
+				transaction.setResponseMsg(message);
 				lostClientsIdx.add(new Integer(idx));
 				closeClient(c.connection);
+			} else {
+				transaction.getResponses().add(rsp);				
 			}
-			transaction.getResponses().add(rsp);
+			int ridx = waitingForResponse.indexOf(c);
+			log.debug("Response received from " + c.system);
+			responseReceivedIdx.add(new Integer(ridx));
 		}
 
 		for (Integer i : lostClientsIdx) {
 			int idx = i.intValue();
 			clients.remove(idx);
+		}
+		for (Integer i : responseReceivedIdx) {
+			int idx = i.intValue();
+			waitingForResponse.remove(idx);
 		}
 		return result;
 	}

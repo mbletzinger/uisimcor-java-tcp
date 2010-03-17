@@ -13,7 +13,7 @@ import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
-import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
+import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
 
 public class TransactionResponder extends Thread {
 	public boolean connected;
