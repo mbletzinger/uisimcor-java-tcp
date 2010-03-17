@@ -29,4 +29,14 @@ public class BroadcastTransaction extends Transaction {
 	public Set<TriggerResponse> getResponses() {
 		return responses;
 	}
+	@Override
+	public String toString() {
+		String result = "/state=" + state + "/dir=" + direction + "\n";
+		result += "/transId=" + id + "/error=" + error + "/bmsg=" + getBroadcastMsg() + "/rmsg=" + getResponseMsg() + "\n";
+		result += "/command=" + command;
+		for(TriggerResponse tr : getResponses()) {
+		result += "/response=" + tr;
+		}
+		return result;
+	}
 }

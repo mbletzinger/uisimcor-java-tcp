@@ -6,7 +6,6 @@ public class SimpleTransaction extends Transaction {
 	boolean pickedUp = false;
 	boolean posted = false;
 	SimCorMsg response = null;
-	protected TcpError error;
 	public SimpleTransaction() {
 	}
 
@@ -55,13 +54,5 @@ public class SimpleTransaction extends Transaction {
 		result += "/command=" + command;
 		result += "/response=" + response;
 		return result;
-	}
-
-	public TcpError getError() {
-		return error;
-	}
-
-	public void setError(TcpError error) {
-		this.error = error;
 	}
 }

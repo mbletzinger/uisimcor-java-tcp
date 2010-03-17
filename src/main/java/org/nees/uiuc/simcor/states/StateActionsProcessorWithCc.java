@@ -31,6 +31,9 @@ public class StateActionsProcessorWithCc extends StateActionsProcessorWithLsm {
 		TransactionStateNames state = transaction.getState();
 		if(cc.waitForBroadcastFinished()) {
 			state = next;
+			log.debug("Broadcasts are done");
+		} else {
+			log.debug("Still broadcasting");
 		}
 		TcpError err = new TcpError();
 		if(transaction.getBroadcastMsg() != null) {
@@ -39,7 +42,7 @@ public class StateActionsProcessorWithCc extends StateActionsProcessorWithLsm {
 		setStatus((Transaction)transaction, err, state, state);
 	}
 	public void setupTriggerResponses(Transaction transaction, TransactionStateNames next) {
-		cc.setupResponsesCheck();
+		cc.setupResponsesCheck((BroadcastTransaction) transaction);
 		setStatus(transaction, new TcpError(), next);		
 		
 	}
@@ -47,6 +50,9 @@ public class StateActionsProcessorWithCc extends StateActionsProcessorWithLsm {
 		TransactionStateNames state = transaction.getState();
 		if(cc.waitForResponsesFinished(transaction)) {
 			state = next;
+			log.debug("Responses are done");
+		} else {
+			log.debug("Still waiting for responses");
 		}
 		TcpError err = new TcpError();
 		if(transaction.getResponseMsg() != null) {

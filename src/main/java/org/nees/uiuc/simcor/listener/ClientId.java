@@ -37,7 +37,7 @@ public class ClientId {
 			result += "null";
 		}
 		if(remoteHost != null) {
-			result += " at " + remoteHost.hashCode();
+			result += " at " + remoteHost;
 		} else {
 			result += " at null";
 		}

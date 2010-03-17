@@ -1,8 +1,9 @@
 package org.nees.uiuc.simcor.test;
 
-
 import java.util.ArrayList;
 import java.util.List;
+
+import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -28,7 +29,7 @@ public class T06_TriggerTest {
 	private int clientIdx = 0;
 	private TransactionFactory tf;
 	private final Logger log = Logger.getLogger(T06_TriggerTest.class);
-
+	private int number = 0;
 
 	@Before
 	public void setUp() throws Exception {
@@ -37,78 +38,164 @@ public class T06_TriggerTest {
 		cparams.setTcpTimeout(5000);
 		lparams.setLocalPort(6445);
 		lparams.setTcpTimeout(5000);
-		ListenerStateMachine lsm = new ListenerStateMachine(new ClientConnections(), false);
+		ListenerStateMachine lsm = new ListenerStateMachine(
+				new ClientConnections(), false);
 		sap = new StateActionsProcessorWithCc(lsm);
 		sap.setParams(lparams);
 		tf = sap.getTf();
 		tf.setSystemDescription("Broadcaster");
 		TransactionIdentity id = tf.createTransactionId(0, 0, 0);
 		tf.setId(id);
-		SimpleTransaction transaction  = tf.createSimpleTransaction(null);
+		SimpleTransaction transaction = tf.createSendCommandTransaction(null);
 		log.debug("Start transaction: " + transaction);
 		sap.startListener(transaction, TransactionStateNames.TRANSACTION_DONE);
 	}
+
 	@After
 	public void tearDown() throws Exception {
-		SimpleTransaction transaction  = tf.createSimpleTransaction(null);
+		SimpleTransaction transaction = tf.createSendCommandTransaction(null);
 		sap.stopListener(transaction, TransactionStateNames.TRANSACTION_DONE);
 	}
-	
+
 	@Test
 	public void tesOneTriggering() {
 		startClient();
+		checkClientList(1);
 		BroadcastTransaction transaction = broadcast();
-		log.debug("Broadcasts: " + transaction.getBroadcastMsg());
-		log.debug("Responses: " + transaction.getResponseMsg());
+		log.debug("Results for " + number+ ": " + transaction);
+		checkTransaction(transaction, true, false, 1);
 		transaction = broadcast();
-		log.debug("Broadcasts: " + transaction.getBroadcastMsg());
-		log.debug("Responses: " + transaction.getResponseMsg());
+		log.debug("Results for " + number+ ": " + transaction);
+		checkTransaction(transaction, false, false, 1);
+		endClient();
+		checkClientList(0);
+		transaction = broadcast();
+		log.debug("Results for " + number+ ": " + transaction);
+		checkTransaction(transaction, false, true, 0);
+	}
+
+	@Test
+	public void testTwoTriggering() {
+		startClient();
+		checkClientList(1);
+		BroadcastTransaction transaction = broadcast();
+		log.debug("Results for " + number+ ": " + transaction);
+		checkTransaction(transaction, true, false, 1);
+		transaction = broadcast();
+		log.debug("Results for " + number+ ": " + transaction);
+		checkTransaction(transaction, false, false, 1);
+		startClient();
+		checkClientList(2);
+		 transaction = broadcast();
+		log.debug("Results for " + number+ ": " + transaction);
+		checkTransaction(transaction, true, false, 2);
 		endClient();
 		transaction = broadcast();
-		log.debug("Broadcasts: " + transaction.getBroadcastMsg());
-		log.debug("Responses: " + transaction.getResponseMsg());
+		log.debug("Results for " + number+ ": " + transaction);
+		checkTransaction(transaction, false, true, 1);
+		endClient();
+		checkClientList(0);
+		transaction = broadcast();
+		log.debug("Results for " + number+ ": " + transaction);
+		checkTransaction(transaction, false, true, 0);
 	}
-	
+
 	private void startClient() {
 		String sys = "Client " + clientIdx;
-		TriggerConnectionsClient client = new TriggerConnectionsClient(cparams, sys);
+		TriggerConnectionsClient client = new TriggerConnectionsClient(cparams,
+				sys);
 		client.connect();
 		clients.add(client);
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+		}
 	}
+
 	private BroadcastTransaction broadcast() {
-		SimCorMsg msg = tf.createCommand("trigger", "MDL-00-01", null, "Broadcast " + tf.getSystemDescription());
-		BroadcastTransaction transaction  = tf.createBroadcastTransaction(msg);
-		sap.assembleTriggerCommands(transaction,TransactionStateNames.BROADCAST_COMMAND, false);
-		while(transaction.getState().equals(TransactionStateNames.BROADCAST_COMMAND)) {
-			sap.broadcastCommands(transaction, TransactionStateNames.SETUP_TRIGGER_READ_COMMANDS);
+		number++;
+		TransactionIdentity id = tf.createTransactionId(number, 0, 0);
+		tf.setId(id);
+		SimCorMsg msg = tf.createCommand("trigger", "MDL-00-01", null,
+				"Broadcast " + tf.getSystemDescription());
+		BroadcastTransaction transaction = tf.createBroadcastTransaction(msg);
+		sap.assembleTriggerCommands(transaction,
+				TransactionStateNames.BROADCAST_COMMAND, false);
+		log.debug("Assemble Broadcast " + transaction);
+		TransactionStateNames prevState = TransactionStateNames.READY;
+		while (transaction.getState().equals(
+				TransactionStateNames.BROADCAST_COMMAND)) {
+			sap.broadcastCommands(transaction,
+					TransactionStateNames.SETUP_TRIGGER_READ_COMMANDS);
 			try {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
+			}
+			if (transaction.getState().equals(prevState) == false) {
+//				log.debug("Commanding broadcast " + transaction);
+				prevState = transaction.getState();
 			}
 		}
-		sap.setupTriggerResponses(transaction, TransactionStateNames.WAIT_FOR_TRIGGER_RESPONSES);
-		while(transaction.getState().equals(TransactionStateNames.WAIT_FOR_TRIGGER_RESPONSES)) {
-			sap.waitForTriggerResponse(transaction, TransactionStateNames.TRANSACTION_DONE);
+		log.debug("Broadcast done" + transaction);
+		sap.setupTriggerResponses(transaction,
+				TransactionStateNames.WAIT_FOR_TRIGGER_RESPONSES);
+		log.debug("Setup Responses " + transaction);
+		while (transaction.getState().equals(
+				TransactionStateNames.WAIT_FOR_TRIGGER_RESPONSES)) {
+			checkMsgs();
 			try {
-				Thread.sleep(200);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 			}
-			checkMsgs();
+			sap.waitForTriggerResponse(transaction,
+					TransactionStateNames.TRANSACTION_DONE);
+			if (transaction.getState().equals(prevState) == false) {
+//				log.debug("Collecting Responses " + transaction);
+				prevState = transaction.getState();
+			}
+			log.debug("Collecting Responses done" + transaction);
 		}
 		return transaction;
 	}
+
+	private void checkTransaction(BroadcastTransaction transaction, boolean bmsgExpected, boolean rmsgExpected, int expected) {
+		if (bmsgExpected) {
+			Assert.assertNotNull(transaction.getBroadcastMsg());
+		} else {
+			Assert.assertNull(transaction.getBroadcastMsg());
+		}
+		if (rmsgExpected) {
+			Assert.assertNotNull(transaction.getResponseMsg());
+		} else {
+			Assert.assertNull(transaction.getResponseMsg());
+		}
+		Assert.assertEquals(expected, transaction.getResponses().size());
+	}
 	private void checkMsgs() {
-		for(TriggerConnectionsClient c : clients) {
+		for (TriggerConnectionsClient c : clients) {
 			c.checkForMessages();
 		}
 	}
+
+private void checkClientList(int expected) {
+	String clientsStr = "";			
+	int activeC = 0;
+	for (TriggerConnectionsClient c : clients) {
+		clientsStr += c.getClientId() + "\n";
+		if(c.isDone() == false) {
+			activeC++;
+		}
+	}
+	log.debug("Client List:\n" + clientsStr + "\nend list");
+	Assert.assertEquals(expected, activeC);
+}
 	private void endClient() {
 		TriggerConnectionsClient client = clients.get(0);
 		client.closeConnection();
 		try {
-			Thread.sleep(500);
+			Thread.sleep(2000);
 		} catch (InterruptedException e) {
 		}
-		clients.remove(0);
+//		clients.remove(0);
 	}
 }

@@ -36,6 +36,7 @@ public class Connection extends Thread {
 		super();
 		actions.setLink(link);
 		remoteHost = link.getRemoteHost();
+		setConnectionState(ConnectionStatus.READY);
 	}
 
 	public synchronized ConnectionStatus getConnectionState() {

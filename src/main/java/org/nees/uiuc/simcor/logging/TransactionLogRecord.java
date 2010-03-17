@@ -11,7 +11,7 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
-import org.nees.uiuc.simcor.transaction.SimpleTransaction.DirectionType;
+import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
 
 public class TransactionLogRecord {
 	SimpleDateFormat format = new SimpleDateFormat("dd-MMMM-yyyy HH:mm:ss.SSS");

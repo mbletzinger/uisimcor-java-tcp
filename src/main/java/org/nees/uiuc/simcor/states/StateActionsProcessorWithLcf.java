@@ -34,15 +34,13 @@ public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 		TcpError er = new TcpError();
 		Connection connection = null;
 		connection = lcf.checkForListenerConnection();
-		if (connection == null
-				|| connection.getConnectionState().equals(
-						Connection.ConnectionStatus.BUSY)) {
+		if (connection == null) {
 			return;
 		}
 		er = lcf.checkForErrors();
 		cm.setConnection(connection);
 		connection.setMsgTimeout(transaction.getTimeout());
-		saveStatus(transaction, er, next);
+		setStatus(transaction, er, next);
 	}
 
 	@Override
@@ -73,7 +71,9 @@ public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 		cm.setParams(params);
 		lcf.setParams(params);
 		lcf.startListener();
-		saveStatus(transaction, new TcpError(),
+		TcpError err = lcf.checkForErrors();
+		lcf.saveError();
+		setStatus(transaction, err,
 				TransactionStateNames.OPENING_CONNECTION);
 	}
 	

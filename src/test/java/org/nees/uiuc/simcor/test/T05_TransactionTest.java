@@ -79,7 +79,7 @@ public class T05_TransactionTest {
 			log.debug("Original command " + transO);
 			TransactionIdentity id = transO.getId();
 			tf.setId(id);
-			SimpleTransaction trans = tf.createSimpleTransaction(transO.getCommand());
+			SimpleTransaction trans = tf.createSendCommandTransaction(transO.getCommand());
 			if (id != null) {
 				trans.getId().setTransId(id.getTransId());
 			}

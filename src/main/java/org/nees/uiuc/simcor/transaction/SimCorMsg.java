@@ -4,11 +4,9 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
-
-
 public class SimCorMsg {
 	public enum MsgType {
-		COMMAND, NOT_OK_RESPONSE, OK_RESPONSE,ERROR
+		COMMAND, NOT_OK_RESPONSE, OK_RESPONSE, ERROR
 	}
 
 	// address is null if not used
@@ -95,7 +93,7 @@ public class SimCorMsg {
 			result += getContent().hashCode();
 		}
 		result += type.hashCode();
-//		log.debug("Message: " + this + " has hash " + result);
+		// log.debug("Message: " + this + " has hash " + result);
 		return result;
 	}
 
@@ -123,9 +121,11 @@ public class SimCorMsg {
 
 	@Override
 	public String toString() {
-		String result = type.toString();
+		String result = "";
 		if (type == MsgType.COMMAND) {
 			result += "/command=" + (command != null ? command : "null");
+		} else {
+			result += "/response=" + type;
 		}
 		result += "/address=" + (address != null ? address : "null");
 		result += "/content=" + (content != null ? content : "null");
