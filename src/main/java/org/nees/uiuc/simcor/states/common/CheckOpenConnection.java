@@ -10,9 +10,8 @@ import org.nees.uiuc.simcor.transaction.Transaction;
 public class CheckOpenConnection extends TransactionState {
 	private final Logger log = Logger.getLogger(CheckOpenConnection.class);
 
-	public CheckOpenConnection(StateActionsProcessor sap) {
-		super(TransactionStateNames.CHECK_OPEN_CONNECTION, sap,
-				TransactionStateNames.ASSEMBLE_OPEN_COMMAND);
+	public CheckOpenConnection(StateActionsProcessor sap, TransactionStateNames next) {
+		super(TransactionStateNames.CHECK_OPEN_CONNECTION, sap, next);
 	}
 
 	@Override

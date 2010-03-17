@@ -5,6 +5,7 @@ import org.nees.uiuc.simcor.listener.ListenerStateMachine;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class StateActionsProcessorWithLsm extends StateActionsProcessor {
 	private ListenerStateMachine lsm;
@@ -13,7 +14,7 @@ public class StateActionsProcessorWithLsm extends StateActionsProcessor {
 		super();
 		this.lsm = lsm;
 	}
-	public void checkListenerForConnection(SimpleTransaction transaction, TransactionStateNames next) {
+	public void checkListenerForConnection(Transaction transaction, TransactionStateNames next) {
 		ClientIdWithConnection id = lsm.getOneClient();
 		TcpError error = lsm.getError();
 		if(id == null && error.getType().equals(TcpErrorTypes.NONE)) {
@@ -25,13 +26,13 @@ public class StateActionsProcessorWithLsm extends StateActionsProcessor {
 		setStatus(transaction, error,next);
 	}
 	
-	public void startListener(SimpleTransaction transaction, TransactionStateNames next) {
+	public void startListener(Transaction transaction, TransactionStateNames next) {
 		lsm.getSap().setParams(params);
 		lsm.start();
 		TcpError error = lsm.getError();
 		setStatus(transaction, error, next);
 	}
-	public void stopListener(SimpleTransaction transaction, TransactionStateNames next) {
+	public void stopListener(Transaction transaction, TransactionStateNames next) {
 		lsm.setRunning(false);
 		if(lsm.isAlive()) {
 			return;
