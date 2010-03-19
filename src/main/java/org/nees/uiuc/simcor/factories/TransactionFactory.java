@@ -83,6 +83,14 @@ public class TransactionFactory {
 		return result;
 	}
 
+	public synchronized int getTransactionTimeout() {
+		return transactionTimeout;
+	}
+
+	public synchronized void setTransactionTimeout(int transactionTimeout) {
+		this.transactionTimeout = transactionTimeout;
+	}
+
 	public SimpleTransaction createReceiveCommandTransaction(int msgTimeout) {
 		SimpleTransaction result = new SimpleTransaction();
 		result.setDirection(direction);
@@ -105,12 +113,12 @@ public class TransactionFactory {
 		return result;
 	}
 
-	public SimpleTransaction createSendCommandTransaction(SimCorMsg msg) {
+	public SimpleTransaction createSendCommandTransaction(SimCorMsg msg, int msgTimeout) {
 		SimpleTransaction result = new SimpleTransaction();
 		result.setCommand(msg);
 		result.setId(id);
 		result.setDirection(direction);
-		result.setTimeout(transactionTimeout);
+		result.setTimeout(msgTimeout);
 		log.debug("Created transaction: " + result);
 		return result;
 	}

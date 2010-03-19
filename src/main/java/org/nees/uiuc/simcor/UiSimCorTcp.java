@@ -14,14 +14,12 @@ import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.StateActionsProcessorWithLsm;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
-import org.nees.uiuc.simcor.states.common.AssembleCommand;
 import org.nees.uiuc.simcor.states.common.AssembleResponse;
 import org.nees.uiuc.simcor.states.common.CheckOpenConnection;
 import org.nees.uiuc.simcor.states.common.CloseConnection;
 import org.nees.uiuc.simcor.states.common.CommandAvailable;
 import org.nees.uiuc.simcor.states.common.OpenConnection;
 import org.nees.uiuc.simcor.states.common.Ready;
-import org.nees.uiuc.simcor.states.common.ResponseAvailable;
 import org.nees.uiuc.simcor.states.common.SendingCommand;
 import org.nees.uiuc.simcor.states.common.SendingResponse;
 import org.nees.uiuc.simcor.states.common.SetupReadMessage;
@@ -30,19 +28,22 @@ import org.nees.uiuc.simcor.states.common.StopListener;
 import org.nees.uiuc.simcor.states.common.TransactionDone;
 import org.nees.uiuc.simcor.states.common.WaitForCommand;
 import org.nees.uiuc.simcor.states.common.WaitForOpenResponse;
-import org.nees.uiuc.simcor.states.common.WaitForResponse;
 import org.nees.uiuc.simcor.states.common.WaitForResponsePosting;
-import org.nees.uiuc.simcor.states.common.AssembleCommand.AssembleCommandType;
+import org.nees.uiuc.simcor.states.p2p.AssembleCommand;
 import org.nees.uiuc.simcor.states.p2p.CheckListenerOpenConnection;
+import org.nees.uiuc.simcor.states.p2p.ResponseAvailable;
+import org.nees.uiuc.simcor.states.p2p.WaitForResponse;
+import org.nees.uiuc.simcor.states.p2p.AssembleCommand.AssembleCommandType;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity.StepTypes;
 
-public abstract class UiSimCorTcp {
+public  class UiSimCorTcp {
 
 	public enum ConnectType {
 		P2P_RECEIVE_COMMAND, P2P_SEND_COMMAND, TRIGGER_CLIENT
@@ -196,7 +197,7 @@ public abstract class UiSimCorTcp {
 		}
 		
 		this.archive = sap.getArchive();
-		transaction = sap.getTf().createSendCommandTransaction(null);
+		transaction = sap.getTf().createSendCommandTransaction(null,sap.getTf().getTransactionTimeout());
 		transaction.setState(TransactionStateNames.TRANSACTION_DONE);
 		sap.getTf().setMdl(mdl);
 
@@ -213,8 +214,12 @@ public abstract class UiSimCorTcp {
 	}
 
 	public void shutdown() {
-		transaction = sap.getTf().createSendCommandTransaction(null);
-		transaction.setState(TransactionStateNames.CLOSING_CONNECTION);
+		transaction = sap.getTf().createSendCommandTransaction(null,sap.getTf().getTransactionTimeout());
+		if (connectType.equals(ConnectType.P2P_RECEIVE_COMMAND)) {
+			transaction.setState(TransactionStateNames.SHUTDOWN_CONNECTION);
+		} else {
+			transaction.setState(TransactionStateNames.CLOSING_CONNECTION);
+		}
 		log.info("Closing connection");
 		log.info("Shutting down network logger");
 		archive.logTransaction(new ExitTransaction());
@@ -223,7 +228,8 @@ public abstract class UiSimCorTcp {
 	/**
 	 * Starts a Receive command transaction.
 	 */
-	public void startTransaction() {
+	public void startTransaction(int msgTimeout) {
+		transaction = sap.getTf().createReceiveCommandTransaction(msgTimeout);
 		transaction.setState(TransactionStateNames.SETUP_READ_COMMAND);
 		execute();
 	}
@@ -236,9 +242,10 @@ public abstract class UiSimCorTcp {
 	 *            with the transactionFactory.
 	 */
 
-	public void startTransaction(SimpleTransaction command) {
+	public void startTransaction(SimCorMsg msg, TransactionIdentity id, int msgTimeout) {
 
-		transaction = command;
+		transaction = sap.getTf().createSendCommandTransaction(msg, msgTimeout);
+		transaction.setId(id);
 		transaction.setState(TransactionStateNames.WAIT_FOR_COMMAND);
 		execute();
 	}
@@ -255,8 +262,9 @@ public abstract class UiSimCorTcp {
 	 */
 
 	public void startup(TcpParameters params) {
+		sap.setParams(params);
 		TransactionFactory transactionFactory = sap.getTf();
-		transaction = transactionFactory.createSendCommandTransaction(null);
+		transaction = transactionFactory.createSendCommandTransaction(null,transactionFactory.getTransactionTimeout());
 		if (connectType.equals(ConnectType.P2P_RECEIVE_COMMAND)) {
 			transaction.setState(TransactionStateNames.START_LISTENER);
 		} else {

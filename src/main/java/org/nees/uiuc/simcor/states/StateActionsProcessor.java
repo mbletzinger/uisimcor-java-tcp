@@ -1,5 +1,7 @@
 package org.nees.uiuc.simcor.states;
 
+import junit.framework.Assert;
+
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.listener.ClientIdWithConnection;
@@ -27,6 +29,7 @@ public class StateActionsProcessor {
 	protected TcpParameters params;
 	private ClientIdWithConnection remoteClient;
 	protected TransactionFactory tf;
+	private TcpError savedError = new TcpError();
 
 	public StateActionsProcessor() {
 		super();
@@ -67,8 +70,9 @@ public class StateActionsProcessor {
 			return;
 		}
 		er = cm.checkForErrors();
-		cm.saveError();
+		saveError(er);
 		setStatus(transaction, er, next);
+		log.debug("Check Open Connection  " + transaction);
 	}
 
 	public void closingConnection(SimpleTransaction transaction,
@@ -79,9 +83,10 @@ public class StateActionsProcessor {
 		}
 		TcpError er = cm.checkForErrors();
 		if (er.getType().equals(TcpErrorTypes.NONE)) {
-			er = cm.getSavedError();
+			er = getSavedError();
 		}
-		setStatus(transaction, er, next);
+		setStatus(transaction, er, next,next);
+		log.debug("Closing Connection  " + transaction);
 	}
 
 	public Archiving getArchive() {
@@ -110,6 +115,8 @@ public class StateActionsProcessor {
 		cm.openConnection();
 		setStatus(transaction, new TcpError(),
 				TransactionStateNames.CHECK_OPEN_CONNECTION);
+		log.debug(" Open Connection  " + transaction);
+
 	}
 
 	public void recordTransaction(SimpleTransaction transaction,
@@ -119,9 +126,11 @@ public class StateActionsProcessor {
 			archive.logTransaction(transaction);
 		}
 		if (next.equals(TransactionStateNames.READY)) {
-			cm.clearError();
+			clearError();
 		}
 		setStatus(transaction, new TcpError(), next);
+		log.debug("Record Transaction  " + transaction);
+
 	}
 
 	public void setArchive(Archiving archive) {
@@ -144,16 +153,13 @@ public class StateActionsProcessor {
 	protected void setStatus(Transaction transaction, TcpError error,
 			TransactionStateNames state) {
 		setStatus(transaction, error, state,
-				TransactionStateNames.TRANSACTION_DONE);
+				TransactionStateNames.CLOSING_CONNECTION);
 	}
 
 	protected void setStatus(Transaction transaction, TcpError error,
 			TransactionStateNames state, TransactionStateNames errstate) {
-		TcpError err = error;
-		if (transaction instanceof SimpleTransaction) {
-			((SimpleTransaction) transaction).setError(error);
-		}
-		if (err.getType() != TcpErrorTypes.NONE) {
+		transaction.setError(error);
+		if (error.getType() != TcpErrorTypes.NONE) {
 			transaction.setState(errstate);
 		} else {
 			transaction.setState(state);
@@ -172,6 +178,8 @@ public class StateActionsProcessor {
 		c.setMsgTimeout(transaction.getTimeout());
 		c.setToRemoteMsg(action);
 		transaction.setState(next);
+		log.debug("Set Up Read  " + transaction);
+
 	}
 
 	public void setUpWrite(SimpleTransaction transaction, boolean isCommand,
@@ -186,11 +194,10 @@ public class StateActionsProcessor {
 		} else {
 			msg.setMsg(transaction.getResponse());
 		}
-		log.debug("Sending: " + transaction);
 		connection.setToRemoteMsg(action);
 		transaction.setPosted(false);
 		transaction.setState(next);
-
+		log.debug("Set Up Write  " + transaction);
 	}
 
 	public void waitForPickUp(SimpleTransaction transaction,
@@ -200,6 +207,8 @@ public class StateActionsProcessor {
 		}
 		setStatus(transaction, new TcpError(), next);
 		transaction.setPickedUp(false);
+		log.debug("Wait For Pickup " + transaction);
+
 	}
 
 	public void waitForPosted(SimpleTransaction transaction,
@@ -209,27 +218,30 @@ public class StateActionsProcessor {
 		}
 		setStatus(transaction, new TcpError(), next);
 		transaction.setPosted(false);
+		log.debug("Wait For Posted " + transaction);
 	}
 
 	public void waitForRead(SimpleTransaction transaction, boolean isCommand,
 			TransactionStateNames next) {
 		Connection connection = cm.getConnection();
 		if (connection.getConnectionState().equals(ConnectionStatus.BUSY)) {
+			log.debug("Connection still busy");
 			return;
 		}
 		TcpActionsDto result = connection.getFromRemoteMsg();
 		SimCorMsg msg = result.getMsg().getMsg();
 		TransactionIdentity id = result.getMsg().getId();
-		log.debug("Received msg:" + msg + " id: " + id);
+		log.debug("Received msg:" + result);
 		if (isCommand) {
 			transaction.setCommand(msg);
 		} else {
 			transaction.setResponse(msg);
 		}
 		transaction.setId(id);
-		cm.saveError();
-		setStatus(transaction, cm.checkForErrors(), next);
+		saveError(result.getError());
+		setStatus(transaction, result.getError(), next);
 		transaction.setPickedUp(false);
+		log.debug("Wait For Read" + transaction);
 	}
 
 	public void waitForSend(SimpleTransaction transaction,
@@ -243,8 +255,10 @@ public class StateActionsProcessor {
 		SimCorMsg msg = result.getMsg().getMsg();
 		TransactionIdentity id = result.getMsg().getId();
 		log.debug("Sent msg:" + msg + " id: " + id);
-		cm.saveError();
+		saveError(result.getError());
 		setStatus(transaction, result.getError(), next);
+		log.debug("Wait For Send " + transaction);
+
 
 	}
 
@@ -270,7 +284,21 @@ public class StateActionsProcessor {
 			}
 			remoteClient = new ClientIdWithConnection(connection, system,
 					connection.getRemoteHost());
+			log.debug("Wait For Session Msg Read " + transaction);
 		}
+	}
+
+	private TcpError getSavedError() {
+		return savedError;
+	}
+
+	protected void saveError(TcpError error) {
+		savedError = error;
+		log.debug("Saved Error " + savedError);
+	}
+
+	private void clearError() {
+		savedError = new TcpError();
 	}
 
 }

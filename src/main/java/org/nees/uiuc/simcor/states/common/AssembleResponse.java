@@ -19,9 +19,6 @@ public class AssembleResponse extends TransactionState {
 
 	@Override
 	public void execute(Transaction transaction) {
-		if (transaction instanceof SimpleTransaction == false) {
-			log.fatal("Transaction not simple", new Exception());
-		}
 		if (isSessionResponse) {
 			sap.assembleSessionMessage((SimpleTransaction) transaction, true, false, next);
 		} else {

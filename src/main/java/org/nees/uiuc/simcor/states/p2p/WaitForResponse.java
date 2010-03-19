@@ -1,4 +1,4 @@
-package org.nees.uiuc.simcor.states.common;
+package org.nees.uiuc.simcor.states.p2p;
 
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.states.StateActionsProcessor;
@@ -17,9 +17,6 @@ public class WaitForResponse extends TransactionState {
 
 	@Override
 	public void execute(Transaction transaction) {
-		if (transaction instanceof SimpleTransaction == false) {
-			log.fatal("Transaction not simple", new Exception());
-		}
 		sap.waitForRead((SimpleTransaction) transaction, true, next);
 	}
 

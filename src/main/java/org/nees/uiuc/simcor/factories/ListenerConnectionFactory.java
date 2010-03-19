@@ -12,8 +12,6 @@ public class ListenerConnectionFactory {
 	private TcpListen listener;
 	private final Logger log = Logger.getLogger(ListenerConnectionFactory.class);
 	private TcpParameters params;
-	private TcpError savedError = new TcpError();
-
 	public TcpError checkForErrors() {
 		TcpError result = new TcpError();
 		if (listener != null) {
@@ -41,25 +39,12 @@ public class ListenerConnectionFactory {
 		return c;
 	}
 
-	public void clearError() {
-		savedError = new TcpError();
-	}
-
-
 	public TcpListen getListener() {
 		return listener;
 	}
 
 	public TcpParameters getParams() {
 		return params;
-	}
-
-	public TcpError getSavedError() {
-		return savedError;
-	}
-
-	public void saveError() {
-		savedError = checkForErrors();
 	}
 
 	public void setParams(TcpParameters params) {
@@ -76,7 +61,7 @@ public class ListenerConnectionFactory {
 		}
 	}
 
-	public void stopListener() {
-		listener.stopListening();
+	public boolean stopListener() {
+		return listener.stopListening();
 	}
 }

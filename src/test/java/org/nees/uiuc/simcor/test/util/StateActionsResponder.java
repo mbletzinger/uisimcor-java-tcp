@@ -92,6 +92,7 @@ public class StateActionsResponder extends Thread {
 			return false;
 		}
 		setTransaction(tr);
+		log.debug("Received " + tr);
 		return true;
 	}
 
@@ -99,10 +100,9 @@ public class StateActionsResponder extends Thread {
 	public void run() {
 		sap.setParams(params);
 		SimpleTransaction tr = getTransaction();
-		tr = sap.getTf().createSendCommandTransaction(null);
+		tr = sap.getTf().createSendCommandTransaction(null,2000);
 		tr.setPosted(true);
 		tr.setState(TransactionStateNames.OPENING_CONNECTION);
-		tr.setTimeout(2000);
 		int count = 0;
 		while (tr.getState().equals(TransactionStateNames.OPENING_CONNECTION)
 				&& count < 50) {
@@ -224,6 +224,7 @@ public class StateActionsResponder extends Thread {
 			return false;
 		}
 		setTransaction(tr);
+		log.debug("Sent: " + tr);
 		return true;
 	}
 
@@ -247,6 +248,7 @@ public class StateActionsResponder extends Thread {
 			return false;
 		}
 		setTransaction(tr);
+		log.debug("Sent " + tr);
 		return true;
 	}
 

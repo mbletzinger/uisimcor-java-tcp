@@ -8,7 +8,6 @@ import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
-import org.nees.uiuc.simcor.states.common.AssembleCommand;
 import org.nees.uiuc.simcor.states.common.AssembleResponse;
 import org.nees.uiuc.simcor.states.common.CloseConnection;
 import org.nees.uiuc.simcor.states.common.SendingCommand;
@@ -17,8 +16,9 @@ import org.nees.uiuc.simcor.states.common.SetupReadMessage;
 import org.nees.uiuc.simcor.states.common.TransactionDone;
 import org.nees.uiuc.simcor.states.common.WaitForOpenCommand;
 import org.nees.uiuc.simcor.states.common.WaitForOpenResponse;
-import org.nees.uiuc.simcor.states.common.AssembleCommand.AssembleCommandType;
 import org.nees.uiuc.simcor.states.listener.ListenForConnections;
+import org.nees.uiuc.simcor.states.p2p.AssembleCommand;
+import org.nees.uiuc.simcor.states.p2p.AssembleCommand.AssembleCommandType;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
@@ -102,7 +102,7 @@ public class ListenerStateMachine extends Thread {
 						TransactionStateNames.LISTEN_FOR_CONNECTIONS));
 		machine.put(TransactionStateNames.CLOSING_CONNECTION,
 				new CloseConnection(sap));
-		SimpleTransaction transaction = sap.getTf().createSendCommandTransaction(null);
+		SimpleTransaction transaction = sap.getTf().createSendCommandTransaction(null, sap.getTf().getTransactionTimeout());
 		sap.startListening(transaction);
 		return transaction;
 	}

@@ -61,7 +61,7 @@ public class TriggerConnectionsClient {
 
 	public void closeConnection() {
 		SimpleTransaction transaction = sap.getTf().createSendCommandTransaction(
-				new SimCorMsg());
+				new SimCorMsg(),2000);
 		sap.closingConnection(transaction,
 				TransactionStateNames.TRANSACTION_DONE);
 		log.debug("Client " + sap.getTf().getSystemDescription() + " is down" + sap.getCm().checkForErrors());
@@ -76,7 +76,7 @@ public class TriggerConnectionsClient {
 		}
 		TransactionStateNames prevState = TransactionStateNames.READY;
 		SimpleTransaction transaction = sap.getTf().createSendCommandTransaction(
-				null);
+				null,2000);
 		sap.openConnection(transaction);
 		while (transaction.getState().equals(
 				TransactionStateNames.CHECK_OPEN_CONNECTION)) {
