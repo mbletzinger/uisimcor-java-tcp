@@ -16,9 +16,6 @@ private final Logger log = Logger.getLogger(SendingResponse.class);
 
 	@Override
 	public void execute(Transaction transaction) {
-		if(transaction instanceof SimpleTransaction == false) {
-			log.fatal("Transaction not simple",new Exception());
-		}
 		sap.waitForSend((SimpleTransaction) transaction, next);
 	}
 

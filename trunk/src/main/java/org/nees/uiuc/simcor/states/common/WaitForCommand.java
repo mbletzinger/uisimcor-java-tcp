@@ -17,10 +17,7 @@ public class WaitForCommand extends TransactionState {
 
 	@Override
 	public void execute(Transaction transaction) {
-		if (transaction instanceof SimpleTransaction == false) {
-			log.fatal("Transaction not simple", new Exception());
-		}
-		sap.waitForRead((SimpleTransaction) transaction, true, next);
+			sap.waitForRead((SimpleTransaction) transaction, true, next);
 	}
 
 }

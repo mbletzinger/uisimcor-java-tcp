@@ -86,6 +86,9 @@ public class TcpListen {
 	}
 
 	public boolean stopListening() {
+		if (server == null) {
+			return true;
+		}
 		try {
 			server.close();
 		} catch (IOException e) {

@@ -13,9 +13,7 @@ import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
 public class TransactionMsgs {
-	public Transaction closeTransaction;
 	public List<SimpleTransaction> cmdList;
-	public Transaction openTransaction;
 	public HashMap<String, SimpleTransaction> transactions;
 	public Transaction triggerTransaction;
 
@@ -29,16 +27,7 @@ public class TransactionMsgs {
 
 		SimpleTransaction transaction = new SimpleTransaction();
 		SimCorMsg msg = new SimCorMsg();
-		msg.setCommand("open-session");
-		msg.setContent("dummySession");
 		SimCorMsg resp = new SimCorMsg();
-		resp.setContent("Open Session Suceeded");
-		resp.setType(MsgType.OK_RESPONSE);
-		transaction.setCommand(msg);
-		transaction.setResponse(resp);
-		transactions.put(msg.toString(),transaction);
-		cmdList.add(transaction);
-		openTransaction = transaction;
 	
 		transaction = new SimpleTransaction();
 		msg = new SimCorMsg();
@@ -201,19 +190,5 @@ public class TransactionMsgs {
 		transactions.put(cmsg.toString(),transaction);
 		cmdList.add(transaction);
 	
-		transaction = new SimpleTransaction();
-		msg = new SimCorMsg();
-		msg.setCommand("close-session");
-		msg.setContent("dummy");
-	
-		resp = new SimCorMsg();
-		resp.setContent("Close accepted");
-		resp.setType(MsgType.OK_RESPONSE);
-		transaction.setId(null);
-		transaction.setCommand(msg);
-		transaction.setResponse(resp);
-		transactions.put(msg.toString(),transaction);
-		cmdList.add(transaction);
-		closeTransaction = transaction;
 	}
 }

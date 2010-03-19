@@ -139,7 +139,7 @@ public class T06_TriggerTest {
 		tf.setSystemDescription("Broadcaster");
 		TransactionIdentity id = tf.createTransactionId(0, 0, 0);
 		tf.setId(id);
-		SimpleTransaction transaction = tf.createSendCommandTransaction(null);
+		SimpleTransaction transaction = tf.createSendCommandTransaction(null,2000);
 		log.debug("Start transaction: " + transaction);
 		sap.startListener(transaction, TransactionStateNames.TRANSACTION_DONE);
 	}
@@ -159,7 +159,7 @@ public class T06_TriggerTest {
 
 	@After
 	public void tearDown() throws Exception {
-		SimpleTransaction transaction = tf.createSendCommandTransaction(null);
+		SimpleTransaction transaction = tf.createSendCommandTransaction(null,2000);
 		transaction.setState(TransactionStateNames.STOP_LISTENER);
 		while (transaction.getState().equals(
 				TransactionStateNames.STOP_LISTENER)) {

@@ -5,12 +5,9 @@ import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.logging.Archiving;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.ConnectionManager;
-import org.nees.uiuc.simcor.tcp.TcpActionsDto;
 import org.nees.uiuc.simcor.tcp.TcpError;
-import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
-import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 	private ListenerConnectionFactory lcf;
@@ -41,25 +38,7 @@ public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 		cm.setConnection(connection);
 		connection.setMsgTimeout(transaction.getTimeout());
 		setStatus(transaction, er, next);
-	}
-
-	@Override
-	public void recordTransaction(SimpleTransaction transaction, TransactionStateNames next) {
-		if (transaction.getError().getType().equals(TcpErrorTypes.NONE)) {
-			transaction.setError(cm.getSavedError()); // capture connection
-			// errors
-		}
-		if (transaction.getError().getType().equals(TcpErrorTypes.NONE)) {
-			transaction.setError(lcf.getSavedError()); // capture listener errors
-		}
-		if (archive.isArchivingEnabled()) {
-			log.debug("Handling: " + transaction);
-			archive.logTransaction(transaction);
-		}
-		if(next.equals(TransactionStateNames.READY)) {
-		cm.clearError();
-		}
-		setStatus(transaction, new TcpError(), next);
+		log.debug("Listen For Connection " + transaction);
 	}
 
 	public void setLcf(ListenerConnectionFactory cf) {
@@ -72,17 +51,22 @@ public class StateActionsProcessorWithLcf extends StateActionsProcessor {
 		lcf.setParams(params);
 		lcf.startListener();
 		TcpError err = lcf.checkForErrors();
-		lcf.saveError();
+		saveError(err);
 		setStatus(transaction, err,
-				TransactionStateNames.OPENING_CONNECTION);
+				TransactionStateNames.OPENING_CONNECTION,TransactionStateNames.STOP_LISTENER);
+		log.debug("Start Listening " + transaction);
+
 	}
 	
 	public void stopListening(SimpleTransaction transaction) {
-		lcf.stopListener();
+		boolean stopped = lcf.stopListener();
+		if (stopped == false) {
+			return;
+		}
 		TcpError er = lcf.checkForErrors();
-		TransactionStateNames state = TransactionStateNames.STOP_LISTENER;
-		state = TransactionStateNames.TRANSACTION_DONE;
-		setStatus(transaction, er, state);
+		setStatus(transaction, er, TransactionStateNames.TRANSACTION_DONE, TransactionStateNames.TRANSACTION_DONE);
+		log.debug("Stop Listening " + transaction);
+
 	}
 
 }

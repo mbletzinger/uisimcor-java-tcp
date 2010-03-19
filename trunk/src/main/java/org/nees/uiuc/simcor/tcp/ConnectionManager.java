@@ -9,23 +9,18 @@ public class ConnectionManager {
 	private Connection connection;
 	private final Logger log = Logger.getLogger(ConnectionManager.class);
 	private TcpParameters params;
-	private TcpError savedError = new TcpError();
-
 	public TcpError checkForErrors() {
 		TcpError result = new TcpError();
 		if (connection != null) {
 			result = connection.getFromRemoteMsg().getError();
 		}
+		log.debug("Checked Error " + result);
 		return result;
 	}
 
 	public TcpError checkForErrors(Connection c) {
 		return c.getFromRemoteMsg().getError();
 	}
-	public void clearError() {
-		savedError = new TcpError();
-	}
-
 	public boolean closeConnection() {
 		boolean result = closeConnection(connection);
 		if(result) {
@@ -71,10 +66,6 @@ public class ConnectionManager {
 		return params;
 	}
 
-	public TcpError getSavedError() {
-		return savedError;
-	}
-
 	public void openConnection() {
 		connection = new Connection();
 		try {
@@ -87,10 +78,6 @@ public class ConnectionManager {
 		TcpActionsDto cmd = new TcpActionsDto();
 		cmd.setAction(ActionsType.CONNECT);
 		connection.setToRemoteMsg(cmd);
-	}
-
-	public void saveError() {
-		savedError = checkForErrors();
 	}
 
 	public void setConnection(Connection connection) {

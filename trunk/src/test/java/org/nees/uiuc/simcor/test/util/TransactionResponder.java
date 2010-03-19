@@ -5,15 +5,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.nees.uiuc.simcor.ConnectionPeer;
 import org.nees.uiuc.simcor.UiSimCorTcp;
+import org.nees.uiuc.simcor.UiSimCorTcp.ConnectType;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
-import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
 
 public class TransactionResponder extends Thread {
 	public static void main(String[] args) {
@@ -62,14 +61,16 @@ public class TransactionResponder extends Thread {
 	public void run() {
 		params.setLocalPort(6445);
 		params.setTcpTimeout(200000);
-		simcor = new ConnectionPeer(DirectionType.RECEIVE_COMMAND, "MDL-00-01");
+		simcor = new UiSimCorTcp(ConnectType.P2P_RECEIVE_COMMAND, "MDL-00-01");
 		simcor.startup(params);
 		connected = false;
 		int count = 0;
 
-		while (simcor.isReady().equals(TransactionStateNames.OPENING_CONNECTION)
+		TransactionStateNames state = simcor.isReady();
+		while (state.equals(TransactionStateNames.READY) == false
 				&& count < 40) {
-			log.info("Waiting for a connection");
+			log.info("Waiting for a connection " + state);
+			state = simcor.isReady();
 			count++;
 			try {
 				Thread.sleep(1000);
@@ -81,15 +82,14 @@ public class TransactionResponder extends Thread {
 		org.junit.Assert.assertTrue(count < 40);
 		log.info("Open result [" + simcor.getTransaction() + "]");
 		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, simcor.getTransaction().getError().getType());
-		org.junit.Assert.assertEquals(TransactionStateNames.TRANSACTION_DONE, simcor.getTransaction().getState());
-		org.junit.Assert.assertNotNull(simcor.getSap().getCm().getConnection());
+		org.junit.Assert.assertEquals(TransactionStateNames.READY, simcor.getTransaction().getState());
 		connected = true;
 		log.info("Connection established");
 
 		while (connected) {
-			simcor.startTransaction();
-			TransactionStateNames state = simcor.isReady();
-			while ( state != TransactionStateNames.COMMAND_AVAILABLE) {
+			simcor.startTransaction(2000);
+			 state = simcor.isReady();
+			while ( state.equals(TransactionStateNames.COMMAND_AVAILABLE) == false) {
 				try {
 					Thread.sleep(200);
 					state = simcor.isReady();
@@ -130,7 +130,7 @@ public class TransactionResponder extends Thread {
 			simcor.continueTransaction(resp);
 			state = simcor.isReady();
 			log.debug("Sending response " + resp);
-			while (state != TransactionStateNames.TRANSACTION_DONE) {
+			while (state.equals(TransactionStateNames.READY) == false) {
 				try {
 					Thread.sleep(200);
 					state = simcor.isReady();
@@ -145,14 +145,15 @@ public class TransactionResponder extends Thread {
 			org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction.getError().getType());
 		}
 		simcor.shutdown();
-		TransactionStateNames state = simcor.isReady();
-		while (readyStates.contains(state) == false) {
+		 state = simcor.isReady();
+		while (state.equals(TransactionStateNames.READY) == false) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				log.info("Sleep interrupted");
 			}
 			state = simcor.isReady();
+			log.debug("Responder disconnecting");
 		}
 		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, simcor.getErrors().getType());
 		org.junit.Assert.assertEquals(TransactionStateNames.TRANSACTION_DONE, simcor.getTransaction().getState());
