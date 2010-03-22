@@ -5,12 +5,13 @@ import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
+import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
-import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
 public class StateActionsResponder extends Thread {
 	public enum DieBefore {
-		CLOSE_COMMAND, END, OPEN_COMMAND, OPEN_RESPONSE
+		CLOSE_COMMAND, END, OPEN_COMMAND, OPEN_RESPONSE, PARAM_MSG_COMMAND,PARAM_MSG_RESPONSE
 	}
 
 	private DieBefore lifeSpan = DieBefore.END;;
@@ -100,7 +101,7 @@ public class StateActionsResponder extends Thread {
 	public void run() {
 		sap.setParams(params);
 		SimpleTransaction tr = getTransaction();
-		tr = sap.getTf().createSendCommandTransaction(null,2000);
+		tr = sap.getTf().createSendCommandTransaction(null, 2000);
 		tr.setPosted(true);
 		tr.setState(TransactionStateNames.OPENING_CONNECTION);
 		int count = 0;
@@ -127,14 +128,16 @@ public class StateActionsResponder extends Thread {
 			shutdown();
 			return;
 		}
-		log.debug("Current transaction after open connection: " + getTransaction());
+		log.debug("Current transaction after open connection: "
+				+ getTransaction());
 		if (sendSession) {
-			if (sendSessionCommand(true) == false) {
+			if (sendSessionCommand(DieBefore.OPEN_COMMAND) == false) {
 				log.debug("Ending because sendSendSessionCommand died");
 				shutdown();
 				return;
 			}
-			log.debug("Current transaction after send open session command: " + getTransaction());
+			log.debug("Current transaction after send open session command: "
+					+ getTransaction());
 			if (lifeSpan.equals(DieBefore.OPEN_RESPONSE)) {
 				log.debug("Ending because lifespan is " + lifeSpan);
 				shutdown();
@@ -145,7 +148,9 @@ public class StateActionsResponder extends Thread {
 				shutdown();
 				return;
 			}
-			log.debug("Current transaction after receive open session response: " + getTransaction());
+			log
+					.debug("Current transaction after receive open session response: "
+							+ getTransaction());
 
 		} else {
 			if (receiveSessionCommand() == false) {
@@ -159,13 +164,62 @@ public class StateActionsResponder extends Thread {
 				shutdown();
 				return;
 			}
-			log.debug("Current transaction after receive open session command: " + getTransaction());
-			if (sendSessionResponse(true) == false) {
+			log
+					.debug("Current transaction after receive open session command: "
+							+ getTransaction());
+			if (sendSessionResponse(DieBefore.OPEN_RESPONSE) == false) {
 				log.debug("Ending because sendSessionResponse died");
 				shutdown();
 				return;
 			}
-			log.debug("Current transaction after send open session response: " + getTransaction());
+			log.debug("Current transaction after send open session response: "
+					+ getTransaction());
+		}
+
+		if (sendSession) {
+			if (sendSessionCommand(DieBefore.PARAM_MSG_COMMAND) == false) {
+				log.debug("Ending because sendSendSessionCommand died");
+				shutdown();
+				return;
+			}
+			log.debug("Current transaction after send param  command: "
+					+ getTransaction());
+			if (lifeSpan.equals(DieBefore.PARAM_MSG_COMMAND)) {
+				log.debug("Ending because lifespan is " + lifeSpan);
+				shutdown();
+				return;
+			}
+			if (receiveSessionResponse() == false) {
+				log.debug("Ending because receiveSessionResponse died");
+				shutdown();
+				return;
+			}
+			log
+					.debug("Current transaction after receive param  response: "
+							+ getTransaction());
+
+		} else {
+			if (receiveSessionCommand() == false) {
+				log.debug("Ending because receiveSessionCommand died");
+				shutdown();
+				return;
+			}
+			log.debug("Current transaction: " + getTransaction());
+			if (lifeSpan.equals(DieBefore.PARAM_MSG_RESPONSE)) {
+				log.debug("Ending because lifespan is " + lifeSpan);
+				shutdown();
+				return;
+			}
+			log
+					.debug("Current transaction after receive param  command: "
+							+ getTransaction());
+			if (sendSessionResponse(DieBefore.PARAM_MSG_RESPONSE) == false) {
+				log.debug("Ending because sendSessionResponse died");
+				shutdown();
+				return;
+			}
+			log.debug("Current transaction after send param  response: "
+					+ getTransaction());
 		}
 		if (lifeSpan.equals(DieBefore.CLOSE_COMMAND)) {
 			log.debug("Ending because lifespan is " + lifeSpan);
@@ -174,7 +228,7 @@ public class StateActionsResponder extends Thread {
 		}
 
 		if (sendSession) {
-			if (sendSessionCommand(false) == false) {
+			if (sendSessionCommand(DieBefore.CLOSE_COMMAND) == false) {
 				log.debug("Ending because sendSessionCommand died");
 				shutdown();
 				return;
@@ -185,12 +239,15 @@ public class StateActionsResponder extends Thread {
 				shutdown();
 				return;
 			}
-			log.debug("Current transaction after receive close session command: " + getTransaction());
+			log
+					.debug("Current transaction after receive close session command: "
+							+ getTransaction());
 			tr = getTransaction();
 			tr.setState(TransactionStateNames.TRANSACTION_DONE);
-			count = 0; 
+			count = 0;
 			while (tr.getState().equals(
-					TransactionStateNames.CLOSING_CONNECTION) && count < 50) {
+					TransactionStateNames.CLOSING_CONNECTION)
+					&& count < 50) {
 				sap.closingConnection(tr,
 						TransactionStateNames.TRANSACTION_DONE);
 				count++;
@@ -204,11 +261,21 @@ public class StateActionsResponder extends Thread {
 		shutdown();
 	}
 
-	private boolean sendSessionCommand(boolean isOpen) {
+	private boolean sendSessionCommand(DieBefore cmdType) {
 		int count = 0;
+		boolean isOpen = (cmdType == DieBefore.OPEN_COMMAND);
 		SimpleTransaction tr = getTransaction();
-		sap.assembleSessionMessage(tr, isOpen, true,
-				TransactionStateNames.SENDING_COMMAND);
+		if (cmdType.equals(DieBefore.PARAM_MSG_COMMAND) == false) {
+			sap.assembleSessionMessage(tr, isOpen, true,
+					TransactionStateNames.SENDING_COMMAND);
+		} else {
+			SimCorMsg msg = new SimCorMsg();
+			msg.setCommand("set-parameter");
+			msg.setContent("dummySetParam	nstep	0");
+			tr.setCommand(msg);
+			tr.setId(null);
+			sap.setUpWrite(tr, true, TransactionStateNames.SENDING_COMMAND);
+		}
 		while ((tr.getState().equals(TransactionStateNames.SENDING_COMMAND))
 				&& (count < 50)) {
 			count++;
@@ -228,11 +295,20 @@ public class StateActionsResponder extends Thread {
 		return true;
 	}
 
-	private boolean sendSessionResponse(boolean isOpen) {
+	private boolean sendSessionResponse(DieBefore rspType) {
 		int count = 0;
 		SimpleTransaction tr = getTransaction();
-		sap.assembleSessionMessage(tr, isOpen, false,
+		if (rspType.equals(DieBefore.PARAM_MSG_RESPONSE) == false) {		
+		sap.assembleSessionMessage(tr, true, false,
 				TransactionStateNames.SENDING_RESPONSE);
+		} else {
+			SimCorMsg resp = new SimCorMsg();
+			resp.setContent("Command ignored. Carry on.");
+			resp.setType(MsgType.OK_RESPONSE);
+			tr.setResponse(resp);
+			tr.setId(null);
+			sap.setUpWrite(tr, true, TransactionStateNames.SENDING_RESPONSE);
+		}
 		while ((tr.getState().equals(TransactionStateNames.SENDING_RESPONSE))
 				&& (count < 50)) {
 			count++;
@@ -271,6 +347,7 @@ public class StateActionsResponder extends Thread {
 	public synchronized void setTransaction(SimpleTransaction transaction) {
 		this.transaction = transaction;
 	}
+
 	private void shutdown() {
 		SimpleTransaction tr = getTransaction();
 		sap.closingConnection(tr, TransactionStateNames.TRANSACTION_DONE);

@@ -27,9 +27,9 @@ public class T04_ListenerStateMachineTest {
 		lsm = new ListenerStateMachine(null, true,"MDL-00-00", "Connection Test");
 		rparams.setRemoteHost("127.0.0.1");
 		rparams.setRemotePort(6445);
-		rparams.setTcpTimeout(2000);
+		rparams.setTcpTimeout(1000);
 		lparams.setLocalPort(6445);
-		lparams.setTcpTimeout(2000);
+		lparams.setTcpTimeout(1000);
 		lsm.getSap().setParams(lparams);
 	}
 
@@ -80,26 +80,7 @@ public class T04_ListenerStateMachineTest {
 		Assert.assertEquals(TcpErrorTypes.IO_ERROR, error.getType());
 	}
 	@Test
-	public void test02OpenSessionResponseFail() {
-		setupConnection(DieBefore.OPEN_RESPONSE,true);
-		TransactionStateNames state = null;
-		TcpError error = lsm.getError();
-		while(error.getType().equals(TcpErrorTypes.NONE)) {
-			try {
-				Thread.sleep(300);
-			} catch (InterruptedException e) {
-			}
-			error = lsm.getError();
-			state = lsm.getCurrentState();
-//			log.debug("LSM Current State: " + state);
-		}
-		error = lsm.getError();
-		ClientId id = lsm.pickupOneClient();
-		log.debug("Result state " + state + " error: " + error + " client: " + id);
-		Assert.assertEquals(TcpErrorTypes.IO_ERROR, error.getType());
-	}
-	@Test
-	public void test03OpenSessionSuceed() {
+	public void test02OpenSessionSuceed() {
 		setupConnection(DieBefore.END,true);
 		TransactionStateNames state = null;
 		TcpError error = lsm.getError();
@@ -107,14 +88,14 @@ public class T04_ListenerStateMachineTest {
 		int count = 0;
 		while(id == null && count < 100) {
 			try {
-				Thread.sleep(300);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			}
 			error = lsm.getError();
 			state = lsm.getCurrentState();
 			id = lsm.pickupOneClient();
 			count ++;
-//			log.debug("LSM Current State: " + state);
+			log.debug("LSM Current State: " + state);
 		}
 		error = lsm.getError();
 		id = lsm.pickupOneClient();
