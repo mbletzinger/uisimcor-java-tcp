@@ -12,6 +12,7 @@ import org.nees.uiuc.simcor.test.util.StateActionsResponder;
 import org.nees.uiuc.simcor.test.util.StateActionsResponder.DieBefore;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
 public class T03_StateActionsTest {
 	private final Logger log = Logger.getLogger(T03_StateActionsTest.class);
@@ -21,22 +22,35 @@ public class T03_StateActionsTest {
 	private StateActionsProcessorWithLcf sap;
 	private SimpleTransaction transaction;
 
-	private void read(boolean errorExpected, boolean isCommand) {
-		String cmdStr;
-		TransactionStateNames wastate;
-		TransactionStateNames setstate;
-		TransactionStateNames next;
-		if (isCommand) {
-			cmdStr = "command";
-			setstate = TransactionStateNames.SETUP_READ_OPEN_COMMAND;
-			wastate = TransactionStateNames.WAIT_FOR_OPEN_COMMAND;
-			next = TransactionStateNames.COMMAND_AVAILABLE;
-		} else {
+	private void read(boolean errorExpected,DieBefore msgType) {
+		String cmdStr= "command";
+		TransactionStateNames wastate= TransactionStateNames.WAIT_FOR_OPEN_COMMAND;
+		TransactionStateNames setstate = TransactionStateNames.SETUP_READ_OPEN_COMMAND;
+		TransactionStateNames next = TransactionStateNames.COMMAND_AVAILABLE;
+		boolean isCommand = true;
+		
+		if(msgType.equals(DieBefore.OPEN_RESPONSE)){
 			cmdStr = "response";
 			setstate = TransactionStateNames.SETUP_READ_RESPONSE;
 			wastate = TransactionStateNames.WAIT_FOR_RESPONSE;
 			next = TransactionStateNames.RESPONSE_AVAILABLE;
+			isCommand = false;
 		}
+		if(msgType.equals(DieBefore.PARAM_MSG_COMMAND)){
+			cmdStr = "command";
+			setstate = TransactionStateNames.SETUP_READ_COMMAND;
+			wastate = TransactionStateNames.WAIT_FOR_COMMAND;
+			next = TransactionStateNames.COMMAND_AVAILABLE;
+			isCommand = true;
+		}
+		if(msgType.equals(DieBefore.PARAM_MSG_RESPONSE)) {
+			cmdStr = "response";
+			setstate = TransactionStateNames.SETUP_READ_RESPONSE;
+			wastate = TransactionStateNames.WAIT_FOR_RESPONSE;
+			next = TransactionStateNames.RESPONSE_AVAILABLE;
+			isCommand = false;
+		}
+		
 		transaction.setState(setstate);
 		sap.setUpRead(transaction, false, wastate);
 		while (transaction.getState().equals(wastate)) {
@@ -156,7 +170,7 @@ public class T03_StateActionsTest {
 	@Test
 	public void test00StartListenerBadPortFail() {
 		rspdr = new StateActionsResponder(DieBefore.OPEN_COMMAND, rparams, true); // never
-																					// started
+		// started
 		lparams.setLocalPort(80);
 		transaction.setState(TransactionStateNames.START_LISTENER);
 		sap.startListening(transaction);
@@ -186,13 +200,14 @@ public class T03_StateActionsTest {
 		transaction.setState(TransactionStateNames.START_LISTENER);
 		sap.startListening(transaction);
 		rspdr = new StateActionsResponder(DieBefore.OPEN_COMMAND, rparams, true); // never
-																					// started
+		// started
 		transaction.setState(TransactionStateNames.LISTEN_FOR_CONNECTIONS);
 		sap.listenForConnection(transaction,
 				TransactionStateNames.TRANSACTION_DONE);
 		log.debug("Local Transaction after open connection: " + transaction);
-		org.junit.Assert.assertEquals(TransactionStateNames.LISTEN_FOR_CONNECTIONS,
-				transaction.getState());
+		org.junit.Assert.assertEquals(
+				TransactionStateNames.LISTEN_FOR_CONNECTIONS, transaction
+						.getState());
 		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
 				.getError().getType());
 		transaction.setState(TransactionStateNames.STOP_LISTENER);
@@ -215,69 +230,135 @@ public class T03_StateActionsTest {
 	@Test
 	public void test02OpenSessionReadFail() {
 		setupConnection(DieBefore.OPEN_COMMAND, true);
-		read(true, true);
+		read(true, DieBefore.OPEN_COMMAND);
 		shutdown(true);
 	}
 
 	@Test
 	public void test03OpenSessionWriteFail() {
 		setupConnection(DieBefore.OPEN_RESPONSE, false);
-		write(TransactionStateNames.WAIT_FOR_RESPONSE, true, true);
-		read(true, false);
+		write(TransactionStateNames.WAIT_FOR_RESPONSE, DieBefore.OPEN_COMMAND);
+		read(true, DieBefore.OPEN_RESPONSE);
 		shutdown(true);
 	}
 
 	@Test
-	public void test04CloseSessionWriteFail() {
-		setupConnection(DieBefore.CLOSE_COMMAND, false);
-		write(TransactionStateNames.WAIT_FOR_RESPONSE, true, true);
-		read(false, false);
-		write(TransactionStateNames.TRANSACTION_DONE, true, false);
-		shutdown(false);
+	public void test04ParamWriteFail() {
+		setupConnection(DieBefore.PARAM_MSG_RESPONSE, false);
+		write(TransactionStateNames.WAIT_FOR_RESPONSE, DieBefore.OPEN_COMMAND);
+		read(false, DieBefore.OPEN_RESPONSE);
+		write(TransactionStateNames.WAIT_FOR_RESPONSE, DieBefore.PARAM_MSG_COMMAND);
+		read(true, DieBefore.PARAM_MSG_RESPONSE);
+		shutdown(true);
 	}
 
 	@Test
-	public void test05CloseSessionReadFail() {
+	public void test05ParamReadFail() {
+		setupConnection(DieBefore.PARAM_MSG_COMMAND, true);
+		read(false, DieBefore.OPEN_COMMAND);
+		write(TransactionStateNames.TRANSACTION_DONE, DieBefore.OPEN_RESPONSE);
+		read(false, DieBefore.PARAM_MSG_COMMAND);
+		write(TransactionStateNames.TRANSACTION_DONE, DieBefore.PARAM_MSG_RESPONSE);
+		read(true, DieBefore.CLOSE_COMMAND);
+		shutdown(true);
+	}
+
+	@Test
+	public void test06CloseSessionReadFail() {
 		setupConnection(DieBefore.CLOSE_COMMAND, true);
-		read(false, true);
-		write(TransactionStateNames.TRANSACTION_DONE, false, true);
-		read(true, true);
+		read(false, DieBefore.OPEN_COMMAND);
+		write(TransactionStateNames.TRANSACTION_DONE, DieBefore.OPEN_RESPONSE);
+		read(false, DieBefore.PARAM_MSG_COMMAND);
+		write(TransactionStateNames.TRANSACTION_DONE, DieBefore.PARAM_MSG_RESPONSE);
+		read(true, DieBefore.CLOSE_COMMAND);
 		shutdown(true);
 	}
 
 	@Test
-	public void test06CloseSessionWritePass() {
+	public void test07CloseSessionWritePass() {
 		setupConnection(DieBefore.END, false);
-		write(TransactionStateNames.WAIT_FOR_RESPONSE, true, true);
-		read(false, false);
-		write(TransactionStateNames.TRANSACTION_DONE, true, false);
+		write(TransactionStateNames.WAIT_FOR_RESPONSE, DieBefore.OPEN_COMMAND);
+		read(false, DieBefore.OPEN_RESPONSE);
+		write(TransactionStateNames.WAIT_FOR_RESPONSE, DieBefore.PARAM_MSG_COMMAND);
+		read(false, DieBefore.PARAM_MSG_RESPONSE);
+		write(TransactionStateNames.TRANSACTION_DONE, DieBefore.CLOSE_COMMAND);
 		shutdown(false);
 	}
 
 	@Test
-	public void test07CloseSessionReadPass() {
+	public void test09CloseSessionReadPass() {
 		setupConnection(DieBefore.END, true);
-		read(false, true);
-		write(TransactionStateNames.TRANSACTION_DONE, false, true);
-		read(false, true);
+		read(false, DieBefore.OPEN_COMMAND);
+		write(TransactionStateNames.TRANSACTION_DONE,DieBefore.OPEN_RESPONSE);
+		read(false, DieBefore.PARAM_MSG_COMMAND);
+		write(TransactionStateNames.TRANSACTION_DONE, DieBefore.PARAM_MSG_RESPONSE);
+		read(false, DieBefore.CLOSE_COMMAND);
 		shutdown(false);
 	}
 
-	private void write(TransactionStateNames next, boolean isCommand,
-			boolean isOpen) {
+	private void write(TransactionStateNames next, DieBefore msgType) {
 		TransactionStateNames curstate = TransactionStateNames.ASSEMBLE_OPEN_RESPONSE;
 		TransactionStateNames wastate = TransactionStateNames.WAIT_FOR_OPEN_RESPONSE;
-		if (isCommand) {
-			curstate = (isOpen ? TransactionStateNames.ASSEMBLE_OPEN_COMMAND
-					: TransactionStateNames.ASSEMBLE_CLOSE_COMMAND);
+		String openStr = "open";
+		String cmdStr = "response";
+		boolean isOpen = true;
+		boolean isCommand = false;
+		SimCorMsg msg = new SimCorMsg();
+
+		if (msgType.equals(DieBefore.OPEN_COMMAND)) {
+			curstate = TransactionStateNames.ASSEMBLE_OPEN_COMMAND;
 			wastate = TransactionStateNames.WAIT_FOR_OPEN_COMMAND;
+			openStr = "open";
+			cmdStr = "command";
+			isOpen = true;
+			isCommand = false;
+
+		}
+		if (msgType.equals(DieBefore.CLOSE_COMMAND)) {
+			curstate = TransactionStateNames.ASSEMBLE_CLOSE_COMMAND;
+			wastate = TransactionStateNames.WAIT_FOR_COMMAND;
+			openStr = "close";
+			cmdStr = "command";
+			isOpen = true;
+			isCommand = false;
+
+		}
+		if (msgType.equals(DieBefore.PARAM_MSG_COMMAND)) {
+			curstate = TransactionStateNames.ASSEMBLE_COMMAND;
+			wastate = TransactionStateNames.WAIT_FOR_COMMAND;
+			openStr = "param";
+			cmdStr = "command";
+			isOpen = false;
+			isCommand = false;
+			msg.setCommand("set-parameter");
+			msg.setContent("dummySetParam	nstep	0");
+			transaction.setCommand(msg);
+			transaction.setId(null);
+
+		}
+
+		if (msgType.equals(DieBefore.PARAM_MSG_RESPONSE)) {
+			curstate = TransactionStateNames.ASSEMBLE_RESPONSE;
+			wastate = TransactionStateNames.WAIT_FOR_RESPONSE;
+			openStr = "param";
+			cmdStr = "response";
+			isOpen = false;
+			isCommand = false;
+			msg.setContent("Command ignored. Carry on.");
+			msg.setType(MsgType.OK_RESPONSE);
+			transaction.setResponse(msg);
+			transaction.setId(null);
+
 		}
 		transaction.setState(curstate);
-		sap.assembleSessionMessage(transaction, isOpen, isCommand, wastate);
+		if ((msgType.equals(DieBefore.PARAM_MSG_COMMAND) || msgType
+				.equals(DieBefore.PARAM_MSG_RESPONSE)) == false) {
+			sap.assembleSessionMessage(transaction, isOpen, isCommand, wastate);
+		} else {
+			sap.setUpWrite(transaction, isCommand, wastate);
+		}
 		org.junit.Assert.assertEquals(wastate, transaction.getState());
-		
-		String openStr = isOpen ? "open" : "close";
-		String cmdStr = isCommand ? "command" : "response";
+
 		while (transaction.getState().equals(wastate)) {
 			transaction.setState(wastate);
 			sap.waitForSend(transaction, next);
