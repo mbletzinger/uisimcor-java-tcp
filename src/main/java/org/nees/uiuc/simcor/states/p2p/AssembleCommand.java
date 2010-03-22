@@ -8,9 +8,13 @@ import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class AssembleCommand extends TransactionState {
-	public enum AssembleCommandType { CLOSE, OPEN, OTHER };
+	public enum AssembleCommandType {
+		CLOSE, OPEN, OTHER
+	};
+
 	private AssembleCommandType cmdType;
-	private final Logger log = Logger.getLogger(AssembleCommand.class);
+//	private final Logger log = Logger.getLogger(AssembleCommand.class);
+
 	public AssembleCommand(TransactionStateNames state,
 			StateActionsProcessor sap, AssembleCommandType cmdType) {
 		super(state, sap, TransactionStateNames.SENDING_COMMAND);
@@ -19,15 +23,17 @@ public class AssembleCommand extends TransactionState {
 
 	@Override
 	public void execute(Transaction transaction) {
-		if(cmdType.equals(AssembleCommandType.OPEN)) {
-			sap.assembleSessionMessage((SimpleTransaction) transaction, true, true, next);
+		if (cmdType.equals(AssembleCommandType.OPEN)) {
+			sap.assembleSessionMessage((SimpleTransaction) transaction, true,
+					true, next);
 			return;
 		}
-		if(cmdType.equals(AssembleCommandType.CLOSE)) {
-			sap.assembleSessionMessage((SimpleTransaction) transaction, false, true, next);
+		if (cmdType.equals(AssembleCommandType.CLOSE)) {
+			sap.assembleSessionMessage((SimpleTransaction) transaction, false,
+					true, TransactionStateNames.SENDING_CLOSE_COMMAND);
 			return;
 		}
-		if(cmdType.equals(AssembleCommandType.OTHER)) {
+		if (cmdType.equals(AssembleCommandType.OTHER)) {
 			sap.setUpWrite((SimpleTransaction) transaction, true, next);
 		}
 	}

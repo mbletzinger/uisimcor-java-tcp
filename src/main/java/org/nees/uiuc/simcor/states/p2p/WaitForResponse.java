@@ -17,7 +17,7 @@ public class WaitForResponse extends TransactionState {
 
 	@Override
 	public void execute(Transaction transaction) {
-		sap.waitForRead((SimpleTransaction) transaction, true, next);
+		sap.waitForRead((SimpleTransaction) transaction, false, next);
 	}
 
 }

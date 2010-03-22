@@ -132,7 +132,7 @@ public class T06_TriggerTest {
 		lparams.setLocalPort(6445);
 		lparams.setTcpTimeout(5000);
 		ListenerStateMachine lsm = new ListenerStateMachine(
-				new ClientConnections(), false);
+				new ClientConnections(), false, "MDL-00-00","BROADCASTER");
 		sap = new StateActionsProcessorWithCc(lsm);
 		sap.setParams(lparams);
 		tf = sap.getTf();

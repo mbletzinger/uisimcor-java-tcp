@@ -30,16 +30,26 @@ public class ListenerStateMachine extends Thread {
 	private TcpError error = new TcpError();
 	private final boolean isP2P;
 	private boolean isRunning;
+	private boolean clientAvailable;
+	public synchronized boolean isClientAvailable() {
+		return clientAvailable;
+	}
+
+	public synchronized void setClientAvailable(boolean clientAvailable) {
+		this.clientAvailable = clientAvailable;
+	}
+
 	private final Logger log = Logger.getLogger(ListenerStateMachine.class);
 	protected Map<TransactionStateNames, TransactionState> machine = new HashMap<TransactionStateNames, TransactionState>();
 	private ClientIdWithConnection oneClient = null;
 	private StateActionsProcessorWithLcf sap = new StateActionsProcessorWithLcf();
 
-	public ListenerStateMachine(ClientConnections cc, boolean isP2P) {
+	public ListenerStateMachine(ClientConnections cc, boolean isP2P, String mdl, String system) {
 		super();
 		this.cc = cc;
 		this.isP2P = isP2P;
 		setRunning(false);
+		sap.setIdentity(mdl, system);
 	}
 
 	public synchronized ClientConnections getCc() {
@@ -90,10 +100,14 @@ public class ListenerStateMachine extends Thread {
 			machine.put(TransactionStateNames.SENDING_COMMAND,
 					new SendingCommand(sap,
 							TransactionStateNames.SETUP_READ_RESPONSE));
-			machine.put(TransactionStateNames.SETUP_READ_RESPONSE,
-					new SetupReadMessage(
-							TransactionStateNames.SETUP_READ_RESPONSE, sap,
-							false, TransactionStateNames.WAIT_FOR_OPEN_RESPONSE));
+			machine
+					.put(
+							TransactionStateNames.SETUP_READ_RESPONSE,
+							new SetupReadMessage(
+									TransactionStateNames.SETUP_READ_RESPONSE,
+									sap,
+									false,
+									TransactionStateNames.WAIT_FOR_OPEN_RESPONSE));
 			machine.put(TransactionStateNames.WAIT_FOR_OPEN_RESPONSE,
 					new WaitForOpenResponse(sap));
 		}
@@ -102,7 +116,9 @@ public class ListenerStateMachine extends Thread {
 						TransactionStateNames.LISTEN_FOR_CONNECTIONS));
 		machine.put(TransactionStateNames.CLOSING_CONNECTION,
 				new CloseConnection(sap));
-		SimpleTransaction transaction = sap.getTf().createSendCommandTransaction(null, sap.getTf().getTransactionTimeout());
+		SimpleTransaction transaction = sap.getTf()
+				.createSendCommandTransaction(null,
+						sap.getTf().getTransactionTimeout());
 		sap.startListening(transaction);
 		return transaction;
 	}
@@ -111,9 +127,10 @@ public class ListenerStateMachine extends Thread {
 		return isRunning;
 	}
 
-	public synchronized ClientId pickupOneClient() {
-		ClientId result = oneClient;
+	public synchronized ClientIdWithConnection pickupOneClient() {
+		ClientIdWithConnection result = oneClient;
 		oneClient = null;
+		setClientAvailable(false);
 		return result;
 	}
 
@@ -129,14 +146,15 @@ public class ListenerStateMachine extends Thread {
 		setRunning(true);
 		TransactionStateNames prevState = TransactionStateNames.READY;
 		while (isRunning()) {
-			if(transaction.getState().equals(prevState) == false) {
+			if (transaction.getState().equals(prevState) == false) {
 				log.debug("LSM state:" + transaction.getState() + " client "
 						+ sap.getRemoteClient() + "  transaction "
 						+ transaction);
 				prevState = transaction.getState();
 			}
 			machine.get(getCurrentState()).execute(transaction);
-			if(transaction.getState().equals(TransactionStateNames.TRANSACTION_DONE)) {
+			if (transaction.getState().equals(
+					TransactionStateNames.TRANSACTION_DONE)) {
 				updateClient(transaction);
 			}
 			setCurrentState(transaction.getState());
@@ -147,13 +165,22 @@ public class ListenerStateMachine extends Thread {
 		}
 		log.debug("Stopped LSM state:" + transaction.getState() + " client "
 				+ sap.getRemoteClient() + "  error " + transaction.getError());
-
 		sap.stopListening(transaction);
+		while ( transaction.getState().equals(TransactionStateNames.TRANSACTION_DONE) == false) {
+			try {
+				sleep(100);
+			} catch (InterruptedException e) {
+			}
+			sap.stopListening(transaction);
+			log.debug("Stopping LSM listener:" + transaction);
+			}
+		log.debug("LSM is done:" + transaction);
 	}
 
 	public synchronized void setCurrentState(TransactionStateNames currentState) {
 		this.currentState = currentState;
 	}
+
 	public synchronized void setError(TcpError error) {
 		this.error = error;
 	}
@@ -173,6 +200,7 @@ public class ListenerStateMachine extends Thread {
 		} else {
 			cc.addClient(sap.getRemoteClient());
 		}
-
+		setClientAvailable(true);
+		log.debug("Added Client " + oneClient);
 	}
 }

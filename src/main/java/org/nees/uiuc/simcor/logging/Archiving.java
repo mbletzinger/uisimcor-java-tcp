@@ -65,8 +65,8 @@ public class Archiving extends Thread {
 			}
 
 			TransactionLogRecord tlr = new TransactionLogRecord();
-			for (Iterator<SimpleTransaction> r = records.iterator(); r.hasNext();) {
-				SimpleTransaction t = r.next();
+			for (SimpleTransaction t : records) {
+				log.debug("Logging " + t);
 				if (t instanceof ExitTransaction) {
 					setExit(true);
 					continue;

@@ -24,14 +24,13 @@ public class T04_ListenerStateMachineTest {
 
 	@Before
 	public void setUp() throws Exception {
-		lsm = new ListenerStateMachine(null, true);
+		lsm = new ListenerStateMachine(null, true,"MDL-00-00", "Connection Test");
 		rparams.setRemoteHost("127.0.0.1");
 		rparams.setRemotePort(6445);
 		rparams.setTcpTimeout(2000);
 		lparams.setLocalPort(6445);
 		lparams.setTcpTimeout(2000);
 		lsm.getSap().setParams(lparams);
-		lsm.getSap().setIdentity("MDL-00-00", "Connection Test");
 	}
 
 	private void setupConnection(DieBefore lfsp, boolean sendOpenSession) {

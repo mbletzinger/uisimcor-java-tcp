@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.UiSimCorTcp;
 import org.nees.uiuc.simcor.UiSimCorTcp.ConnectType;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
+import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
@@ -38,17 +39,20 @@ public class TransactionResponder extends Thread {
 	private List<TransactionStateNames> readyStates = new ArrayList<TransactionStateNames>();
 
 	private UiSimCorTcp simcor;
+
 	public TransactionResponder() {
 		readyStates.add(TransactionStateNames.TRANSACTION_DONE);
 		readyStates.add(TransactionStateNames.READY);
 	}
+
 	public TransactionMsgs getData() {
 		return data;
 	}
+
 	public TcpParameters getParams() {
 		return params;
 	}
-	
+
 	public UiSimCorTcp getSimcor() {
 		return simcor;
 	}
@@ -60,15 +64,15 @@ public class TransactionResponder extends Thread {
 	@Override
 	public void run() {
 		params.setLocalPort(6445);
-		params.setTcpTimeout(200000);
-		simcor = new UiSimCorTcp(ConnectType.P2P_RECEIVE_COMMAND, "MDL-00-01");
+		params.setTcpTimeout(5000);
+		simcor = new UiSimCorTcp(ConnectType.P2P_RECEIVE_COMMAND, "MDL-00-01",
+				"RESPONDER");
 		simcor.startup(params);
 		connected = false;
 		int count = 0;
 
 		TransactionStateNames state = simcor.isReady();
-		while (state.equals(TransactionStateNames.READY) == false
-				&& count < 40) {
+		while (state.equals(TransactionStateNames.READY) == false && count < 40) {
 			log.info("Waiting for a connection " + state);
 			state = simcor.isReady();
 			count++;
@@ -77,55 +81,79 @@ public class TransactionResponder extends Thread {
 			} catch (InterruptedException e) {
 				log.info("My sleep was interrupted.");
 			}
-			
+			log.debug("Wating for connection: " + simcor.getTransaction());
 		}
 		org.junit.Assert.assertTrue(count < 40);
 		log.info("Open result [" + simcor.getTransaction() + "]");
-		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, simcor.getTransaction().getError().getType());
-		org.junit.Assert.assertEquals(TransactionStateNames.READY, simcor.getTransaction().getState());
+		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, simcor
+				.getTransaction().getError().getType());
+		org.junit.Assert.assertEquals(TransactionStateNames.READY, simcor
+				.getTransaction().getState());
 		connected = true;
 		log.info("Connection established");
-
+		log.info("Expected Messages:\n" + data.dumpExpected());
 		while (connected) {
-			simcor.startTransaction(2000);
-			 state = simcor.isReady();
-			while ( state.equals(TransactionStateNames.COMMAND_AVAILABLE) == false) {
+			simcor.startTransaction(5000);
+			state = simcor.isReady();
+			while (state.equals(TransactionStateNames.COMMAND_AVAILABLE) == false) {
 				try {
 					Thread.sleep(200);
 					state = simcor.isReady();
-					log.debug("Current state: " + state);
 				} catch (InterruptedException e) {
-					log.info("My sleep was interrupted.");
+				}
+				log.debug("Wating for command: " + simcor.getTransaction());
+				TcpError error = simcor.getTransaction().getError();
+				if (error.getType().equals(TcpErrorTypes.NONE) == false) {
+					log.error("Responder failed because " + error);
+					shutdown();
+					return;
 				}
 			}
-			log.debug("Current state: " + state);
+			log.debug("Received command: " + simcor.getTransaction());
 			Transaction transaction = simcor.pickupTransaction();
-			log.debug("Received command" + transaction.getCommand());
-			if (transaction.getError().getType() != TcpErrorTypes.NONE) {
+			log.debug("Picked up transaction: " + transaction);
+			if (transaction.getError().getType().equals(TcpErrorTypes.NONE) == false) {
 				log.error("Transaction error " + transaction.getError());
+				shutdown();
+				return;
 			}
-			org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction.getError().getType());
-//			org.junit.Assert.assertNotNull(transaction.getCommand().getContent());
+			if (transaction.getCommand() == null) {
+				connected = false;
+				shutdown();
+				log.error("No command was received");
+				return;
+			}
+			if (transaction.getCommand().getCommand().equals("close-session")) {
+				connected = false;
+				shutdown();
+				return;
+			}
+			org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
+					.getError().getType());
+			org.junit.Assert.assertNotNull(transaction.getCommand()
+					.getCommand());
 			SimpleTransaction expected = data.transactions.get(transaction
 					.getCommand().toString());
-			if(expected == null) {
+			if (expected == null) {
 				String hash = "";
-				for(Iterator<String> s = data.transactions.keySet().iterator(); s.hasNext();) {
+				for (Iterator<String> s = data.transactions.keySet().iterator(); s
+						.hasNext();) {
 					String m = s.next();
 					hash += "\t" + m + "=" + m.hashCode() + "\n";
 				}
-				log.error("Command [" + transaction.getCommand() + "]=" + transaction.getCommand().hashCode() + " not recognized\n" + hash);
+				log.error("Command [" + transaction.getCommand() + "]="
+						+ transaction.getCommand().hashCode()
+						+ " not recognized\n" + hash);
 				org.junit.Assert.fail();
 			}
 			org.junit.Assert.assertNotNull(expected);
+			data.checkTransaction((TransactionWithTestFlags) expected,
+					transaction, TcpErrorTypes.NONE);
 			SimCorMsg resp = expected.getResponse();
 			SimCorMsg cmd = transaction.getCommand();
 			if (cmd.getCommand().equals("propose")
 					|| cmd.getCommand().equals("execute")) {
 				transaction.setId(expected.getId());
-			}
-			if (cmd.getCommand().equals("close-session")) {
-				connected = false;
 			}
 			simcor.continueTransaction(resp);
 			state = simcor.isReady();
@@ -137,15 +165,23 @@ public class TransactionResponder extends Thread {
 				} catch (InterruptedException e) {
 					log.info("My sleep was interrupted.");
 				}
+				log.debug("Wating for response send: "
+						+ simcor.getTransaction());
 			}
 			transaction = simcor.getTransaction();
 			if (transaction.getError().getType() != TcpErrorTypes.NONE) {
 				log.error("Transaction error " + transaction.getError());
 			}
-			org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction.getError().getType());
+			org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
+					.getError().getType());
 		}
+		shutdown();
+
+	}
+
+	private void shutdown() {
 		simcor.shutdown();
-		 state = simcor.isReady();
+		TransactionStateNames state = simcor.isReady();
 		while (state.equals(TransactionStateNames.READY) == false) {
 			try {
 				Thread.sleep(1000);
@@ -153,10 +189,8 @@ public class TransactionResponder extends Thread {
 				log.info("Sleep interrupted");
 			}
 			state = simcor.isReady();
-			log.debug("Responder disconnecting");
+			log.debug("Disconnecting " + simcor.getTransaction());
 		}
-		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, simcor.getErrors().getType());
-		org.junit.Assert.assertEquals(TransactionStateNames.TRANSACTION_DONE, simcor.getTransaction().getState());
 
 	}
 
@@ -171,6 +205,7 @@ public class TransactionResponder extends Thread {
 	public void setParams(TcpParameters rparams) {
 		this.params = rparams;
 	}
+
 	public void setSimcor(UiSimCorTcp simcor) {
 		this.simcor = simcor;
 	}

@@ -21,7 +21,7 @@ my $socket = new IO::Socket::INET(
 
 die "Connection to $host:$port failed because $!" unless defined $socket;
 
-sendSCommand("open-session\tdummySession");
+sendSCommand("open-session\tPerl Test Script");
 receiveCommand();
 
 sendSCommand("set-parameter\tdummySetParam\tnstep\t0");
@@ -51,7 +51,7 @@ for my $i ( 1 .. 5 ) {
 	);
 	receiveCommand();
 	$increment = $increment eq "0.5" ? "-0.5" : "0.5";
-	sleep 3;
+	sleep 1;
 }
 
 sendCommand("close-session	dummy");

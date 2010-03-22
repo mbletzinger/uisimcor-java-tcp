@@ -11,7 +11,7 @@ public class Transaction {
 
 	protected SimCorMsg command = null;
 	protected DirectionType direction = DirectionType.NONE;
-	protected TcpError error;
+	protected TcpError error = new TcpError();
 	protected TransactionIdentity id;
 	protected TransactionStateNames state = TransactionStateNames.READY;
 	private int timeout = 3000;
