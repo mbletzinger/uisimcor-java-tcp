@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.junit.Assert;
+import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.Address;
 import org.nees.uiuc.simcor.transaction.SimCorCompoundMsg;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
@@ -16,6 +19,7 @@ public class TransactionMsgs {
 	public List<SimpleTransaction> cmdList;
 	public HashMap<String, SimpleTransaction> transactions;
 	public Transaction triggerTransaction;
+	private final Logger log = Logger.getLogger(TransactionMsgs.class);
 
 	public TransactionMsgs() {
 		this.cmdList = new ArrayList<SimpleTransaction>();
@@ -25,16 +29,16 @@ public class TransactionMsgs {
 
 	public void setUp() throws Exception {
 
-		SimpleTransaction transaction = new SimpleTransaction();
-		SimCorMsg msg = new SimCorMsg();
-		SimCorMsg resp = new SimCorMsg();
+		SimpleTransaction transaction = new TransactionWithTestFlags();
+		SimCorMsg msg = new SimCorMsgWithTestFlags();
+		SimCorMsg resp = new SimCorMsgWithTestFlags();
 	
-		transaction = new SimpleTransaction();
-		msg = new SimCorMsg();
+		transaction = new TransactionWithTestFlags();
+		msg = new SimCorMsgWithTestFlags();
 		msg.setCommand("set-parameter");
 		msg.setContent("dummySetParam	nstep	0");
 	
-		resp = new SimCorMsg();
+		resp = new SimCorMsgWithTestFlags();
 		resp.setContent("Command ignored. Carry on.");
 		resp.setType(MsgType.OK_RESPONSE);
 		transaction.setCommand(msg);
@@ -42,14 +46,14 @@ public class TransactionMsgs {
 		transactions.put(msg.toString(),transaction);
 		cmdList.add(transaction);
 	
-		transaction = new SimpleTransaction();
-		msg = new SimCorMsg();
-		TransactionIdentity id = new TransactionIdentity();
+		transaction = new TransactionWithTestFlags();
+		msg = new SimCorMsgWithTestFlags();
+		TransactionIdentity id = new TransactionIdentityWithTestFlags();
 		msg.setCommand("get-control-point");
 		id.setTransId("dummy");
 		msg.setAddress(new Address("MDL-00-01:LBCB2"));
 	
-		resp = new SimCorMsg();
+		resp = new SimCorMsgWithTestFlags();
 		resp.setAddress(new Address("MDL-00-01:LBCB2"));
 		resp.setContent("x	displacement	5.036049E-1" +
 				"	y	displacement	1.557691E-4" +
@@ -70,14 +74,14 @@ public class TransactionMsgs {
 		transactions.put(msg.toString(),transaction);
 		cmdList.add(transaction);
 	
-		transaction = new SimpleTransaction();
-		id = new TransactionIdentity();
-		msg = new SimCorMsg();
+		transaction = new TransactionWithTestFlags();
+		id = new TransactionIdentityWithTestFlags();
+		msg = new SimCorMsgWithTestFlags();
 		msg.setCommand("get-control-point");
 		id.setTransId("dummy");
 		msg.setAddress(new Address("MDL-00-01:ExternalSensors"));
 	
-		resp = new SimCorMsg();
+		resp = new SimCorMsgWithTestFlags();
 		resp.setAddress(new Address("MDL-00-01:ExternalSensors"));
 		resp.setContent("Ext.Long.LBCB2	external	2.422813E-1	" +
 				"Ext.Tranv.TopLBCB2	external	2.422813E-1	" + 
@@ -92,14 +96,14 @@ public class TransactionMsgs {
 		transactions.put(msg.toString(),transaction);
 		cmdList.add(transaction);
 	
-		transaction = new SimpleTransaction();
-		id = new TransactionIdentity();
-		msg = new SimCorMsg();
+		transaction = new TransactionWithTestFlags();
+		id = new TransactionIdentityWithTestFlags();
+		msg = new SimCorMsgWithTestFlags();
 		msg.setCommand("get-control-point");
 		id.setTransId("dummy");
 		msg.setAddress(new Address("MDL-00-01:ExternalSensors"));
 	
-		resp = new SimCorMsg();
+		resp = new SimCorMsgWithTestFlags();
 		resp.setAddress(new Address("MDL-00-01:ExternalSensors"));
 		resp.setContent("	1_LBCB1_x	external	-7.565553E-1"
 				+ "	2_LBCB1_z_right	external	0.000000E+0"
@@ -114,9 +118,9 @@ public class TransactionMsgs {
 		transactions.put(msg.toString(),transaction);
 		cmdList.add(transaction);
 
-		transaction = new SimpleTransaction();
-		id = new TransactionIdentity();
-		SimCorCompoundMsg cmsg = new SimCorCompoundMsg();
+		transaction = new TransactionWithTestFlags();
+		id = new TransactionIdentityWithTestFlags();
+		SimCorCompoundMsg cmsg = new SimCorCompoundMsgWithTestFlags();
 		cmsg.setCommand("propose");
 		id.createTransId();
 		cmsg.setContent(new Address("MDL-00-01:LBCB1"),"x	displacement	0.5	y	displacement	0.0");
@@ -124,7 +128,7 @@ public class TransactionMsgs {
 		id.setStep(100);
 		id.setSubStep(23);
 	
-		resp = new SimCorMsg();
+		resp = new SimCorMsgWithTestFlags();
 		resp.setContent("propose accepted");
 		resp.setType(MsgType.OK_RESPONSE);
 		transaction.setId(id);
@@ -133,16 +137,16 @@ public class TransactionMsgs {
 		transactions.put(cmsg.toString(),transaction);
 		cmdList.add(transaction);
 	
-		transaction = new SimpleTransaction();
-		id = new TransactionIdentity();
-		msg = new SimCorMsg();
+		transaction = new TransactionWithTestFlags();
+		id = new TransactionIdentityWithTestFlags();
+		msg = new SimCorMsgWithTestFlags();
 		msg.setCommand("execute");
 		id.createTransId();
 		id.setTransId("trans200912317925.320");
 		id.setStep(100);
 		id.setSubStep(23);
 	
-		resp = new SimCorMsg();
+		resp = new SimCorMsgWithTestFlags();
 		resp.setContent("execute done");
 		resp.setType(MsgType.OK_RESPONSE);
 		transaction.setId(id);
@@ -151,16 +155,16 @@ public class TransactionMsgs {
 		transactions.put(msg.toString(),transaction);
 		cmdList.add(transaction);
 	
-		transaction = new SimpleTransaction();
-		id = new TransactionIdentity();
-		msg = new SimCorMsg();
+		transaction = new TransactionWithTestFlags();
+		id = new TransactionIdentityWithTestFlags();
+		msg = new SimCorMsgWithTestFlags();
 		msg.setCommand("trigger");
 		id.createTransId();
 		id.setTransId("trans200912317925.320");
 		id.setStep(100);
 		id.setSubStep(23);
 	
-		resp = new SimCorMsg();
+		resp = new SimCorMsgWithTestFlags();
 		resp.setContent("trigger received");
 		resp.setType(MsgType.OK_RESPONSE);
 		transaction.setId(id);
@@ -170,16 +174,16 @@ public class TransactionMsgs {
 		cmdList.add(transaction);
 		triggerTransaction = transaction;
 	
-		transaction = new SimpleTransaction();
-		cmsg = new SimCorCompoundMsg();
+		transaction = new TransactionWithTestFlags();
+		cmsg = new SimCorCompoundMsgWithTestFlags();
 		cmsg.setCommand("propose");
-		id = new TransactionIdentity();
+		id = new TransactionIdentityWithTestFlags();
 		id.setTransId("trans20080206155057.44");
 		cmsg.setContent(new Address("MDL-00-01"),"x	displacement	1.0000000000e-003	y	displacement	2.0000000000e-003	z	rotation	3.0000000000e-003");
 		cmsg.setContent(new Address("MDL-00-02"),"x	displacement	4.0000000000e-003	y	displacement	5.0000000000e-003	z	rotation	6.0000000000e-003");
 		cmsg.setContent(new Address("MDL-00-03"),"x	displacement	7.0000000000e-003	y	displacement	8.0000000000e-003	z	rotation	9.0000000000e-003");
 	
-		SimCorCompoundMsg cresp = new SimCorCompoundMsg();
+		SimCorCompoundMsg cresp = new SimCorCompoundMsgWithTestFlags();
 		cresp.setContent(new Address("MDL-00-01"),"x	displacement	1.0000000000e-003	y	displacement	2.0000000000e-003	z	rotation	3.0000000000e-003");
 		cresp.setContent(new Address("MDL-00-02"),"x	displacement	4.0000000000e-003	y	displacement	5.0000000000e-003	z	rotation	6.0000000000e-003");
 		cresp.setContent(new Address("MDL-00-03"),"x	displacement	7.0000000000e-003	y	displacement	8.0000000000e-003	z	rotation	9.0000000000e-003");
@@ -189,6 +193,98 @@ public class TransactionMsgs {
 		transaction.setResponse(cresp);
 		transactions.put(cmsg.toString(),transaction);
 		cmdList.add(transaction);
+
+//		transaction = new TransactionWithTestFlags();
+//		id = new TransactionIdentityWithTestFlags();
+//		msg = new SimCorMsgWithTestFlags();
+//		msg.setCommand("close-session");
+//		msg.setContent("dummy");
+//		transaction.setCommand(msg);
+//		transactions.put(msg.toString(),transaction);
+//		cmdList.add(transaction);
+	}
+
+	public void checkCompoundMsg(SimCorCompoundMsgWithTestFlags expected, SimCorCompoundMsg tested) {
+		if(expected.isAddressExists()) {
+			Assert.assertEquals(expected.getAddress(), tested.getAddress());
+		}
+		if(expected.isCommandExists()) {
+			Assert.assertEquals(expected.getCommand(), tested.getCommand());
+		}
+		if(expected.isContentExists()) {
+			Assert.assertEquals(expected.getContent(), tested.getContent());
+		}
+		if(expected.isCommandExists()) {
+			Assert.assertEquals(expected.getCommand(), tested.getCommand());
+		}
+		if(expected.isTypeExists()) {
+			Assert.assertEquals(expected.getType(), tested.getType());
+		}
+		
+	}
+
+	public void checkMsg(SimCorMsgWithTestFlags expected, SimCorMsg tested) {
+		if(expected.isAddressExists()) {
+			Assert.assertEquals(expected.getAddress(), tested.getAddress());
+		}
+		if(expected.isCommandExists()) {
+			Assert.assertEquals(expected.getCommand(), tested.getCommand());
+		}
+		if(expected.isContentExists()) {
+			Assert.assertEquals(expected.getContent(), tested.getContent());
+		}
+		if(expected.isCommandExists()) {
+			Assert.assertEquals(expected.getCommand(), tested.getCommand());
+		}
+		if(expected.isTypeExists()) {
+			Assert.assertEquals(expected.getType(), tested.getType());
+		}
+		
+	}
+
+	public void checkTransaction(TransactionWithTestFlags expected, Transaction tested, TcpErrorTypes expectedError) {		
+		log.debug("Checking: " + tested);
+		if(expected.isCommandExiists()) {
+			if(expected.getCommand() instanceof SimCorCompoundMsgWithTestFlags) {
+				checkCompoundMsg((SimCorCompoundMsgWithTestFlags)expected.getCommand(),(SimCorCompoundMsg) tested.getCommand());
+			} else {
+				checkMsg((SimCorMsgWithTestFlags) expected.getCommand(), tested.getCommand());
+			}
+		}
+		if(expected.isDirectionExists()) {
+			Assert.assertEquals(expected.getDirection(), tested.getDirection());
+		}
+		if(expected.isErrorExists()) {
+			Assert.assertEquals(expectedError, tested.getError().getType());
+		}
+		if(expected.isIdExists()) {
+			checkTransId((TransactionIdentityWithTestFlags) expected.getId(), tested.getId());
+		}
+		if(expected.isTimeoutExists()) {
+			Assert.assertEquals(expected.getTimeout(), tested.getTimeout());
+		}
+	}
+
+	public void checkTransId(TransactionIdentityWithTestFlags expected, TransactionIdentity tested) {
+		if(expected.isCorrectionStepExists()) {
+			Assert.assertEquals(expected.getCorrectionStep(), tested.getCorrectionStep());
+		}
+		if(expected.isStepExists()) {
+			Assert.assertEquals(expected.getStep(), tested.getStep());
+		}
+		if(expected.isSubStepExists()) {
+			Assert.assertEquals(expected.getSubStep(), tested.getSubStep());
+		}
+		if(expected.isTransIdExists()) {
+			Assert.assertEquals(expected.getTransId(), tested.getTransId());
+		}
 	
+	}
+	public String dumpExpected() {
+		String result = "";
+		for(SimpleTransaction t : cmdList) {
+			result += t + "\n";
+		}
+		return result;
 	}
 }

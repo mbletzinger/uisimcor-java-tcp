@@ -4,7 +4,6 @@ import org.nees.uiuc.simcor.listener.ClientIdWithConnection;
 import org.nees.uiuc.simcor.listener.ListenerStateMachine;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
-import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class StateActionsProcessorWithLsm extends StateActionsProcessor {
@@ -15,16 +14,17 @@ public class StateActionsProcessorWithLsm extends StateActionsProcessor {
 		this.lsm = lsm;
 	}
 	public void checkListenerForConnection(Transaction transaction, TransactionStateNames next) {
-		ClientIdWithConnection id = lsm.getOneClient();
 		TcpError error = lsm.getError();
-		if(id == null && error.getType().equals(TcpErrorTypes.NONE)) {
+		if((lsm.isClientAvailable() == false) && error.getType().equals(TcpErrorTypes.NONE)) {
+			log.debug("Still Listeining " + transaction);
 			return;
 		}
+		ClientIdWithConnection id = lsm.pickupOneClient();
 		if(id != null) {
 			cm.setConnection(id.connection);
 		}
 		setStatus(transaction, error,next);
-		log.debug("Check Listener For Connection " + transaction);
+		log.debug("Found Connection " + transaction);
 
 	}
 	
@@ -38,6 +38,7 @@ public class StateActionsProcessorWithLsm extends StateActionsProcessor {
 	public void stopListener(Transaction transaction, TransactionStateNames next) {
 		lsm.setRunning(false);
 		if(lsm.isAlive()) {
+			log.debug("Still stopping listener " + transaction);
 			return;
 		}
 		TcpError error = lsm.getError();

@@ -172,13 +172,13 @@ public class StateActionsProcessor {
 
 	public void setUpRead(Transaction transaction, boolean isCommand,
 			TransactionStateNames next) {
+		log.debug("Set Up Read  " + transaction);
 		Connection c = cm.getConnection();
 		TcpActionsDto action = new TcpActionsDto();
 		action.setAction(ActionsType.READ);
 		c.setMsgTimeout(transaction.getTimeout());
 		c.setToRemoteMsg(action);
 		transaction.setState(next);
-		log.debug("Set Up Read  " + transaction);
 
 	}
 

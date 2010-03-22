@@ -8,8 +8,8 @@ import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class StartListener extends TransactionState {
 
-	public StartListener(StateActionsProcessor sap) {
-		super(TransactionStateNames.START_LISTENER, sap, TransactionStateNames.TRANSACTION_DONE);
+	public StartListener(StateActionsProcessor sap, TransactionStateNames next) {
+		super(TransactionStateNames.START_LISTENER, sap, next);
 	}
 
 	@Override

@@ -8,7 +8,7 @@ import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class SendingCommand extends TransactionState {
-	private final Logger log = Logger.getLogger(SendingCommand.class);
+//	private final Logger log = Logger.getLogger(SendingCommand.class);
 
 	public SendingCommand(StateActionsProcessor sap,
 			TransactionStateNames next) {

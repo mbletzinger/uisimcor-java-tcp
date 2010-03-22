@@ -17,7 +17,7 @@ public class TransactionIdentity {
 	public TransactionIdentity(TransactionIdentity i) {
 		step = i.step;
 		subStep = i.subStep;
-		if(transId != null) {
+		if(i.transId != null) {
 			transId = new String(i.transId);
 		}
 	}
