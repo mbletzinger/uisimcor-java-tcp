@@ -4,7 +4,7 @@
   <artifactId>UiSimCorJava</artifactId>
   <name>UI-SimCorJavaTcpLibrary</name>
   <packaging>jar</packaging>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.1-SNAPSHOT</version>
   <description>TCP Library for UI-SimCor</description>
   <build>
   	<plugins>
@@ -25,8 +25,8 @@
 			<!--
 				<exclude>**/CommandListenerTest.java</exclude>
 				<exclude>**/CommandSenderTest.java</exclude>
-				-->
 				<exclude>**/TriggerTest.java</exclude>
+				-->
 			</excludes>
 		</configuration>
 	</plugin>
