@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 
 public class SimCorMsg {
 	public enum MsgType {
-		COMMAND, ERROR, NOT_OK_RESPONSE, OK_RESPONSE
+		COMMAND, NULL, NOT_OK_RESPONSE, OK_RESPONSE
 	}
 
 	// address is null if not used
@@ -16,7 +16,7 @@ public class SimCorMsg {
 	private String content = null;
 	private final Logger log = Logger.getLogger(SimCorMsg.class);
 	private Date timestamp;
-	private MsgType type = MsgType.ERROR;
+	private MsgType type = MsgType.NULL;
 
 	public SimCorMsg() {
 		// clearMessage();

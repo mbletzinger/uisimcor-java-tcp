@@ -23,6 +23,9 @@ public class TriggerConnectionsClient {
 	}
 
 	public void checkForMessages() {
+		if(done) {
+			return;
+		}
 		log.debug("Before read command: ");
 		SimpleTransaction transaction = sap.getTf().createReceiveCommandTransaction(6000);
 		sap
@@ -40,6 +43,11 @@ public class TriggerConnectionsClient {
 		log.debug("After trigger command: " + transaction);
 		if (transaction.getError().getType().equals(TcpErrorTypes.NONE) == false) {
 			log.error("Transaction error: " + transaction);
+			return;
+		}
+		if(transaction.getCommand().getCommand().equals("close-session")) {
+			log.debug("Received close message " + transaction);
+			closeConnection();
 			return;
 		}
 		SimCorMsg rsp = sap.getTf().createResponse("MDL-00-01", null,

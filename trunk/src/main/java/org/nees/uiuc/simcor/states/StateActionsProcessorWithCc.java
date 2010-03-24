@@ -42,7 +42,12 @@ public class StateActionsProcessorWithCc extends StateActionsProcessorWithLsm {
 		setStatus((Transaction)transaction, err, state, state);
 	}
 	public void closeTriggerConnections(Transaction transaction, TransactionStateNames next) {
-		
+		boolean allClosed = cc.closeClientConnections();
+		if(allClosed ==  false) {
+			return;
+		}
+		setStatus((Transaction)transaction,  new TcpError(), next, next);
+
 	}
 	public void setupTriggerResponses(Transaction transaction, TransactionStateNames next) {
 		cc.setupResponsesCheck((BroadcastTransaction) transaction);
@@ -61,8 +66,7 @@ public class StateActionsProcessorWithCc extends StateActionsProcessorWithLsm {
 		if(transaction.getResponseMsg() != null) {
 			err.setType(TcpErrorTypes.BROADCAST_CLIENTS_LOST);
 		}
-		setStatus(transaction, err, state,state);
-		
+		setStatus(transaction, err, state,state);	
 	}
 
 }

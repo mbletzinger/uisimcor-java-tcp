@@ -119,7 +119,7 @@ public class StateActionsProcessor {
 
 	}
 
-	public void recordTransaction(SimpleTransaction transaction,
+	public void recordTransaction(Transaction transaction,
 			TransactionStateNames next) {
 		if (archive.isArchivingEnabled()) {
 			log.debug("Handling: " + transaction);

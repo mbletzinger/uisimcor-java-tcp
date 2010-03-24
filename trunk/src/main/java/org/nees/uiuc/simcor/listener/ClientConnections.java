@@ -79,6 +79,18 @@ public class ClientConnections {
 		c.setToRemoteMsg(action);
 	}
 
+	private boolean  closeConnection(Connection c) {
+		if (c == null) {
+			return true;
+		}
+		if (c.getState().equals(ConnectionStatus.BUSY) == false && c.isAlive()) {
+			TcpActionsDto cmd = new TcpActionsDto();
+			cmd.setAction(ActionsType.CLOSE);
+			c.setToRemoteMsg(cmd);
+		}
+		return c.getConnectionState().equals(ConnectionStatus.CLOSED) || (c.isAlive() == false);
+	}
+	
 	private void sendMsg(Connection client, SimCorMsg msg,
 			TransactionIdentity id) {
 		client.setMsgTimeout(msgTimeout);
@@ -94,7 +106,7 @@ public class ClientConnections {
 		this.msgTimeout = msgTimeout;
 	}
 
-	public void setupResponsesCheck(BroadcastTransaction transaction) {
+	public synchronized void setupResponsesCheck(BroadcastTransaction transaction) {
 		for (ClientIdWithConnection c : clients) {
 			readMsg(c.connection);
 		}
@@ -102,6 +114,14 @@ public class ClientConnections {
 		transaction.getResponses().clear();
 	}
 
+	public synchronized boolean closeClientConnections() {
+		boolean allClosed = true;
+		for (ClientIdWithConnection c : clients) {
+			allClosed = closeConnection(c.connection) && allClosed;
+		}
+		return allClosed;
+	}
+	
 	public synchronized boolean waitForBroadcastFinished() {
 		for (ClientIdWithConnection c : clients) {
 			if (c.connection.getConnectionState() == ConnectionStatus.BUSY) {

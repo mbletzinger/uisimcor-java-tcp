@@ -1,6 +1,7 @@
 package org.nees.uiuc.simcor.factories;
 
 import org.apache.log4j.Logger;
+import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.transaction.Address;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.SimCorCompoundMsg;
@@ -21,13 +22,17 @@ public class TransactionFactory {
 	private String mdl = "MDL-00-01";
 	private String systemDescription;
 	private int transactionTimeout = 3000;
+	private int vampCount = 0;
 
-	public BroadcastTransaction createBroadcastTransaction(SimCorMsg msg) {
+	public BroadcastTransaction createBroadcastTransaction(int step, int subStep, int correctionStep, int msgTimeout) {
 		BroadcastTransaction result = new BroadcastTransaction();
+		id = createTransactionId(step, subStep, correctionStep);
+		id.createTransId();
+		SimCorMsg msg = createCommand("trigger", mdl, null, "[" + systemDescription + "]");
 		result.setCommand(msg);
 		result.setId(id);
 		result.setDirection(DirectionType.SEND_COMMAND);
-		result.setTimeout(transactionTimeout);
+		result.setTimeout(msgTimeout);
 		log.debug("Created transaction: " + result);
 		return result;
 	}
@@ -47,7 +52,7 @@ public class TransactionFactory {
 		log.debug("Created " + result);
 		return result;
 	}
-
+	
 	public SimCorCompoundMsg createCompoundCommand(String cmd, String[] mdl,
 			String[] cps, String[] cnt) {
 		SimCorCompoundMsg result = new SimCorCompoundMsg();
@@ -83,14 +88,6 @@ public class TransactionFactory {
 		return result;
 	}
 
-	public synchronized int getTransactionTimeout() {
-		return transactionTimeout;
-	}
-
-	public synchronized void setTransactionTimeout(int transactionTimeout) {
-		this.transactionTimeout = transactionTimeout;
-	}
-
 	public SimpleTransaction createReceiveCommandTransaction(int msgTimeout) {
 		SimpleTransaction result = new SimpleTransaction();
 		result.setDirection(direction);
@@ -123,12 +120,28 @@ public class TransactionFactory {
 		return result;
 	}
 
+	public BroadcastTransaction createCloseTriggerTransaction( int msgTimeout) {
+		BroadcastTransaction result = new BroadcastTransaction();
+		result.setCommand(createSessionCommand(false));
+		result.setId(id);
+		result.setDirection(direction);
+		result.setTimeout(msgTimeout);
+		result.setState(TransactionStateNames.ASSEMBLE_CLOSE_TRIGGER_COMMANDS);
+		log.debug("Created transaction: " + result);
+		return result;
+	}
+
 	public SimCorMsg createSessionCommand(boolean isOpen) {
 		return createCommand((isOpen ? "open-session" : "close-session"), mdl,
 				null, systemDescription);
 	}
 
 	public SimCorMsg createSessionResponse(SimCorMsg cmd) {
+		return createResponse(mdl, null, ("[" + systemDescription + "] "
+				+ cmd.getCommand() + " done"), false);
+	}
+
+	public SimCorMsg createTriggerResponse(SimCorMsg cmd) {
 		return createResponse(mdl, null, ("[" + systemDescription + "] "
 				+ cmd.getCommand() + " done"), false);
 	}
@@ -149,6 +162,10 @@ public class TransactionFactory {
 		return result;
 	}
 
+	public BroadcastTransaction createVampTransaction(int msgTimeout)  {
+		return createBroadcastTransaction(0, 0, vampCount, msgTimeout);
+	}
+
 	public DirectionType getDirection() {
 		return direction;
 	}
@@ -163,6 +180,10 @@ public class TransactionFactory {
 
 	public String getSystemDescription() {
 		return systemDescription;
+	}
+
+	public synchronized int getTransactionTimeout() {
+		return transactionTimeout;
 	}
 
 	public void setDirection(DirectionType direction) {
@@ -189,6 +210,10 @@ public class TransactionFactory {
 
 	public void setSystemDescription(String systemDescription) {
 		this.systemDescription = systemDescription;
+	}
+
+	public synchronized void setTransactionTimeout(int transactionTimeout) {
+		this.transactionTimeout = transactionTimeout;
 	}
 
 }

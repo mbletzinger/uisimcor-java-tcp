@@ -17,7 +17,7 @@ public class TransactionDone extends TransactionState {
 
 	@Override
 	public void execute(Transaction transaction) {
-		sap.recordTransaction((SimpleTransaction) transaction, next);
+		sap.recordTransaction(transaction, next);
 	}
 
 }
