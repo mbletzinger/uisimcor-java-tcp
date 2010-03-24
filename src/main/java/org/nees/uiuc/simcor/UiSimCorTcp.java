@@ -27,6 +27,7 @@ import org.nees.uiuc.simcor.states.common.StartListener;
 import org.nees.uiuc.simcor.states.common.StopListener;
 import org.nees.uiuc.simcor.states.common.TransactionDone;
 import org.nees.uiuc.simcor.states.common.WaitForCommand;
+import org.nees.uiuc.simcor.states.common.WaitForOpenCommand;
 import org.nees.uiuc.simcor.states.common.WaitForOpenResponse;
 import org.nees.uiuc.simcor.states.common.WaitForResponsePosting;
 import org.nees.uiuc.simcor.states.p2p.AssembleCommand;
@@ -36,7 +37,6 @@ import org.nees.uiuc.simcor.states.p2p.ShutdownConnection;
 import org.nees.uiuc.simcor.states.p2p.WaitForResponse;
 import org.nees.uiuc.simcor.states.p2p.AssembleCommand.AssembleCommandType;
 import org.nees.uiuc.simcor.tcp.Connection;
-import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
@@ -76,7 +76,14 @@ public class UiSimCorTcp {
 	private void execute() {
 		TransactionState state = machine.get(transaction.getState());
 		log.debug("Executing state: " + transaction.getState());
+		if (state == null) {
+			log.error("State not recognized " + transaction.getState());
+		}
 		state.execute(transaction);
+	}
+
+	public TransactionFactory getTf() {
+		return sap.getTf();
 	}
 
 	public Archiving getArchive() {
@@ -180,8 +187,6 @@ public class UiSimCorTcp {
 									TransactionStateNames.CHECK_LISTENER_OPEN_CONNECTION));
 			machine.put(TransactionStateNames.STOP_LISTENER, new StopListener(
 					sap));
-			machine.put(TransactionStateNames.TRANSACTION_DONE,
-					new TransactionDone(sap, TransactionStateNames.READY));
 			machine.put(TransactionStateNames.WAIT_FOR_COMMAND,
 					new WaitForCommand(sap));
 			machine.put(TransactionStateNames.WAIT_FOR_RESPONSE_POSTING,
@@ -193,9 +198,8 @@ public class UiSimCorTcp {
 							TransactionStateNames.ASSEMBLE_CLOSE_COMMAND, sap,
 							AssembleCommandType.CLOSE));
 			machine.put(TransactionStateNames.ASSEMBLE_COMMAND,
-					new AssembleCommand(
-							TransactionStateNames.ASSEMBLE_COMMAND, sap,
-							AssembleCommandType.OTHER));
+					new AssembleCommand(TransactionStateNames.ASSEMBLE_COMMAND,
+							sap, AssembleCommandType.OTHER));
 			machine.put(TransactionStateNames.ASSEMBLE_OPEN_COMMAND,
 					new AssembleCommand(
 							TransactionStateNames.ASSEMBLE_OPEN_COMMAND, sap,
@@ -220,8 +224,6 @@ public class UiSimCorTcp {
 					new SetupReadMessage(
 							TransactionStateNames.SETUP_READ_COMMAND, sap,
 							false, TransactionStateNames.WAIT_FOR_RESPONSE));
-			machine.put(TransactionStateNames.TRANSACTION_DONE,
-					new TransactionDone(sap, TransactionStateNames.READY));
 			machine.put(TransactionStateNames.WAIT_FOR_OPEN_RESPONSE,
 					new WaitForOpenResponse(sap));
 			machine.put(TransactionStateNames.WAIT_FOR_RESPONSE,
@@ -240,36 +242,38 @@ public class UiSimCorTcp {
 									sap, false));
 			machine.put(TransactionStateNames.CHECK_OPEN_CONNECTION,
 					new CheckOpenConnection(sap,
-							TransactionStateNames.SETUP_READ_COMMAND));
+							TransactionStateNames.SETUP_READ_OPEN_COMMAND));
 			machine.put(TransactionStateNames.CLOSING_CONNECTION,
 					new CloseConnection(sap));
 			machine.put(TransactionStateNames.COMMAND_AVAILABLE,
 					new CommandAvailable(sap));
 			machine.put(TransactionStateNames.OPENING_CONNECTION,
 					new OpenConnection(sap));
-			machine.put(TransactionStateNames.READY, new Ready(sap));
 			machine.put(TransactionStateNames.SENDING_RESPONSE,
 					new SendingResponse(sap));
 			machine.put(TransactionStateNames.SETUP_READ_OPEN_COMMAND,
 					new SetupReadMessage(
 							TransactionStateNames.SETUP_READ_OPEN_COMMAND, sap,
 							true, TransactionStateNames.WAIT_FOR_OPEN_COMMAND));
+			machine.put(TransactionStateNames.WAIT_FOR_OPEN_COMMAND,
+					new WaitForOpenCommand(sap));
 			machine.put(TransactionStateNames.SETUP_READ_COMMAND,
 					new SetupReadMessage(
 							TransactionStateNames.SETUP_READ_COMMAND, sap,
 							true, TransactionStateNames.WAIT_FOR_COMMAND));
-			machine.put(TransactionStateNames.TRANSACTION_DONE,
-					new TransactionDone(sap, TransactionStateNames.READY));
 			machine.put(TransactionStateNames.WAIT_FOR_COMMAND,
 					new WaitForCommand(sap));
 			machine.put(TransactionStateNames.WAIT_FOR_RESPONSE_POSTING,
 					new WaitForResponsePosting(sap));
 		}
+		machine.put(TransactionStateNames.READY, new Ready(sap));
 
 		this.archive = sap.getArchive();
 		transaction = sap.getTf().createSendCommandTransaction(null,
 				sap.getTf().getTransactionTimeout());
-		transaction.setState(TransactionStateNames.TRANSACTION_DONE);
+		machine.put(TransactionStateNames.TRANSACTION_DONE,
+				new TransactionDone(sap, TransactionStateNames.READY));
+		transaction.setState(TransactionStateNames.READY);
 		sap.getTf().setMdl(mdl);
 
 	}
@@ -289,12 +293,17 @@ public class UiSimCorTcp {
 			return;
 		}
 
-		transaction = sap.getTf().createSendCommandTransaction(null,
+		transaction = getTf().createSendCommandTransaction(
+				getTf().createSessionCommand(false),
 				sap.getTf().getTransactionTimeout());
 		if (connectType.equals(ConnectType.P2P_RECEIVE_COMMAND)) {
 			transaction.setState(TransactionStateNames.SHUTDOWN_CONNECTION);
-		} else {
+		}
+		if (connectType.equals(ConnectType.P2P_SEND_COMMAND)) {
 			transaction.setState(TransactionStateNames.ASSEMBLE_CLOSE_COMMAND);
+		}
+		if (connectType.equals(ConnectType.TRIGGER_CLIENT)) {
+			transaction.setState(TransactionStateNames.CLOSING_CONNECTION);
 		}
 		log.info("Closing connection");
 		log.info("Shutting down network logger");
@@ -306,7 +315,7 @@ public class UiSimCorTcp {
 	 * Starts a Receive command transaction.
 	 */
 	public void startTransaction(int msgTimeout) {
-		transaction = sap.getTf().createReceiveCommandTransaction(msgTimeout);
+		transaction = getTf().createReceiveCommandTransaction(msgTimeout);
 		transaction.setState(TransactionStateNames.SETUP_READ_COMMAND);
 		transaction.setDirection(DirectionType.RECEIVE_COMMAND);
 		execute();

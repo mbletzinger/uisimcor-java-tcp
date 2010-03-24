@@ -10,7 +10,7 @@ import org.nees.uiuc.simcor.transaction.Transaction;
 public class AssembleCloseTriggerCommands extends TransactionState {
 
 	public AssembleCloseTriggerCommands(StateActionsProcessor sap) {
-		super(TransactionStateNames.ASSEMBLE_CLOSE_TRIGGER_COMMANDS, sap,TransactionStateNames.SEND_CLOSE_TRIGGER_COMMANDS);
+		super(TransactionStateNames.ASSEMBLE_CLOSE_TRIGGER_COMMANDS, sap,TransactionStateNames.BROADCAST_CLOSE_COMMAND);
 	}
 
 	@Override

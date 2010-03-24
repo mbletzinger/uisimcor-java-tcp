@@ -33,11 +33,7 @@ public class T06_TriggerTest {
 
 	private BroadcastTransaction broadcast() {
 		number++;
-		TransactionIdentity id = tf.createTransactionId(number, 0, 0);
-		tf.setId(id);
-		SimCorMsg msg = tf.createCommand("trigger", "MDL-00-01", null,
-				"Broadcast " + tf.getSystemDescription());
-		BroadcastTransaction transaction = tf.createBroadcastTransaction(msg);
+		BroadcastTransaction transaction = tf.createBroadcastTransaction(number,0,0,5000);
 		sap.assembleTriggerCommands(transaction,
 				TransactionStateNames.BROADCAST_COMMAND, false);
 		log.debug("Assemble Broadcast " + transaction);
@@ -241,5 +237,54 @@ public class T06_TriggerTest {
 		transaction = broadcast();
 		log.debug("Results for " + number + ": " + transaction);
 		checkTransaction(transaction, false, true, 0);
+	}
+	@Test
+	public void test04BatchWitCloseTriggering() {
+		startClient();
+		checkClientList(1);
+		BroadcastTransaction transaction = broadcast();
+		log.debug("Results for " + number + ": " + transaction);
+		checkTransaction(transaction, true, false, 1);
+		transaction = broadcast();
+		log.debug("Results for " + number + ": " + transaction);
+		checkTransaction(transaction, false, false, 1);
+		startClient();
+		startClient();
+		startClient();
+		checkClientList(4);
+		transaction = broadcast();
+		log.debug("Results for " + number + ": " + transaction);
+		checkTransaction(transaction, true, false, 4);
+		int count = 0;
+		transaction = sap.getTf().createCloseTriggerTransaction(sap.getTf().getTransactionTimeout());
+		sap.assembleTriggerCommands(transaction,
+				TransactionStateNames.BROADCAST_CLOSE_COMMAND, true);
+		log.debug("Assemble Close Broadcast " + transaction);
+		TransactionStateNames prevState = TransactionStateNames.READY;
+		while (transaction.getState().equals(
+				TransactionStateNames.BROADCAST_CLOSE_COMMAND)) {
+			sap.broadcastCommands(transaction,
+					TransactionStateNames.CLOSE_TRIGGER_CONNECTIONS);
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+			}
+			if (transaction.getState().equals(prevState) == false) {
+				 log.debug("Commanding broadcast " + transaction);
+				prevState = transaction.getState();
+			}
+		}
+		checkMsgs();
+		log.debug("Broadcast done" + transaction);
+		while(transaction.getState().equals(TransactionStateNames.CLOSE_TRIGGER_CONNECTIONS) && count < 50) {
+			sap.closeTriggerConnections(transaction, TransactionStateNames.STOP_LISTENER);
+			try {
+				Thread.sleep(400);
+			} catch (InterruptedException e) {
+			}
+			log.debug("Closing connection " + transaction);
+		}
+		Assert.assertTrue("count is less than 50", count < 50);
+		checkClientList(0);
 	}
 }
