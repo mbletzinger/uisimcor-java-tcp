@@ -246,3 +246,21 @@ null
 22-March-2010 09:39:11.837	RCVD	OK	0	trans200912317925.320[100 23 0]	trigger received
 22-March-2010 09:39:12.018	SENT	propose	trans20080206155057.44	MDL-00-01	x	displacement	1.0000000000e-003	y	displacement	2.0000000000e-003	z	rotation	3.0000000000e-003	MDL-00-02	x	displacement	4.0000000000e-003	y	displacement	5.0000000000e-003	z	rotation	6.0000000000e-003	MDL-00-03	x	displacement	7.0000000000e-003	y	displacement	8.0000000000e-003	z	rotation	9.0000000000e-003
 22-March-2010 09:39:12.444	RCVD	OK	0	trans20080206155057.44	MDL-00-01	x	displacement	1.0000000000e-003	y	displacement	2.0000000000e-003	z	rotation	3.0000000000e-003	MDL-00-02	x	displacement	4.0000000000e-003	y	displacement	5.0000000000e-003	z	rotation	6.0000000000e-003	MDL-00-03	x	displacement	7.0000000000e-003	y	displacement	8.0000000000e-003	z	rotation	9.0000000000e-003
+26-March-2010 21:19:40.886	SENT	open-session	MDL-00-00	SENDER
+26-March-2010 21:19:41.329	RCVD	OK	0	MDL-00-01	[RESPONDER] open-session done
+26-March-2010 21:19:41.502	SENT	set-parameter	dummySetParam	nstep	0
+26-March-2010 21:19:44.827	RCVD	OK	0	Command ignored. Carry on.
+26-March-2010 21:19:45.028	SENT	get-control-point	dummy	MDL-00-01:LBCB2
+26-March-2010 21:19:45.437	RCVD	OK	0	dummy	MDL-00-01:LBCB2	x	displacement	5.036049E-1	y	displacement	1.557691E-4	z	displacement	-7.850649E-4	x	rotation	3.829964E-5	y	rotation	-2.747683E-5	z	rotation	1.195688E-3	x	force	6.296413E+0	y	force	1.451685E-1	z	force	-1.252275E+0	x	moment	7.296673E-1	y	moment	-2.214440E+0	z	moment	3.522242E-2
+26-March-2010 21:19:45.615	SENT	get-control-point	dummy	MDL-00-01:ExternalSensors
+26-March-2010 21:19:46.047	RCVD	OK	0	dummy	MDL-00-01:ExternalSensors		1_LBCB1_x	external	-7.565553E-1	2_LBCB1_z_right	external	0.000000E+0	3_LBCB1_z_left	external	-8.081407E-1	4_LBCB2_z_right	external	0.000000E+0	5_LBCB2_z_left	external	7.518438E-2	6_LBCB2_x	external	0.00]000E+0
+26-March-2010 21:19:46.224	SENT	get-control-point	dummy	MDL-00-01:ExternalSensors
+26-March-2010 21:19:46.651	RCVD	OK	0	dummy	MDL-00-01:ExternalSensors		1_LBCB1_x	external	-7.565553E-1	2_LBCB1_z_right	external	0.000000E+0	3_LBCB1_z_left	external	-8.081407E-1	4_LBCB2_z_right	external	0.000000E+0	5_LBCB2_z_left	external	7.518438E-2	6_LBCB2_x	external	0.00]000E+0
+26-March-2010 21:19:46.828	SENT	propose	trans20100326211938.037[100 23 0]	MDL-00-01:LBCB1	x	displacement	0.5	y	displacement	0.0	MDL-00-01:LBCB2	z	displacement	0.5	y	rotation	0.002
+26-March-2010 21:19:47.253	RCVD	OK	0	trans20100326211938.037[100 23 0]	propose accepted
+26-March-2010 21:19:47.438	SENT	execute	trans200912317925.320[100 23 0]
+26-March-2010 21:19:47.854	RCVD	OK	0	trans200912317925.320[100 23 0]	execute done
+26-March-2010 21:19:48.032	SENT	trigger	trans200912317925.320[100 23 0]
+26-March-2010 21:19:48.459	RCVD	OK	0	trans200912317925.320[100 23 0]	trigger received
+26-March-2010 21:19:48.646	SENT	propose	trans20080206155057.44	MDL-00-01	x	displacement	1.0000000000e-003	y	displacement	2.0000000000e-003	z	rotation	3.0000000000e-003	MDL-00-02	x	displacement	4.0000000000e-003	y	displacement	5.0000000000e-003	z	rotation	6.0000000000e-003	MDL-00-03	x	displacement	7.0000000000e-003	y	displacement	8.0000000000e-003	z	rotation	9.0000000000e-003
+26-March-2010 21:19:49.061	RCVD	OK	0	trans20080206155057.44	MDL-00-01	x	displacement	1.0000000000e-003	y	displacement	2.0000000000e-003	z	rotation	3.0000000000e-003	MDL-00-02	x	displacement	4.0000000000e-003	y	displacement	5.0000000000e-003	z	rotation	6.0000000000e-003	MDL-00-03	x	displacement	7.0000000000e-003	y	displacement	8.0000000000e-003	z	rotation	9.0000000000e-003

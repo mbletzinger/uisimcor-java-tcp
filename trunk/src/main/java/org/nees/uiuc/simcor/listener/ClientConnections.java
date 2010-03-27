@@ -144,7 +144,7 @@ public class ClientConnections {
 				result = false;
 				continue;
 			}
-			if (rsp.getError().getType().equals(TcpErrorTypes.NONE) == false) {
+			if (rsp.getError().errorsExist()) {
 				int idx = clients.indexOf(c);
 				if (message == null) {
 					message = "";
