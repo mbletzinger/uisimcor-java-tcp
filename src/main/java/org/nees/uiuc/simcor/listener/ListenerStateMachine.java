@@ -140,7 +140,7 @@ public class ListenerStateMachine extends Thread {
 		setError(transaction.getError());
 		transaction.setState(TransactionStateNames.LISTEN_FOR_CONNECTIONS);
 		setCurrentState(transaction.getState());
-		if (transaction.getError().getType().equals(TcpErrorTypes.NONE) == false) {
+		if (transaction.getError().errorsExist()) {
 			return;
 		}
 		setRunning(true);

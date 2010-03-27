@@ -55,6 +55,9 @@ public class TcpError {
 		this.type = error;
 	}
 
+	public boolean errorsExist() {
+		return getType().equals(TcpErrorTypes.NONE) == false;
+	}
 	@Override
 	public String toString() {
 		String result = "/type=" + type;
