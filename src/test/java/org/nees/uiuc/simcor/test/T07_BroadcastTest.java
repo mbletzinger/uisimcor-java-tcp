@@ -12,9 +12,12 @@ import org.junit.Test;
 import org.nees.uiuc.simcor.UiSimCorTriggerBroadcast;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
+import org.nees.uiuc.simcor.tcp.TcpListen;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
+import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.test.util.TriggerStateMachine;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
+import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class T07_BroadcastTest {
 	private int clientIdx = 0;
@@ -94,6 +97,9 @@ public class T07_BroadcastTest {
 		lparams.setLocalPort(6445);
 		lparams.setTcpTimeout(5000);
 		simcor = new UiSimCorTriggerBroadcast("MDL-00-00", "Broadcaster Test");
+	}
+
+	private void startSimCor() {
 		simcor.startup(lparams);
 		TransactionStateNames state = simcor.isReady();
 		while (state.equals(TransactionStateNames.READY) == false) {
@@ -105,7 +111,6 @@ public class T07_BroadcastTest {
 			log.debug("Start Listening " + simcor.getTransaction());
 		}
 	}
-
 	private void startClient() {
 		String sys = "Client " + clientIdx;
 		TriggerStateMachine client = new TriggerStateMachine(cparams, sys);
@@ -152,6 +157,7 @@ public class T07_BroadcastTest {
 
 	@Test
 	public void test00NoClientTriggering() {
+		startSimCor();
 		checkClientList(0);
 		BroadcastTransaction transaction = broadcast();
 		log.debug("Results for " + number + ": " + transaction);
@@ -160,6 +166,7 @@ public class T07_BroadcastTest {
 
 	@Test
 	public void test01OneTriggering() {
+		startSimCor();
 		startClient();
 		checkClientList(1);
 		BroadcastTransaction transaction = broadcast();
@@ -177,6 +184,7 @@ public class T07_BroadcastTest {
 
 	@Test
 	public void test02TwoTriggering() {
+		startSimCor();
 		startClient();
 		checkClientList(1);
 		BroadcastTransaction transaction = broadcast();
@@ -201,6 +209,7 @@ public class T07_BroadcastTest {
 
 	@Test
 	public void test03BatchWithCloseTriggering() {
+		startSimCor();
 		startClient();
 		startClient();
 		startClient();
@@ -231,7 +240,37 @@ public class T07_BroadcastTest {
 		checkClientList(0);
 	}
 	@Test
-	public void test04OneClientWithDeadClientClose() {
+	public void test04StartListenerFail() {
+		TcpListen block = new TcpListen(lparams);
+		Assert.assertTrue(block.startListening());
+		simcor.startup(lparams);
+		TransactionStateNames state = simcor.isReady();
+		while(state.equals(TransactionStateNames.TRANSACTION_DONE) == false) {
+			state = simcor.isReady();
+			log.debug("Starttng up " + simcor.getTransaction());
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+			}
+		}
+		Transaction transaction = simcor.getTransaction();
+		log.debug("Started " + transaction);
+		Assert.assertEquals(TcpErrorTypes.IO_ERROR, transaction.getError().getType());
+		simcor.shutdown();
+		state = simcor.isReady();
+		while (state.equals(TransactionStateNames.READY) == false) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+			}
+			state = simcor.isReady();
+			log.debug("Closing down " + simcor.getTransaction());
+		}
+		Assert.assertTrue(block.stopListening());
+	}
+	@Test
+	public void test05OneClientWithDeadClientClose() {
+		startSimCor();
 		startClient();
 		checkClientList(1);
 		BroadcastTransaction transaction = broadcast();

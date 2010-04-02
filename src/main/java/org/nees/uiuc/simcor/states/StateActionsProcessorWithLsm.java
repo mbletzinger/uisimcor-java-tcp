@@ -31,8 +31,12 @@ public class StateActionsProcessorWithLsm extends StateActionsProcessor {
 	public void startListener(Transaction transaction, TransactionStateNames next) {
 		lsm.getSap().setParams(params);
 		lsm.start();
+		try {
+			Thread.sleep(200); //Give it time to bind the address
+		} catch (InterruptedException e) {
+		}
 		TcpError error = lsm.getError();
-		setStatus(transaction, error, next);
+		setStatus(transaction, error, next, TransactionStateNames.STOP_LISTENER);
 		log.debug("Start Listener " + transaction);
 }
 	public void stopListener(Transaction transaction, TransactionStateNames next) {
@@ -42,7 +46,7 @@ public class StateActionsProcessorWithLsm extends StateActionsProcessor {
 			return;
 		}
 		TcpError error = lsm.getError();
-		setStatus(transaction, error, next);
+		setStatus(transaction, error, next, next);
 		log.debug("Stop Listener " + transaction);
 	}
 
