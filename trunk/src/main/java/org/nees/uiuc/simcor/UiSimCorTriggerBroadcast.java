@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.factories.ListenerConnectionFactory;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.listener.ClientConnections;
-import org.nees.uiuc.simcor.listener.ClientIdWithConnection;
 import org.nees.uiuc.simcor.listener.ListenerStateMachine;
 import org.nees.uiuc.simcor.logging.Archiving;
 import org.nees.uiuc.simcor.logging.ExitTransaction;
@@ -28,9 +27,7 @@ import org.nees.uiuc.simcor.states.common.TransactionDone;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
-import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;
-import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity.StepTypes;
 
@@ -142,12 +139,13 @@ public class UiSimCorTriggerBroadcast {
 
 	public void shutdown() {
 		if (connectionActive == false) {
+			log.warn("Broadcast trigger is already shut down");
 			return;
 		}
 
 		transaction = sap.getTf().createCloseTriggerTransaction(sap.getTf().getTransactionTimeout());
 		transaction.setState(TransactionStateNames.ASSEMBLE_CLOSE_TRIGGER_COMMANDS);
-		log.info("Closing connection");
+		log.info("Shutting down broadcast trigger");
 		log.info("Shutting down network logger");
 		archive.logTransaction(new ExitTransaction());
 		connectionActive = false;
