@@ -137,6 +137,7 @@ public class ListenerStateMachine extends Thread {
 	@Override
 	public void run() {
 		SimpleTransaction transaction = initialize();
+		log.debug("LSM initialized " + transaction);
 		setError(transaction.getError());
 		transaction.setState(TransactionStateNames.LISTEN_FOR_CONNECTIONS);
 		setCurrentState(transaction.getState());
