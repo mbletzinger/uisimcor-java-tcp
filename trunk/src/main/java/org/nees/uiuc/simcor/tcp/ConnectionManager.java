@@ -3,6 +3,7 @@ package org.nees.uiuc.simcor.tcp;
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.tcp.Connection.ConnectionStatus;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
+import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 
 public class ConnectionManager {
 
@@ -19,6 +20,15 @@ public class ConnectionManager {
 	}
 
 	public TcpError checkForErrors(Connection c) {
+		if(c.isAlive() == false) {
+			if(c.isRunning()) {
+				TcpError err = new TcpError();
+				err.setType(TcpErrorTypes.THREAD_DIED);
+				err.setRemoteHost(c.getRemoteHost());
+				err.setText("Connection has died");
+				return err;
+			}
+		}
 		return c.getFromRemoteMsg().getError();
 	}
 	public boolean closeConnection() {

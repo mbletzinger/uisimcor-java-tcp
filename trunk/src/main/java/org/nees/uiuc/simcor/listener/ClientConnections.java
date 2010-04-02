@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto;
+import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.Connection.ConnectionStatus;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
@@ -68,7 +69,13 @@ public class ClientConnections {
 			}
 			message += c.system + " at " + c.remoteHost + " is connected.\n";
 		}
-		transaction.setBroadcastMsg(message);
+		if (message != null) {
+			transaction.setBroadcastMsg(message);
+			TcpError err = new TcpError();
+			err.setType(TcpErrorTypes.BROADCAST_CLIENTS_ADDED);
+			err.setText(message);
+			transaction.setError(err);
+		}
 		newClients.clear();
 	}
 
@@ -79,7 +86,7 @@ public class ClientConnections {
 		c.setToRemoteMsg(action);
 	}
 
-	private boolean  closeConnection(Connection c) {
+	private boolean closeConnection(Connection c) {
 		if (c == null) {
 			return true;
 		}
@@ -88,9 +95,10 @@ public class ClientConnections {
 			cmd.setAction(ActionsType.CLOSE);
 			c.setToRemoteMsg(cmd);
 		}
-		return c.getConnectionState().equals(ConnectionStatus.CLOSED) || (c.isAlive() == false);
+		return c.getConnectionState().equals(ConnectionStatus.CLOSED)
+				|| (c.isAlive() == false);
 	}
-	
+
 	private void sendMsg(Connection client, SimCorMsg msg,
 			TransactionIdentity id) {
 		client.setMsgTimeout(msgTimeout);
@@ -106,7 +114,8 @@ public class ClientConnections {
 		this.msgTimeout = msgTimeout;
 	}
 
-	public synchronized void setupResponsesCheck(BroadcastTransaction transaction) {
+	public synchronized void setupResponsesCheck(
+			BroadcastTransaction transaction) {
 		for (ClientIdWithConnection c : clients) {
 			readMsg(c.connection);
 		}
@@ -121,7 +130,7 @@ public class ClientConnections {
 		}
 		return allClosed;
 	}
-	
+
 	public synchronized boolean waitForBroadcastFinished() {
 		for (ClientIdWithConnection c : clients) {
 			if (c.connection.getConnectionState() == ConnectionStatus.BUSY) {
@@ -145,7 +154,6 @@ public class ClientConnections {
 				continue;
 			}
 			if (rsp.getError().errorsExist()) {
-				int idx = clients.indexOf(c);
 				if (message == null) {
 					message = "";
 				}
@@ -153,12 +161,15 @@ public class ClientConnections {
 						+ c.remoteHost + " because " + rsp.getError().getText()
 						+ "\n";
 				transaction.setResponseMsg(message);
+				TcpError err = new TcpError();
+				err.setType(TcpErrorTypes.BROADCAST_CLIENTS_LOST);
+				err.setText(message);
+				transaction.setError(err);
 				lostClients.add(c);
 				closeClient(c.connection);
 			} else {
-				transaction.getResponses().add(rsp);				
+				transaction.getResponses().add(rsp);
 			}
-			int ridx = waitingForResponse.indexOf(c);
 			log.debug("Response received from " + c.system);
 			responseReceived.add(c);
 		}

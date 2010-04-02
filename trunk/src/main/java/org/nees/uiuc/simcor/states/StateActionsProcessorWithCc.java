@@ -22,10 +22,12 @@ public class StateActionsProcessorWithCc extends StateActionsProcessorWithLsm {
 	public void assembleTriggerCommands(BroadcastTransaction transaction, TransactionStateNames next, boolean isClose) {
 		if(isClose) {
 			SimCorMsg msg = tf.createSessionCommand(false);
-			transaction.setCommand(msg);
+			transaction.setCommand(msg);			
 		}
 		cc.assembleTriggerMessages(transaction);
-		setStatus((Transaction)transaction, new TcpError(), next);
+		log.debug("During Assemble " + transaction);
+		setStatus((Transaction)transaction, transaction.getError(), next,next);
+		log.debug("After Assemble " + transaction);
 	}
 	public void broadcastCommands(BroadcastTransaction transaction, TransactionStateNames next) {
 		TransactionStateNames state = transaction.getState();
@@ -35,24 +37,19 @@ public class StateActionsProcessorWithCc extends StateActionsProcessorWithLsm {
 		} else {
 			log.debug("Still broadcasting");
 		}
-		TcpError err = new TcpError();
-		if(transaction.getBroadcastMsg() != null) {
-			err.setType(TcpErrorTypes.BROADCAST_CLIENTS_ADDED);
-			err.setText(transaction.getBroadcastMsg());
-		}
-		setStatus((Transaction)transaction, err, state, state);
+		setStatus((Transaction)transaction, transaction.getError(), state, state);
 	}
 	public void closeTriggerConnections(Transaction transaction, TransactionStateNames next) {
 		boolean allClosed = cc.closeClientConnections();
 		if(allClosed ==  false) {
 			return;
 		}
-		setStatus((Transaction)transaction,  new TcpError(), next, next);
+		setStatus((Transaction)transaction,  transaction.getError(), next, next);
 
 	}
 	public void setupTriggerResponses(Transaction transaction, TransactionStateNames next) {
 		cc.setupResponsesCheck((BroadcastTransaction) transaction);
-		setStatus(transaction, new TcpError(), next);		
+		setStatus(transaction, transaction.getError(), next,next);		
 		
 	}
 	public void waitForTriggerResponse(BroadcastTransaction transaction, TransactionStateNames next) {
@@ -63,12 +60,7 @@ public class StateActionsProcessorWithCc extends StateActionsProcessorWithLsm {
 		} else {
 			log.debug("Still waiting for responses");
 		}
-		TcpError err = new TcpError();
-		if(transaction.getResponseMsg() != null) {
-			err.setType(TcpErrorTypes.BROADCAST_CLIENTS_LOST);
-			err.setText(transaction.getResponseMsg());
-		}
-		setStatus(transaction, err, state,state);	
+		setStatus(transaction, transaction.getError(), state,state);	
 	}
 
 }
