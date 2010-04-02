@@ -38,6 +38,7 @@ public class StateActionsProcessorWithCc extends StateActionsProcessorWithLsm {
 		TcpError err = new TcpError();
 		if(transaction.getBroadcastMsg() != null) {
 			err.setType(TcpErrorTypes.BROADCAST_CLIENTS_ADDED);
+			err.setText(transaction.getBroadcastMsg());
 		}
 		setStatus((Transaction)transaction, err, state, state);
 	}
@@ -65,6 +66,7 @@ public class StateActionsProcessorWithCc extends StateActionsProcessorWithLsm {
 		TcpError err = new TcpError();
 		if(transaction.getResponseMsg() != null) {
 			err.setType(TcpErrorTypes.BROADCAST_CLIENTS_LOST);
+			err.setText(transaction.getResponseMsg());
 		}
 		setStatus(transaction, err, state,state);	
 	}
