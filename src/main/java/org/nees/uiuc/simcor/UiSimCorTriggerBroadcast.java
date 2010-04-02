@@ -25,6 +25,7 @@ import org.nees.uiuc.simcor.states.common.StartListener;
 import org.nees.uiuc.simcor.states.common.StopListener;
 import org.nees.uiuc.simcor.states.common.TransactionDone;
 import org.nees.uiuc.simcor.tcp.Connection;
+import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
@@ -57,7 +58,7 @@ public class UiSimCorTriggerBroadcast {
 
 	private void execute() {
 		TransactionState state = machine.get(transaction.getState());
-		log.debug("Executing state: " + transaction.getState());
+		log.debug("Executing: " + transaction);
 		if(state == null) {
 			log.error("State not recognized " + transaction.getState() );
 		}
@@ -163,6 +164,7 @@ public class UiSimCorTriggerBroadcast {
 		this.transaction = transaction;
 		this.transaction.setState(TransactionStateNames.ASSEMBLE_TRIGGER_COMMANDS);
 		this.transaction.setDirection(DirectionType.SEND_COMMAND);
+		this.transaction.setError(new TcpError());
 		execute();
 	}
 

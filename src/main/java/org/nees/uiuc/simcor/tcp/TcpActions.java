@@ -1,6 +1,5 @@
 package org.nees.uiuc.simcor.tcp;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,27 +13,29 @@ import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 
 public class TcpActions {
 
-	private byte [] eom = new byte[2];
-	private TcpLinkDto link  = new TcpLinkDto();
+	private byte[] eom = new byte[2];
+	private TcpLinkDto link = new TcpLinkDto();
 	private final Logger log = Logger.getLogger(TcpActions.class);
 	private TcpParameters parameters;
 	private final StringListUtils slu = new StringListUtils();
+
 	public TcpActions() {
 		super();
 		String endOfMsgS = "\r\n";
 		eom = endOfMsgS.getBytes();
 		log.debug("eom is [" + eom + "]");
-		if(log.isDebugEnabled()) {
+		if (log.isDebugEnabled()) {
 			String str = slu.Byte2HexString(eom);
 			log.debug("EOM[" + str + "] length " + eom.length);
 		}
 
 	}
+
 	public TcpActionsDto closeConnection() {
 		TcpActionsDto result = new TcpActionsDto();
 		Msg2Tcp message = new Msg2Tcp();
 		result.setMsg(message);
-		if(link.getSocket() == null) {
+		if (link.getSocket() == null) {
 			TcpError error = new TcpError();
 			error.setText("Connection does not exist");
 			error.setType(TcpErrorTypes.UNKNOWN_REMOTE_HOST);
@@ -47,19 +48,19 @@ public class TcpActions {
 		try {
 			socket.close();
 		} catch (IOException e) {
-			String msg = "Closing connection to " + remoteHost
-					+ " failed";
+			String msg = "Closing connection to " + remoteHost + " failed";
 			log.error(msg, e);
 			TcpError error = new TcpError();
 			error.setText(msg);
 			error.setType(TcpErrorTypes.IO_ERROR);
-			result.setError(error);			
+			result.setError(error);
 		}
 		TcpError error = new TcpError();
 		error.setType(TcpErrorTypes.NONE);
 		result.setError(error);
 		return result;
 	}
+
 	public TcpActionsDto connect() {
 		TcpActionsDto result = new TcpActionsDto();
 		Msg2Tcp message = new Msg2Tcp();
@@ -97,12 +98,15 @@ public class TcpActions {
 		result.setError(error);
 		return result;
 	}
+
 	public TcpLinkDto getLink() {
 		return link;
 	}
+
 	public TcpParameters getParameters() {
 		return parameters;
 	}
+
 	public TcpActionsDto readMessage(int msgTimeout) {
 		TcpActionsDto result = new TcpActionsDto();
 		String remoteHost = link.getRemoteHost();
@@ -110,13 +114,12 @@ public class TcpActions {
 		try {
 			in = link.getSocket().getInputStream();
 		} catch (IOException e) {
-			String msg = "Reading message from " + remoteHost
-					+ " failed";
+			String msg = "Reading message from " + remoteHost + " failed";
 			log.error(msg, e);
 			TcpError error = new TcpError();
 			error.setText(msg);
 			error.setType(TcpErrorTypes.IO_ERROR);
-			result.setError(error);			
+			result.setError(error);
 			return result;
 		}
 
@@ -138,13 +141,12 @@ public class TcpActions {
 			try {
 				avail = in.available();
 			} catch (IOException e) {
-				String msg = "Reading message from "
-						+ remoteHost + " failed";
+				String msg = "Reading message from " + remoteHost + " failed";
 				log.error(msg, e);
 				TcpError error = new TcpError();
 				error.setText(msg);
 				error.setType(TcpErrorTypes.IO_ERROR);
-				result.setError(error);			
+				result.setError(error);
 				Msg2Tcp message = new Msg2Tcp();
 				result.setMsg(message);
 				return result;
@@ -158,13 +160,13 @@ public class TcpActions {
 				try {
 					amt = in.read(buf, 0, amt);
 				} catch (IOException e) {
-					String msg = "Reading message from "
-							+ remoteHost + " failed";
+					String msg = "Reading message from " + remoteHost
+							+ " failed";
 					log.error(msg, e);
 					TcpError error = new TcpError();
 					error.setText(msg);
 					error.setType(TcpErrorTypes.IO_ERROR);
-					result.setError(error);			
+					result.setError(error);
 					Msg2Tcp message = new Msg2Tcp();
 					result.setMsg(message);
 					return result;
@@ -173,11 +175,11 @@ public class TcpActions {
 				int marker = 0;
 				for (int i = 0; i < amt; i++) {
 					// scan for the CRLF characters which delineate messages
-					if (buf[i] == eom[1] ) {
+					if (buf[i] == eom[1]) {
 						marker = i - 1;
 						log.debug("found CR at " + i);
-						if(i > 0) {
-							crByte = buf[i-1];
+						if (i > 0) {
+							crByte = buf[i - 1];
 						}
 						if (crByte != eom[0]) {
 							marker = i;
@@ -186,7 +188,11 @@ public class TcpActions {
 						log.debug("found chars " + tmp);
 						soFar.append(tmp);
 						Msg2Tcp message = new Msg2Tcp();
-						message.parse(soFar.substring(0, soFar.length())); // Make sure CR is gone
+						message.parse(soFar.substring(0, soFar.length())); // Make
+																			// sure
+																			// CR
+																			// is
+																			// gone
 						result.setMsg(message);
 						log.debug("Received [" + soFar.toString() + "]");
 						TcpError error = new TcpError();
@@ -203,13 +209,13 @@ public class TcpActions {
 				try {
 					avail = in.available();
 				} catch (IOException e) {
-					String msg = "Reading message from "
-							+ remoteHost + " failed";
+					String msg = "Reading message from " + remoteHost
+							+ " failed";
 					log.error(msg, e);
 					TcpError error = new TcpError();
 					error.setText(msg);
 					error.setType(TcpErrorTypes.IO_ERROR);
-					result.setError(error);			
+					result.setError(error);
 					Msg2Tcp message = new Msg2Tcp();
 					result.setMsg(message);
 					return result;
@@ -217,18 +223,19 @@ public class TcpActions {
 			}
 			long time = (System.currentTimeMillis() - start);
 			if (time > msgTimeout) {
-				String msg = "Reading message from "
-						+ remoteHost + " timed out > " + msgTimeout;
+				String msg = "Reading message from " + remoteHost
+						+ " timed out > " + msgTimeout;
 				log.error(msg);
 				TcpError error = new TcpError();
 				error.setText(msg);
 				error.setType(TcpErrorTypes.IO_ERROR);
-				result.setError(error);			
+				result.setError(error);
 				Msg2Tcp message = new Msg2Tcp();
 				result.setMsg(message);
 				return result;
 			} else {
-//				log.debug("Timeout " + time + " < " + parameters.getTcpTimeout());
+				// log.debug("Timeout " + time + " < " +
+				// parameters.getTcpTimeout());
 			}
 
 		}
@@ -237,11 +244,12 @@ public class TcpActions {
 		result.setError(error);
 		return result;
 	}
+
 	public TcpActionsDto sendMessage(TcpActionsDto state) {
 		TcpActionsDto result = new TcpActionsDto();
 		result.setMsg(state.getMsg());
-		byte [] sendeom;
-		if(parameters.isLfcrSendEom()) {
+		byte[] sendeom;
+		if (parameters.isLfcrSendEom()) {
 			sendeom = eom;
 		} else {
 			String endOfMsgS = "\n";
@@ -257,37 +265,50 @@ public class TcpActions {
 			TcpError error = new TcpError();
 			error.setText(msg);
 			error.setType(TcpErrorTypes.IO_ERROR);
-			result.setError(error);			
+			result.setError(error);
 			return result;
 
 		}
-			
+
+		if (link.getSocket().isOutputShutdown() || link.getSocket().isClosed()
+				|| link.getSocket().isInputShutdown()
+				|| (link.getSocket().isConnected() == false)) {
+			String msg = "Send message [" + outMsg + "] to " + remoteHost
+					+ " failed socket is closed";
+			log.error(msg);
+			TcpError error = new TcpError();
+			error.setText(msg);
+			error.setType(TcpErrorTypes.IO_ERROR);
+			result.setError(error);
+			return result;
+
+		}
 		try {
 			out = link.getSocket().getOutputStream();
 			int lng = outMsg.length();
-			byte [] mbuf = outMsg.getBytes();
-			byte [] buf = new byte[lng + sendeom.length];
+			byte[] mbuf = outMsg.getBytes();
+			byte[] buf = new byte[lng + sendeom.length];
 
-			for (int b = 0; b < lng; b++)  {
+			for (int b = 0; b < lng; b++) {
 				buf[b] = mbuf[b];
 			}
-			
+
 			buf[lng] = sendeom[0];
-			
-			if(parameters.isLfcrSendEom()) {
+
+			if (parameters.isLfcrSendEom()) {
 				buf[lng + 1] = eom[1];
 			}
-			log.debug("WRITE: [" + slu.Byte2HexString(buf) + "]");			
+			log.debug("WRITE: [" + slu.Byte2HexString(buf) + "]");
 			out.write(buf);
 			out.flush();
-		} catch (IOException e) {
-			String msg = "Send message [" + outMsg + "] to "
-					+ remoteHost + " failed";
+		} catch (Exception e) {
+			String msg = "Send message [" + outMsg + "] to " + remoteHost
+					+ " failed";
 			log.error(msg, e);
 			TcpError error = new TcpError();
 			error.setText(msg);
 			error.setType(TcpErrorTypes.IO_ERROR);
-			result.setError(error);			
+			result.setError(error);
 			return result;
 		}
 		log.debug("Sent [" + outMsg + "]");
@@ -296,9 +317,11 @@ public class TcpActions {
 		result.setError(error);
 		return result;
 	}
+
 	public void setLink(TcpLinkDto link) {
 		this.link = link;
 	}
+
 	public void setParameters(TcpParameters parameters) {
 		this.parameters = parameters;
 	}

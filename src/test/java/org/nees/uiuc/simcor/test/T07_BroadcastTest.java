@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.nees.uiuc.simcor.TriggerBroadcastVamp;
 import org.nees.uiuc.simcor.UiSimCorTriggerBroadcast;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
@@ -291,5 +292,51 @@ public class T07_BroadcastTest {
 			state = simcor.isReady();
 			log.debug("Closing down " + simcor.getTransaction());
 		}
+	}
+	@Test
+	public void test06BatchWithVamp() throws InterruptedException {
+		startSimCor();
+		startClient();
+		startClient();
+		checkClientList(2);
+		TriggerBroadcastVamp vmp = new TriggerBroadcastVamp(simcor);
+		vmp.startVamp(1, 3000);
+		TcpErrorTypes err = vmp.getError().getType();
+		while(err.equals(TcpErrorTypes.NONE)) {
+			Thread.sleep(100);
+			err = vmp.getError().getType();
+			log.debug("Waiting for added clients " + err);
+		}
+		Assert.assertEquals(TcpErrorTypes.BROADCAST_CLIENTS_ADDED, err);
+		while(err.equals(TcpErrorTypes.BROADCAST_CLIENTS_ADDED)) {
+			Thread.sleep(100);
+			err = vmp.getError().getType();
+			log.debug("Waiting for NONE message " + err);
+		}
+		Assert.assertEquals(TcpErrorTypes.NONE, err);
+		log.debug("Killing a client");
+		endClient();
+		err = vmp.getError().getType();
+		while(err.equals(TcpErrorTypes.NONE)) {
+			Thread.sleep(100);
+			err = vmp.getError().getType();
+			log.debug("Waiting for lost clients " + err);
+		}
+		Assert.assertEquals(TcpErrorTypes.BROADCAST_CLIENTS_LOST, err);
+		while(vmp.stopVamp() == false) {
+			Thread.sleep(100);
+			log.debug("Waiting for vamp to stop");
+		}
+		simcor.shutdown();
+		TransactionStateNames state = simcor.isReady();
+		while (state.equals(TransactionStateNames.READY) == false) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+			}
+			state = simcor.isReady();
+			log.debug("Closing down " + simcor.getTransaction());
+		}
+		checkClientList(0);
 	}
 }
