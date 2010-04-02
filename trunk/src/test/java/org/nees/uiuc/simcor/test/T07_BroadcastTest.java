@@ -230,4 +230,27 @@ public class T07_BroadcastTest {
 		}
 		checkClientList(0);
 	}
+	@Test
+	public void test04OneClientWithDeadClientClose() {
+		startClient();
+		checkClientList(1);
+		BroadcastTransaction transaction = broadcast();
+		log.debug("Results for broadcast " + number + ": " + transaction);
+		checkTransaction(transaction, true, false, 1);
+		transaction = broadcast();
+		log.debug("Results for broadcast " + number + ": " + transaction);
+		checkTransaction(transaction, false, false, 1);
+		endClient();
+		checkClientList(0);
+		simcor.shutdown();
+		TransactionStateNames state = simcor.isReady();
+		while (state.equals(TransactionStateNames.READY) == false) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+			}
+			state = simcor.isReady();
+			log.debug("Closing down " + simcor.getTransaction());
+		}
+	}
 }
