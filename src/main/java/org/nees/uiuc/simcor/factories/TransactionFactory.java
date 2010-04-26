@@ -163,7 +163,7 @@ public class TransactionFactory {
 	}
 
 	public BroadcastTransaction createVampTransaction(int msgTimeout)  {
-		return createBroadcastTransaction(0, 0, vampCount, msgTimeout);
+		return createBroadcastTransaction(99999, 0, vampCount++, msgTimeout);
 	}
 
 	public DirectionType getDirection() {
