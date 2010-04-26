@@ -173,7 +173,7 @@ public class ListenerStateMachine extends Thread {
 			} catch (InterruptedException e) {
 			}
 			sap.stopListening(transaction);
-			log.debug("Stopping LSM listener:" + transaction);
+			log.info("Stopping LSM listener:" + transaction);
 			}
 		log.debug("LSM is done:" + transaction);
 	}
