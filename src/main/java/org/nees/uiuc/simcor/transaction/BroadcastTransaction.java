@@ -48,6 +48,7 @@ public class BroadcastTransaction extends Transaction {
 		for (TriggerResponse tr : getResponses()) {
 			result += "/response=" + tr;
 		}
+		result += "/timeout=" + getTimeout();
 		return result;
 	}
 }

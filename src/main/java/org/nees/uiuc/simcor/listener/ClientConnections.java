@@ -33,6 +33,7 @@ public class ClientConnections {
 	public synchronized void assembleTriggerMessages(
 			BroadcastTransaction transaction) {
 		mergeClients(transaction);
+		setMsgTimeout(transaction.getTimeout());
 		for (ClientIdWithConnection c : clients) {
 			sendMsg(c.connection, transaction.getCommand(), transaction.getId());
 		}
