@@ -58,6 +58,7 @@ public class SimpleTransaction extends Transaction {
 		result += "/transId=" + id + "/error=" + error + "\n";
 		result += "/command=" + command;
 		result += "/response=" + response;
+		result += "/timeout=" + getTimeout();
 		return result;
 	}
 }
