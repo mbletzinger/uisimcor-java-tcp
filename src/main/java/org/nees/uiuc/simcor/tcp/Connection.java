@@ -6,18 +6,18 @@ import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 
 public class Connection extends Thread {
 	public enum ConnectionStatus {
-		BUSY, CLOSED, IN_ERROR, READY
+		BUSY, READING, CLOSED, IN_ERROR, READY
 	};
 
-	private TcpActions actions = new TcpActions();
-	private ConnectionStatus connectionState = ConnectionStatus.CLOSED;
-	private TcpActionsDto fromRemoteMsg = new TcpActionsDto();
+	private volatile TcpActions actions = new TcpActions();
+	private volatile ConnectionStatus connectionState = ConnectionStatus.CLOSED;
+	private volatile TcpActionsDto fromRemoteMsg = new TcpActionsDto();
 	private final Logger log = Logger.getLogger(Connection.class);
 	private int msgTimeout = 3000;
 	private String remoteHost;
 	private boolean running = false;
 
-	private TcpActionsDto toRemoteMsg = new TcpActionsDto();
+	private volatile TcpActionsDto toRemoteMsg = new TcpActionsDto();
 
 	public Connection() {
 		super();
