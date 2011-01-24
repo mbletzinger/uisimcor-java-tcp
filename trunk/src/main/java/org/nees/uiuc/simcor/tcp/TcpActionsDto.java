@@ -6,10 +6,12 @@ import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 
 public class TcpActionsDto {
 	public enum ActionsType {CLOSE, CONNECT, EXIT,NONE,READ,WRITE}
+	private ActionsType action = ActionsType.NONE;
 
-	private ActionsType action = ActionsType.NONE;;
 	TcpError error = new TcpError();
-	Msg2Tcp msg = new Msg2Tcp();
+
+	Msg2Tcp msg = new Msg2Tcp();;
+	private boolean stillReading = false;
 	public TcpActionsDto() {
 		super();
 	}
@@ -17,12 +19,11 @@ public class TcpActionsDto {
 		action = tdto.action;
 		msg = tdto.msg;
 		error = tdto.error;
+		stillReading = tdto.stillReading;
 	}
-	
 	public ActionsType getAction() {
 		return action;
 	}
-
 	public TcpError getError() {
 		return error;
 	}
@@ -30,6 +31,14 @@ public class TcpActionsDto {
 	public Msg2Tcp getMsg() {
 		return msg;
 	}
+
+	/**
+	 * @return the stillReading
+	 */
+	public boolean isStillReading() {
+		return stillReading;
+	}
+	
 	public void setAction(ActionsType action) {
 		this.action = action;
 	}
@@ -41,6 +50,12 @@ public class TcpActionsDto {
 	}
 	public void setMsg(Msg2Tcp msg) {
 		this.msg = msg;
+	}
+	/**
+	 * @param stillReading the stillReading to set
+	 */
+	public void setStillReading(boolean stillReading) {
+		this.stillReading = stillReading;
 	}
 
 	public void timestamp() {
