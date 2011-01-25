@@ -8,6 +8,8 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -25,7 +27,7 @@ import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
-public class T05_TransactionTest {
+public class T05_TransactionTest extends TestCase {
 	TransactionMsgs data = new TransactionMsgs();
 	private final Logger log = Logger.getLogger(T05_TransactionTest.class);
 	private TcpParameters params = new TcpParameters();

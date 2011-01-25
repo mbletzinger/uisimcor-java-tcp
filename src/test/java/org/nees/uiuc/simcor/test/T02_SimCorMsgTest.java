@@ -1,10 +1,9 @@
 package org.nees.uiuc.simcor.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.junit.Before;
@@ -13,11 +12,11 @@ import org.nees.uiuc.simcor.test.util.TransactionMsgs;
 import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 import org.nees.uiuc.simcor.transaction.SimCorCompoundMsg;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
+import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
-import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
-public class T02_SimCorMsgTest {
+public class T02_SimCorMsgTest extends TestCase {
 	public class TestMsg {
 		public boolean isCompoundMsg = false;
 		public String text;

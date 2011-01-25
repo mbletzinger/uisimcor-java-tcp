@@ -48,7 +48,7 @@ public class ConnectionManager {
 			cmd.setAction(ActionsType.CLOSE);
 			c.setToRemoteMsg(cmd);
 		}
-		return c.getConnectionState().equals(ConnectionStatus.CLOSED) || (c.isAlive() == false);
+		return c.getConnectionStatus().equals(ConnectionStatus.CLOSED) || (c.isAlive() == false);
 	}
 
 	public boolean deleteConnectionHandle(Connection c) {
@@ -77,9 +77,8 @@ public class ConnectionManager {
 	}
 
 	public void openConnection() {
-		connection = new Connection();
+		connection = new Connection(params);
 		try {
-			connection.setParams(params);
 			connection.start();
 			Thread.sleep(300); // Give the connection time to start
 		} catch (Exception e) {

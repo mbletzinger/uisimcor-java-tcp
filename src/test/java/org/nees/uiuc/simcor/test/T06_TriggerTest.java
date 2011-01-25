@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -21,7 +22,7 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
-public class T06_TriggerTest {
+public class T06_TriggerTest extends TestCase {
 	private int clientIdx = 0;
 	private List<TriggerConnectionsClient> clients = new ArrayList<TriggerConnectionsClient>();
 	private TcpParameters cparams = new TcpParameters();

@@ -65,7 +65,7 @@ public class StateActionsProcessor {
 		TcpError er = new TcpError();
 		Connection connection = null;
 		connection = cm.getConnection();
-		if (connection.getConnectionState().equals(
+		if (connection.getConnectionStatus().equals(
 				Connection.ConnectionStatus.BUSY)) {
 			return;
 		}
@@ -224,7 +224,7 @@ public class StateActionsProcessor {
 	public void waitForRead(SimpleTransaction transaction, boolean isCommand,
 			TransactionStateNames next) {
 		Connection connection = cm.getConnection();
-		if (connection.getConnectionState().equals(ConnectionStatus.BUSY)) {
+		if (connection.getConnectionStatus().equals(ConnectionStatus.BUSY)) {
 			log.debug("Connection still busy");
 			return;
 		}
@@ -248,7 +248,7 @@ public class StateActionsProcessor {
 			TransactionStateNames next) {
 		Connection connection = cm.getConnection();
 		// Check if command has been sent
-		if (connection.getConnectionState() == ConnectionStatus.BUSY) {
+		if (connection.getConnectionStatus() == ConnectionStatus.BUSY) {
 			return;
 		}
 		TcpActionsDto result = connection.getFromRemoteMsg();

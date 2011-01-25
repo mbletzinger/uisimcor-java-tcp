@@ -1,38 +1,46 @@
 package org.nees.uiuc.simcor.tcp;
 
 import org.apache.log4j.Logger;
+import org.nees.uiuc.simcor.tcp.ReadTcpAction.TcpReadStatus;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
+import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 
 public class Connection extends Thread {
 	public enum ConnectionStatus {
 		BUSY, READING, CLOSED, IN_ERROR, READY
 	};
 
-	private volatile TcpActions actions = new TcpActions();
-	private volatile ConnectionStatus connectionState = ConnectionStatus.CLOSED;
+	private final OpenCloseTcpAction openCloseAction;
+	private WriteTcpAction writer;
+	private ReadTcpAction reader;
+	private volatile ConnectionStatus connectionStatus = ConnectionStatus.CLOSED;
 	private volatile TcpActionsDto fromRemoteMsg = new TcpActionsDto();
+	private volatile TcpActionsDto toRemoteMsg = new TcpActionsDto();
 	private final Logger log = Logger.getLogger(Connection.class);
+	private TcpLinkDto link;
+
 	private int msgTimeout = 3000;
+
 	private String remoteHost;
+
 	private boolean running = false;
 
-	private volatile TcpActionsDto toRemoteMsg = new TcpActionsDto();
-
-	public Connection() {
+	public Connection(TcpLinkDto link, TcpParameters parameters) {
 		super();
-
-	}
-
-	public Connection(TcpLinkDto link) {
-		super();
-		actions.setLink(link);
+		writer = new WriteTcpAction(parameters.isLfcrSendEom(), link);
+		reader = new ReadTcpAction(link);
+		openCloseAction = new OpenCloseTcpAction(getLink(), parameters);
 		remoteHost = link.getRemoteHost();
-		setConnectionState(ConnectionStatus.BUSY);
+		setConnectionStatus(ConnectionStatus.BUSY);
 	}
 
-	public synchronized ConnectionStatus getConnectionState() {
-		return connectionState;
+	public Connection(TcpParameters parameters) {
+		openCloseAction = new OpenCloseTcpAction(parameters);
+	}
+
+	public synchronized ConnectionStatus getConnectionStatus() {
+		return connectionStatus;
 	}
 
 	public synchronized TcpActionsDto getFromRemoteMsg() {
@@ -41,7 +49,7 @@ public class Connection extends Thread {
 	}
 
 	public synchronized TcpLinkDto getLink() {
-		return actions.getLink();
+		return link;
 	}
 
 	public synchronized int getMsgTimeout() {
@@ -53,14 +61,13 @@ public class Connection extends Thread {
 	}
 
 	public synchronized TcpActionsDto getToRemoteMsg() {
-		if (getConnectionState() == ConnectionStatus.READY) {
+		if (getConnectionStatus() == ConnectionStatus.READY) {
 			try {
 				log.debug("I'm WAAAAIITING");
 				wait();
 			} catch (InterruptedException e1) {
 			}
 		}
-		// log.debug("Returning outMsg[" + toRemoteMsg + "]");
 		TcpActionsDto result = new TcpActionsDto(toRemoteMsg);
 		toRemoteMsg.setAction(ActionsType.NONE);
 		return result;
@@ -72,66 +79,27 @@ public class Connection extends Thread {
 
 	@Override
 	public void run() {
-		TcpActionsDto outM = getToRemoteMsg();
-		// CONNECT, CLOSE, EXIT,READ,WRITE,IDLE
-		log.debug("Connection is running");
-		ActionsType act = outM.getAction();
 		running = true;
-		boolean noRemoteMsgNeeded = false;
-		while (act != ActionsType.EXIT) {
-			TcpActionsDto inM = new TcpActionsDto();
-			log.debug("Executing action " + act.toString());
-			if (act.equals(ActionsType.CONNECT)) {
-				inM = actions.connect();
-				inM.setAction(ActionsType.NONE);
-				setFromRemoteMsg(inM, act);
-				if (getConnectionState().equals(ConnectionStatus.IN_ERROR)) {
-					log.debug("Attempting to EXIT");
-					noRemoteMsgNeeded = true;
-					break;
-				}
+		while (running) {
+			ConnectionStatus state = getConnectionStatus();
+			TcpActionsDto outM = getToRemoteMsg();
+			setConnectionStatus(ConnectionStatus.BUSY);
+			if (state.equals(ConnectionStatus.READING)) {
+				state = readAction();
+			} else {
+				state = startAction(outM);
 			}
-			if (act.equals(ActionsType.CLOSE)) {
-				inM = actions.closeConnection();
-				inM.setAction(ActionsType.NONE);
-				setFromRemoteMsg(inM, act);
-				log.debug("Attempting to EXIT");
-				// noRemoteMsgNeeded = true;
-				break;
+			if (state.equals(ConnectionStatus.CLOSED)) {
+				running = false;
 			}
-			if (act.equals(ActionsType.READ)) {
-				inM = actions.readMessage(getMsgTimeout());
-				inM.setAction(ActionsType.NONE);
-				inM.timestamp();
-				setFromRemoteMsg(inM, act);
-			}
-
-			if (act.equals(ActionsType.WRITE)) {
-				inM = actions.sendMessage(outM);
-				inM.setAction(ActionsType.NONE);
-				inM.timestamp();
-				setFromRemoteMsg(inM, act);
-			}
-			if (act.equals(ActionsType.NONE)) {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-				}
-			}
-			outM = getToRemoteMsg();
-			act = outM.getAction();
+			setConnectionStatus(state);
 		}
-		if (noRemoteMsgNeeded == false) {
-			setFromRemoteMsg(new TcpActionsDto(), ActionsType.EXIT);
-			setConnectionState(ConnectionStatus.CLOSED);
-		}
-		running = false;
 		log.info("Goodbye");
 	}
 
-	public synchronized void setConnectionState(ConnectionStatus busy) {
+	public synchronized void setConnectionStatus(ConnectionStatus busy) {
 		log.debug("I am " + busy);
-		this.connectionState = busy;
+		this.connectionStatus = busy;
 	}
 
 	public synchronized void setFromRemoteMsg(TcpActionsDto inMsg,
@@ -140,37 +108,11 @@ public class Connection extends Thread {
 		this.fromRemoteMsg = inMsg;
 		if (inMsg.getError().getType() != TcpErrorTypes.NONE) {
 			fromRemoteMsg.getError().setRemoteHost(remoteHost);
-			setConnectionState(ConnectionStatus.IN_ERROR);
-		} else {
-			if (act.equals(ActionsType.CLOSE)) {
-				setConnectionState(ConnectionStatus.CLOSED);
-			} else {
-				setConnectionState(ConnectionStatus.READY);
-			}
 		}
-		log.debug("Connection set to " + getConnectionState());
-	}
-
-	public void setLink(TcpLinkDto link) throws Exception {
-		if (running) {
-			Exception e = new Exception("Link is already connected");
-			log.error(e);
-			throw e;
-		}
-		actions.setLink(link);
 	}
 
 	public synchronized void setMsgTimeout(int msgTimeout) {
 		this.msgTimeout = msgTimeout;
-	}
-
-	public void setParams(TcpParameters params) throws Exception {
-		if (running) {
-			Exception e = new Exception("Link is already connected");
-			log.error(e);
-			throw e;
-		}
-		actions.setParameters(params);
 	}
 
 	public void setRemoteHost(String remoteHost) {
@@ -181,14 +123,71 @@ public class Connection extends Thread {
 		log.debug("Setting outMsg[" + outMsg + "]");
 		this.toRemoteMsg = new TcpActionsDto(outMsg);
 		notifyAll();
-		if (running) {
-			setConnectionState(ConnectionStatus.BUSY);
-			log.debug("Connection set to " + getConnectionState());
-		} else {
-			log.debug("Connection is not running");
-			setFromRemoteMsg(outMsg, ActionsType.EXIT); // Clear out previous
-														// fromMsg
-		}
 	}
 
+	private ConnectionStatus startAction(TcpActionsDto outM) {
+		// CONNECT, CLOSE, EXIT,READ,WRITE,IDLE
+		ActionsType act = outM.getAction();
+		TcpActionsDto inM = new TcpActionsDto();
+		log.debug("Executing action " + act.toString());
+		if (act.equals(ActionsType.CONNECT)) {
+			boolean result = openCloseAction.connect();
+			inM.setError(openCloseAction.getError());
+			setFromRemoteMsg(inM, act);
+			if (result == false) {
+				return ConnectionStatus.CLOSED;
+			}
+			reader = new ReadTcpAction(openCloseAction.getLink());
+			writer = new WriteTcpAction(openCloseAction.getParameters()
+					.isLfcrSendEom(), openCloseAction.getLink());
+			return ConnectionStatus.READY;
+		}
+
+		if (act.equals(ActionsType.CLOSE)) {
+			boolean result = openCloseAction.close();
+			inM.setError(openCloseAction.getError());
+			setFromRemoteMsg(inM, act);
+			return ConnectionStatus.CLOSED;
+		}
+		if (act.equals(ActionsType.READ)) {
+			return readAction();
+		}
+
+		if (act.equals(ActionsType.WRITE)) {
+			boolean result = writer.write(outM.getMsg());
+			inM.setAction(ActionsType.NONE);
+			inM.setError(writer.getError());
+			inM.timestamp();
+			setFromRemoteMsg(inM, act);
+			return ConnectionStatus.READY;
+		}
+		if (act.equals(ActionsType.NONE)) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
+		}
+		return ConnectionStatus.READY;
+	}
+
+	private ConnectionStatus readAction() {
+		TcpActionsDto inM = new TcpActionsDto();
+		reader.setMsgTimeout(getMsgTimeout());
+		TcpReadStatus status = reader.readMessage();
+		inM.setAction(ActionsType.NONE);
+		if (status.equals(TcpReadStatus.DONE)) {
+			inM.timestamp();
+			inM.setMsg(reader.getMessage());
+			inM.setError(reader.getError());
+			setFromRemoteMsg(inM, ActionsType.READ);
+			return ConnectionStatus.READY;
+		}
+		if (status.equals(TcpReadStatus.ERRORED)) {
+			inM.setMsg(new Msg2Tcp());
+			inM.setError(reader.getError());
+			setFromRemoteMsg(inM, ActionsType.READ);
+			return ConnectionStatus.IN_ERROR;
+		}
+		return ConnectionStatus.READING;
+	}
 }
