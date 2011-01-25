@@ -16,8 +16,8 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
-public class T03_StateActionsTest extends TestCase {
-	private final Logger log = Logger.getLogger(T03_StateActionsTest.class);
+public class StateActionsTest extends TestCase {
+	private final Logger log = Logger.getLogger(StateActionsTest.class);
 	private TcpParameters lparams = new TcpParameters();
 	private TcpParameters rparams = new TcpParameters();
 	private StateActionsResponder rspdr;

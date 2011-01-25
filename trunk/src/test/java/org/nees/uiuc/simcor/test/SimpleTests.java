@@ -9,7 +9,7 @@ public class SimpleTests {
 		TestSuite suite = new TestSuite(SimpleTests.class.getName());
 		//$JUnit-BEGIN$
 		suite.addTestSuite(HexTest.class);
-		suite.addTestSuite(T02_SimCorMsgTest.class);
+		suite.addTestSuite(SimCorMsgTest.class);
 		//$JUnit-END$
 		return suite;
 	}

@@ -21,11 +21,11 @@ import org.nees.uiuc.simcor.test.util.TriggerStateMachine;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
-public class T07_BroadcastTest extends TestCase {
+public class BroadcastTest extends TestCase {
 	private int clientIdx = 0;
 	private List<TriggerStateMachine> clients = new ArrayList<TriggerStateMachine>();
 	private TcpParameters cparams = new TcpParameters();
-	private final Logger log = Logger.getLogger(T07_BroadcastTest.class);
+	private final Logger log = Logger.getLogger(BroadcastTest.class);
 	private TcpParameters lparams = new TcpParameters();
 	private int number = 0;
 

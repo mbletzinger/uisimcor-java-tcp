@@ -16,7 +16,7 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
-public class T02_SimCorMsgTest extends TestCase {
+public class SimCorMsgTest extends TestCase {
 	public class TestMsg {
 		public boolean isCompoundMsg = false;
 		public String text;
@@ -30,7 +30,7 @@ public class T02_SimCorMsgTest extends TestCase {
 
 	}
 
-	private final Logger log = Logger.getLogger(T02_SimCorMsgTest.class);
+	private final Logger log = Logger.getLogger(SimCorMsgTest.class);
 
 	private ArrayList<TestMsg> testMsgs = new ArrayList<TestMsg>();
 

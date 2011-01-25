@@ -27,9 +27,9 @@ import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
-public class T05_TransactionTest extends TestCase {
+public class TransactionTest extends TestCase {
 	TransactionMsgs data = new TransactionMsgs();
-	private final Logger log = Logger.getLogger(T05_TransactionTest.class);
+	private final Logger log = Logger.getLogger(TransactionTest.class);
 	private TcpParameters params = new TcpParameters();
 	private TransactionResponder responder;
 	private UiSimCorTcp simcor;
