@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -20,7 +21,7 @@ import org.nees.uiuc.simcor.test.util.TriggerStateMachine;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
-public class T07_BroadcastTest {
+public class T07_BroadcastTest extends TestCase {
 	private int clientIdx = 0;
 	private List<TriggerStateMachine> clients = new ArrayList<TriggerStateMachine>();
 	private TcpParameters cparams = new TcpParameters();

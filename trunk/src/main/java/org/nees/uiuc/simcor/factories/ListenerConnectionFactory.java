@@ -27,9 +27,8 @@ public class ListenerConnectionFactory {
 		if (client == null) {
 			return null;
 		}
-		Connection c = new Connection(client);
+		Connection c = new Connection(client, params);
 		try {
-			c.setParams(params);
 			c.start();
 			Thread.sleep(300); // Give the connection time to start
 		} catch (Exception e) {

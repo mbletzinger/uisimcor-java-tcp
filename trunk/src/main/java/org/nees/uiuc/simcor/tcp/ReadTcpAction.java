@@ -10,62 +10,51 @@ import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 
 public class ReadTcpAction {
 	public enum TcpReadStatus {
-		DONE, STILL_READING, ERRORED
-	};
+		DONE, ERRORED, STILL_READING
+	}
+
+	byte[] buf;
+
+	byte crByte;
+
+	private byte[] eom = new byte[2];
+
+	private TcpError error;
+
+	InputStream in = null;
+
+	private final TcpLinkDto link;
+
+	private final Logger log = Logger.getLogger(ReadTcpAction.class);
+
+	private Msg2Tcp message;
+	private int msgTimeout;;
+
+	private final StringListUtils slu = new StringListUtils();
+	StringBuffer soFar;
+
+	long start;
+
+	boolean stillReading;
 
 	public ReadTcpAction(TcpLinkDto link) {
 		super();
 		this.link = link;
 		reset();
 	}
-	private int msgTimeout;
-
-	private byte[] eom = new byte[2];
-
-	private TcpError error;
-
-	private final TcpLinkDto link;
-	private final StringListUtils slu = new StringListUtils();
-
-	private final Logger log = Logger.getLogger(ReadTcpAction.class);
-
-	private Msg2Tcp message;
-
-	InputStream in = null;
-	StringBuffer soFar;
-	byte[] buf;
-	byte crByte;
-	boolean stillReading;
-	long start;
-
-	public TcpReadStatus readMessage() {
-		if (stillReading == false) {
-			TcpReadStatus strt = startReading();
-			if (strt.equals(TcpReadStatus.ERRORED)) {
-				reset();
-				return strt;
-			}
+	private int availableBytes() {
+		int result;
+		try {
+			result = in.available();
+		} catch (IOException e) {
+			String remoteHost = link.getRemoteHost();
+			String msg = "Reading message from " + remoteHost + " failed";
+			log.error(msg, e);
+			error = new TcpError();
+			error.setText(msg);
+			error.setType(TcpErrorTypes.IO_ERROR);
+			return -1;
 		}
-
-		// collect all the bytes waiting on the input stream
-		int avail = availableBytes();
-		if(avail < 0) {
-			reset();
-			return TcpReadStatus.ERRORED;
-		}
-
-		while (avail > 0) {
-			TcpReadStatus result = readBytes(avail);
-			if(result.equals(TcpReadStatus.STILL_READING) == false) {
-				return result;
-			}
-			avail = availableBytes();
-			if(avail < 0) {
-				reset();
-				return TcpReadStatus.ERRORED;
-			}
-		}
-		TcpReadStatus result = checkTimeOut();
 		return result;
 	}
 
@@ -87,6 +76,37 @@ public class ReadTcpAction {
 		}
 	}
 
+	/**
+	 * @return the error
+	 */
+	public TcpError getError() {
+		return error;
+	}
+
+	/**
+	 * @return the link
+	 */
+	public TcpLinkDto getLink() {
+		return link;
+	}
+	/**
+	 * @return the message
+	 */
+	public Msg2Tcp getMessage() {
+		return message;
+	}
+	/**
+	 * @return the msgTimeout
+	 */
+	public int getMsgTimeout() {
+		return msgTimeout;
+	}
+	/**
+	 * @return the stillReading
+	 */
+	public boolean isStillReading() {
+		return stillReading;
+	}
 	private TcpReadStatus readBytes(int avail) {
 		int amt = avail;
 		if (amt > buf.length)
@@ -139,23 +159,68 @@ public class ReadTcpAction {
 		}
 		return TcpReadStatus.STILL_READING;
 	}
-
-	private int availableBytes() {
-		int result;
-		try {
-			result = in.available();
-		} catch (IOException e) {
-			String remoteHost = link.getRemoteHost();
-			String msg = "Reading message from " + remoteHost + " failed";
-			log.error(msg, e);
-			error = new TcpError();
-			error.setText(msg);
-			error.setType(TcpErrorTypes.IO_ERROR);
-			return -1;
+	public TcpReadStatus readMessage() {
+		if (stillReading == false) {
+			TcpReadStatus strt = startReading();
+			if (strt.equals(TcpReadStatus.ERRORED)) {
+				reset();
+				return strt;
+			}
 		}
+
+		// collect all the bytes waiting on the input stream
+		int avail = availableBytes();
+		if(avail < 0) {
+			reset();
+			return TcpReadStatus.ERRORED;
+		}
+
+		while (avail > 0) {
+			TcpReadStatus result = readBytes(avail);
+			if(result.equals(TcpReadStatus.STILL_READING) == false) {
+				return result;
+			}
+			avail = availableBytes();
+			if(avail < 0) {
+				reset();
+				return TcpReadStatus.ERRORED;
+			}
+		}
+		TcpReadStatus result = checkTimeOut();
 		return result;
 	}
 
+	private void reset() {
+		stillReading = false;
+	}
+
+	/**
+	 * @param error the error to set
+	 */
+	public void setError(TcpError error) {
+		this.error = error;
+	}
+
+	/**
+	 * @param message the message to set
+	 */
+	public void setMessage(Msg2Tcp message) {
+		this.message = message;
+	}
+
+	/**
+	 * @param msgTimeout the msgTimeout to set
+	 */
+	public void setMsgTimeout(int msgTimeout) {
+		this.msgTimeout = msgTimeout;
+	}
+
+	/**
+	 * @param stillReading the stillReading to set
+	 */
+	public void setStillReading(boolean stillReading) {
+		this.stillReading = stillReading;
+	}
 	private TcpReadStatus startReading() {
 		try {
 			in = link.getSocket().getInputStream();
@@ -175,8 +240,5 @@ public class ReadTcpAction {
 		// loop until message is completed
 		start = System.currentTimeMillis();
 		return TcpReadStatus.STILL_READING;
-	}
-	private void reset() {
-		stillReading = false;
 	}
 }
