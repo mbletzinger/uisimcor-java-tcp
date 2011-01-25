@@ -16,8 +16,8 @@ import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.test.util.StateActionsResponder;
 import org.nees.uiuc.simcor.test.util.StateActionsResponder.DieBefore;
 
-public class T04_ListenerStateMachineTest  extends TestCase {
-	private final Logger log = Logger.getLogger(T04_ListenerStateMachineTest.class);
+public class ListenerStateMachineTest  extends TestCase {
+	private final Logger log = Logger.getLogger(ListenerStateMachineTest.class);
 	private TcpParameters lparams = new TcpParameters();
 	private ListenerStateMachine lsm;
 	private TcpParameters rparams = new TcpParameters();
