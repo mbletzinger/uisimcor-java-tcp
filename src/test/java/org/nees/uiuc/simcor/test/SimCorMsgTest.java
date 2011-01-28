@@ -3,9 +3,8 @@ package org.nees.uiuc.simcor.test;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.nees.uiuc.simcor.test.util.TransactionMsgs;
@@ -16,7 +15,7 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
-public class SimCorMsgTest extends TestCase {
+public class SimCorMsgTest  {
 	public class TestMsg {
 		public boolean isCompoundMsg = false;
 		public String text;
@@ -117,11 +116,11 @@ public class SimCorMsgTest extends TestCase {
 			log.debug("Parsing " + tm.text);
 
 			scmd.parse(tm.text);
-			assertEquals(tm.type, scmd.getMsg().getType());
-			assertEquals(tm.isCompoundMsg,
+			Assert.assertEquals(tm.type, scmd.getMsg().getType());
+			Assert.assertEquals(tm.isCompoundMsg,
 					scmd.getMsg() instanceof SimCorCompoundMsg);
 			String rm = scmd.assemble();
-			assertEquals(tm.text, rm);
+			Assert.assertEquals(tm.text, rm);
 		}
 	}
 
@@ -135,7 +134,7 @@ public class SimCorMsgTest extends TestCase {
 		m2t.parse(s.text);
 		firstmsg = m2t.getMsg();
 		firstId = m2t.getId();
-		assertEquals(true, firstmsg.equals(firstmsg));
+		Assert.assertEquals(true, firstmsg.equals(firstmsg));
 		while (i.hasNext()) {
 			SimCorMsg msg;
 			TransactionIdentity id;
@@ -144,11 +143,11 @@ public class SimCorMsgTest extends TestCase {
 			msg = m2t.getMsg();
 			id = m2t.getId();
 			log.debug("Checking " + msg);
-			assertEquals(true, msg.equals(msg));
-			assertEquals(false, msg.equals(firstmsg));
+			Assert.assertEquals(true, msg.equals(msg));
+			Assert.assertEquals(false, msg.equals(firstmsg));
 			if (id != null) {
-				assertEquals(true, id.equals(id));
-				assertEquals(false, id.equals(firstId));
+				Assert.assertEquals(true, id.equals(id));
+				Assert.assertEquals(false, id.equals(firstId));
 			}
 		}
 	}
@@ -169,17 +168,17 @@ public class SimCorMsgTest extends TestCase {
 			String msg = m2t.assemble();
 			m2t.clear();
 			m2t.parse(msg);
-			assertEquals(cmd, m2t.getMsg());
+			Assert.assertEquals(cmd, m2t.getMsg());
 			if (id == null) {
-				assertNull(m2t.getId());
+				Assert.assertNull(m2t.getId());
 			} else {
-				assertEquals(id, m2t.getId());
+				Assert.assertEquals(id, m2t.getId());
 			}
 			m2t.setMsg(rsp);
 			msg = m2t.assemble();
 			m2t.clear();
 			m2t.parse(msg);
-			assertEquals(rsp, m2t.getMsg());
+			Assert.assertEquals(rsp, m2t.getMsg());
 		}
 
 	}

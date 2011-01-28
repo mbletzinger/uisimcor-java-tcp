@@ -22,7 +22,7 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
-public class TriggerTest extends TestCase {
+public class TriggerTest  {
 	private int clientIdx = 0;
 	private List<TriggerConnectionsClient> clients = new ArrayList<TriggerConnectionsClient>();
 	private TcpParameters cparams = new TcpParameters();

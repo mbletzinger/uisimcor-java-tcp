@@ -28,7 +28,7 @@ public class OpenCloseTcpAction {
 	}
 
 	public boolean close() {
-		if (link.getSocket() == null) {
+		if (link == null || link.getSocket() == null) {
 			error = new TcpError();
 			error.setText("Connection does not exist");
 			error.setType(TcpErrorTypes.UNKNOWN_REMOTE_HOST);
@@ -75,6 +75,7 @@ public class OpenCloseTcpAction {
 			error.setType(TcpErrorTypes.IO_ERROR);
 			return false;
 		}
+		link = new TcpLinkDto();
 		link.setSocket(socket);
 		link.setRemoteHost(parameters.getRemoteHost());
 		log.debug("Connect to Host " + parameters.getRemoteHost() + ":"

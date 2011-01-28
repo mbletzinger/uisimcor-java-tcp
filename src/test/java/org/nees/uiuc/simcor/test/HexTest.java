@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.nees.uiuc.simcor.matlab.StringListUtils;
 
-public class HexTest extends TestCase{
+public class HexTest {
 
 	private byte [] buf = new byte[100];
 	private Logger log = Logger.getLogger(HexTest.class);

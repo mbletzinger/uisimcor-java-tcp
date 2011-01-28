@@ -16,7 +16,7 @@ import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
-public class StateActionsTest extends TestCase {
+public class StateActionsTest  {
 	private final Logger log = Logger.getLogger(StateActionsTest.class);
 	private TcpParameters lparams = new TcpParameters();
 	private TcpParameters rparams = new TcpParameters();
@@ -168,34 +168,6 @@ public class StateActionsTest extends TestCase {
 		}
 		sap.stopListening(transaction);
 	}
-
-//	@Test
-//	public void test00StartListenerBadPortFail() {
-//		rspdr = new StateActionsResponder(DieBefore.OPEN_COMMAND, rparams, true); // never
-//		// started
-//		lparams.setLocalPort(02);
-//		transaction.setState(TransactionStateNames.START_LISTENER);
-//		sap.startListening(transaction);
-//		log.debug("after start listening: " + transaction);
-//		org.junit.Assert.assertEquals(TransactionStateNames.STOP_LISTENER,
-//				transaction.getState());
-//		org.junit.Assert.assertEquals(TcpErrorTypes.IO_ERROR, transaction
-//				.getError().getType());
-//
-//		transaction.setState(TransactionStateNames.TRANSACTION_DONE);
-//		sap.recordTransaction(transaction, TransactionStateNames.READY);
-//		org.junit.Assert.assertEquals(TransactionStateNames.READY, transaction
-//				.getState());
-//		org.junit.Assert.assertEquals(TcpErrorTypes.NONE, transaction
-//				.getError().getType());
-//		transaction.setState(TransactionStateNames.STOP_LISTENER);
-//		sap.stopListening(transaction);
-//		log.debug("Local Transaction after stop listener: " + transaction);
-//		org.junit.Assert.assertEquals(TransactionStateNames.TRANSACTION_DONE,
-//				transaction.getState());
-//		org.junit.Assert.assertEquals(TcpErrorTypes.IO_ERROR, transaction
-//				.getError().getType());
-//	}
 
 	@Test
 	public void test01StartListenerFail() {
