@@ -21,7 +21,7 @@ import org.nees.uiuc.simcor.test.util.TriggerStateMachine;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
-public class BroadcastTest extends TestCase {
+public class BroadcastTest  {
 	private int clientIdx = 0;
 	private List<TriggerStateMachine> clients = new ArrayList<TriggerStateMachine>();
 	private TcpParameters cparams = new TcpParameters();

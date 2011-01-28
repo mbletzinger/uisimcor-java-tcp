@@ -37,9 +37,21 @@ public class ReadTcpAction {
 
 	boolean stillReading;
 
-	public ReadTcpAction(TcpLinkDto link) {
+	public ReadTcpAction(boolean isLfcrSendEom, TcpLinkDto link) {
 		super();
 		this.link = link;
+		if (isLfcrSendEom) {
+			String endOfMsgS = "\r\n";
+			eom = endOfMsgS.getBytes();
+		} else {
+			String endOfMsgS = "\n";
+			eom = endOfMsgS.getBytes();
+		}
+		log.debug("eom is [" + eom + "]");
+		if (log.isDebugEnabled()) {
+			String str = slu.Byte2HexString(eom);
+			log.debug("EOM[" + str + "] length " + eom.length);
+		}
 		reset();
 	}
 	private int availableBytes() {
@@ -68,7 +80,7 @@ public class ReadTcpAction {
 					+ msgTimeout;
 			log.error(msg);
 			error.setText(msg);
-			error.setType(TcpErrorTypes.IO_ERROR);
+			error.setType(TcpErrorTypes.TIMEOUT);
 			return TcpReadStatus.ERRORED;
 		} else {
 			error.setType(TcpErrorTypes.NONE);
