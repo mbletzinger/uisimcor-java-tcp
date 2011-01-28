@@ -52,7 +52,7 @@ public class ConnectionTest  {
 		dto.setAction(ActionsType.CLOSE);
 		connection.setToRemoteMsg(dto);
 		int count = 1;
-		while (connection.isBusy()) {
+		while (connection.isBusyOrErrored()) {
 			try {
 				Thread.sleep(20);
 			} catch (InterruptedException e) {
@@ -214,7 +214,28 @@ public class ConnectionTest  {
 	}
 
 	@Test
-	public void test05WriteSuccessAndReadAbort() {
+	public void test05WriteReadSuccess2x() {
+		startRemote();
+		startConnection();
+		TcpActionsDto dto = connect2Remote();
+		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+
+		dto = write2Remote();
+		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+
+		dto = readFromRemote();
+		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+
+		dto = write2Remote();
+		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+
+		dto = readFromRemote();
+		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+
+	}
+
+	@Test
+	public void test06WriteSuccessAndReadAbort() {
 		startRemote();
 		startConnection();
 		TcpActionsDto dto = connect2Remote();

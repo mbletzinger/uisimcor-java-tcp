@@ -41,7 +41,7 @@ public class ClientConnections {
 
 	private TriggerResponse checkResponse(ClientIdWithConnection cid) {
 		Connection client = cid.connection;
-		if (client.getConnectionStatus().equals(ConnectionStatus.BUSY)) {
+		if (client.isBusy()) {
 			return null;
 		}
 		TriggerResponse result = new TriggerResponse(client.getFromRemoteMsg()
@@ -134,7 +134,7 @@ public class ClientConnections {
 
 	public synchronized boolean waitForBroadcastFinished() {
 		for (ClientIdWithConnection c : clients) {
-			if (c.connection.getConnectionStatus() == ConnectionStatus.BUSY) {
+			if (c.connection.isBusy()) {
 				return false;
 			}
 		}

@@ -190,6 +190,7 @@ public class ReadTcpAction {
 		while (avail > 0) {
 			TcpReadStatus result = readBytes(avail);
 			if(result.equals(TcpReadStatus.STILL_READING) == false) {
+				stillReading = false;
 				return result;
 			}
 			avail = availableBytes();

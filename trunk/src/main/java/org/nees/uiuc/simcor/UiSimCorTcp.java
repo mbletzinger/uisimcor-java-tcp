@@ -342,7 +342,7 @@ public class UiSimCorTcp {
 	/**
 	 * Sets up the connection used for transactions. For connections that
 	 * connect to a remote host. This function will connected to the host. Use
-	 * {@link Connection#getConnectionStatus()} to determine when the connection
+	 * {@link Connection#isBusy()} to determine when the connection
 	 * is ready. For connections that listen on a local port, This function will
 	 * start the listener. However the listener will need to be monitored to get
 	 * an incoming connection request.
