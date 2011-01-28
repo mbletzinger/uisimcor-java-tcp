@@ -81,6 +81,27 @@ public class StateActionsTest  {
 		}
 	}
 
+	private void feebleRead() {
+		String cmdStr= "command";
+		TransactionStateNames wastate= TransactionStateNames.WAIT_FOR_OPEN_COMMAND;
+		TransactionStateNames setstate = TransactionStateNames.SETUP_READ_OPEN_COMMAND;
+		TransactionStateNames next = TransactionStateNames.COMMAND_AVAILABLE;
+		boolean isCommand = true;
+				
+		transaction.setState(setstate);
+		sap.setUpRead(transaction, false, wastate);
+		for (int i = 0; i < 2; i++) {
+			transaction.setState(wastate);
+			sap.waitForRead(transaction, isCommand, next);
+			try {
+				Thread.sleep(300);
+			} catch (InterruptedException e) {
+			}
+			log.debug("Local Transaction during read " + cmdStr + " message: "
+					+ transaction);
+		}
+	}
+
 	@Before
 	public void setUp() throws Exception {
 		sap = new StateActionsProcessorWithLcf();
@@ -267,6 +288,13 @@ public class StateActionsTest  {
 		read(false, DieBefore.PARAM_MSG_COMMAND);
 		write(TransactionStateNames.TRANSACTION_DONE, DieBefore.PARAM_MSG_RESPONSE);
 		read(false, DieBefore.CLOSE_COMMAND);
+		shutdown(false);
+	}
+
+	@Test
+	public void test10OpenSessionReadFailWithAbort() {
+		setupConnection(DieBefore.OPEN_COMMAND, true);
+		feebleRead();
 		shutdown(false);
 	}
 
