@@ -72,7 +72,7 @@ public class StateActionsTest  {
 			org.junit.Assert.assertEquals(
 					TransactionStateNames.CLOSING_CONNECTION, transaction
 							.getState());
-			org.junit.Assert.assertEquals(TcpErrorTypes.IO_ERROR, transaction
+			org.junit.Assert.assertEquals(TcpErrorTypes.TIMEOUT, transaction
 					.getError().getType());
 		} else {
 			org.junit.Assert.assertEquals(next, transaction.getState());
@@ -134,7 +134,7 @@ public class StateActionsTest  {
 			org.junit.Assert.assertEquals(
 					TransactionStateNames.TRANSACTION_DONE, transaction
 							.getState());
-			org.junit.Assert.assertEquals(TcpErrorTypes.IO_ERROR, transaction
+			org.junit.Assert.assertEquals(TcpErrorTypes.TIMEOUT, transaction
 					.getError().getType());
 		} else {
 			org.junit.Assert.assertEquals(

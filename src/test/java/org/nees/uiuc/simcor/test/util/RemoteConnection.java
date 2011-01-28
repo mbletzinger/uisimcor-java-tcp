@@ -73,6 +73,7 @@ public class RemoteConnection extends Thread {
 			count++;
 		}
 		ConnectionStatus stat = connection.getConnectionStatus();
+		dto = connection.getFromRemoteMsg();
 
 		if (stat.equals(ConnectionStatus.IN_ERROR)) {
 			log.error("Read has an error" + dto.getError());
@@ -153,7 +154,7 @@ public class RemoteConnection extends Thread {
 		dto.setAction(ActionsType.EXIT);
 		connection.setToRemoteMsg(dto);
 		int count = 1;
-		while (connection.isBusy()) {
+		while (connection.isBusyOrErrored()) {
 			try {
 				Thread.sleep(20);
 			} catch (InterruptedException e) {
@@ -190,6 +191,8 @@ public class RemoteConnection extends Thread {
 		SimCorMsg msg = new SimCorMsg();
 		msg.setContent("\"" + message + "\" was sent");
 		msg.setAddress(new Address("MDL-Response"));
+		m2t.setMsg(msg);
+		dto.setMsg(m2t);
 		connection.setToRemoteMsg(dto);
 		int count = 1;
 		while (connection.isBusy()) {

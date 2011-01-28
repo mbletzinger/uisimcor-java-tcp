@@ -139,7 +139,7 @@ public class Connection extends Thread {
 		this.remoteHost = remoteHost;
 	}
 
-	public boolean isBusy() {
+	public boolean isBusyOrErrored() {
 		ConnectionStatus status = getConnectionStatus();
 		if (status.equals(ConnectionStatus.BUSY)) {
 			return true;
@@ -148,6 +148,16 @@ public class Connection extends Thread {
 			return true;
 		}
 		if (status.equals(ConnectionStatus.IN_ERROR)) {
+			return true;
+		}
+		return false;
+	}
+	public boolean isBusy() {
+		ConnectionStatus status = getConnectionStatus();
+		if (status.equals(ConnectionStatus.BUSY)) {
+			return true;
+		}
+		if (status.equals(ConnectionStatus.READING)) {
 			return true;
 		}
 		return false;
@@ -198,12 +208,6 @@ public class Connection extends Thread {
 			inM.timestamp();
 			setFromRemoteMsg(inM, act);
 			return ConnectionStatus.READY;
-		}
-		if (act.equals(ActionsType.NONE)) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-			}
 		}
 		return ConnectionStatus.READY;
 	}

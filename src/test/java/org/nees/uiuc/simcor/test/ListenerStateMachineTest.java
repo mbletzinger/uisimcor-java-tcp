@@ -78,7 +78,7 @@ public class ListenerStateMachineTest {
 		error = lsm.getError();
 		ClientId id = lsm.pickupOneClient();
 		log.debug("Result state " + state + " error: " + error + " client: " + id);
-		Assert.assertEquals(TcpErrorTypes.IO_ERROR, error.getType());
+		Assert.assertEquals(TcpErrorTypes.TIMEOUT, error.getType());
 	}
 	@Test
 	public void test02OpenSessionSuceed() {
