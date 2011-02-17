@@ -25,6 +25,11 @@ public class HashTable extends HashMap<String, Double> {
 		}
 			return result;
 	}
+	
+	public boolean exists(String key) {
+		return super.containsKey(key);
+	}
+	
 	public double [] vals() {
 		Double [] raw = (Double [])super.values().toArray();
 		double [] result = new double[raw.length];
