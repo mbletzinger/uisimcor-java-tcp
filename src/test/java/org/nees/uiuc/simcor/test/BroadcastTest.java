@@ -20,6 +20,7 @@ import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.test.util.TriggerStateMachine;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
+import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
 public class BroadcastTest  {
 	private int clientIdx = 0;
@@ -301,7 +302,8 @@ public class BroadcastTest  {
 		startClient();
 		checkClientList(2);
 		TriggerBroadcastVamp vmp = new TriggerBroadcastVamp(simcor);
-		vmp.startVamp(1, 3000);
+		TransactionIdentity tid = simcor.getTf().createTransactionId(100, 10, 11);
+		vmp.startVamp(1, 3000,tid);
 		TcpErrorTypes err = vmp.getError().getType();
 		while(err.equals(TcpErrorTypes.NONE)) {
 			Thread.sleep(100);

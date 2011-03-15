@@ -68,6 +68,18 @@ public class ClientConnections {
 			if (message == null) {
 				message = "";
 			}
+			if(c == null) {
+				log.error("Null connection received");
+				continue;
+			}
+			if(c.system == null) {
+				log.error("Null system for new connection" );
+				continue;
+			}
+			if(c.remoteHost == null) {
+				log.error("Null remote host for new connection" );
+				continue;
+			}
 			message += c.system + " at " + c.remoteHost + " is connected.\n";
 		}
 		if (message != null) {
