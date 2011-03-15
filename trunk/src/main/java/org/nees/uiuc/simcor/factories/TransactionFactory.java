@@ -20,19 +20,35 @@ public class TransactionFactory {
 	private final Logger log = Logger.getLogger(TransactionFactory.class);
 
 	private String mdl = "MDL-00-01";
+
 	private String systemDescription;
+
 	private int transactionTimeout = 3000;
 	private int vampCount = 0;
+	private TransactionIdentity vampId;
 
-	public BroadcastTransaction createBroadcastTransaction(int step, int subStep, int correctionStep, int msgTimeout) {
+	public BroadcastTransaction createBroadcastTransaction(int step,
+			int subStep, int correctionStep, int msgTimeout) {
 		BroadcastTransaction result = new BroadcastTransaction();
 		id = createTransactionId(step, subStep, correctionStep);
 		id.createTransId();
-		SimCorMsg msg = createCommand("trigger", mdl, null, "[" + systemDescription + "]");
+		SimCorMsg msg = createCommand("trigger", mdl, null, "["
+				+ systemDescription + "]");
 		result.setCommand(msg);
 		result.setId(id);
 		result.setDirection(DirectionType.SEND_COMMAND);
 		result.setTimeout(msgTimeout);
+		log.debug("Created transaction: " + result);
+		return result;
+	}
+
+	public BroadcastTransaction createCloseTriggerTransaction(int msgTimeout) {
+		BroadcastTransaction result = new BroadcastTransaction();
+		result.setCommand(createSessionCommand(false));
+		result.setId(id);
+		result.setDirection(direction);
+		result.setTimeout(msgTimeout);
+		result.setState(TransactionStateNames.ASSEMBLE_CLOSE_TRIGGER_COMMANDS);
 		log.debug("Created transaction: " + result);
 		return result;
 	}
@@ -52,7 +68,7 @@ public class TransactionFactory {
 		log.debug("Created " + result);
 		return result;
 	}
-	
+
 	public SimCorCompoundMsg createCompoundCommand(String cmd, String[] mdl,
 			String[] cps, String[] cnt) {
 		SimCorCompoundMsg result = new SimCorCompoundMsg();
@@ -110,23 +126,13 @@ public class TransactionFactory {
 		return result;
 	}
 
-	public SimpleTransaction createSendCommandTransaction(SimCorMsg msg, int msgTimeout) {
+	public SimpleTransaction createSendCommandTransaction(SimCorMsg msg,
+			int msgTimeout) {
 		SimpleTransaction result = new SimpleTransaction();
 		result.setCommand(msg);
 		result.setId(id);
 		result.setDirection(direction);
 		result.setTimeout(msgTimeout);
-		log.debug("Created transaction: " + result);
-		return result;
-	}
-
-	public BroadcastTransaction createCloseTriggerTransaction( int msgTimeout) {
-		BroadcastTransaction result = new BroadcastTransaction();
-		result.setCommand(createSessionCommand(false));
-		result.setId(id);
-		result.setDirection(direction);
-		result.setTimeout(msgTimeout);
-		result.setState(TransactionStateNames.ASSEMBLE_CLOSE_TRIGGER_COMMANDS);
 		log.debug("Created transaction: " + result);
 		return result;
 	}
@@ -137,13 +143,9 @@ public class TransactionFactory {
 	}
 
 	public SimCorMsg createSessionResponse(SimCorMsg cmd) {
-		return createResponse(mdl, null, ("[" + systemDescription + "] "
-				+ cmd.getCommand() + " done"), false);
-	}
-
-	public SimCorMsg createTriggerResponse(SimCorMsg cmd) {
-		return createResponse(mdl, null, ("[" + systemDescription + "] "
-				+ cmd.getCommand() + " done"), false);
+		return createResponse(mdl, null,
+				("[" + systemDescription + "] " + cmd.getCommand() + " done"),
+				false);
 	}
 
 	public TransactionIdentity createTransactionId(int step, int subStep,
@@ -162,8 +164,17 @@ public class TransactionFactory {
 		return result;
 	}
 
-	public BroadcastTransaction createVampTransaction(int msgTimeout)  {
-		return createBroadcastTransaction(99999, 0, vampCount++, msgTimeout);
+	public SimCorMsg createTriggerResponse(SimCorMsg cmd) {
+		return createResponse(mdl, null,
+				("[" + systemDescription + "] " + cmd.getCommand() + " done"),
+				false);
+	}
+
+	public BroadcastTransaction createVampTransaction(int msgTimeout) {
+		if (vampId == null) {
+			vampId = createTransactionId(9999, 0, 0);
+		}
+		return createBroadcastTransaction(vampId.getStep(), vampId.getSubStep()	, vampId.getCorrectionStep() +  vampCount++, msgTimeout);
 	}
 
 	public DirectionType getDirection() {
@@ -184,6 +195,13 @@ public class TransactionFactory {
 
 	public synchronized int getTransactionTimeout() {
 		return transactionTimeout;
+	}
+
+	/**
+	 * @return the vampId
+	 */
+	public TransactionIdentity getVampId() {
+		return vampId;
 	}
 
 	public void setDirection(DirectionType direction) {
@@ -214,6 +232,14 @@ public class TransactionFactory {
 
 	public synchronized void setTransactionTimeout(int transactionTimeout) {
 		this.transactionTimeout = transactionTimeout;
+	}
+
+	/**
+	 * @param vampId
+	 *            the vampId to set
+	 */
+	public void setVampId(TransactionIdentity vampId) {
+		this.vampId = vampId;
 	}
 
 }
