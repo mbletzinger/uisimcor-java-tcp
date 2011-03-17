@@ -32,8 +32,13 @@ public class ClientConnections {
 
 	public synchronized void assembleTriggerMessages(
 			BroadcastTransaction transaction) {
+		if(transaction == null) {
+			log.error("null transaction received");
+			return;
+		}
 		mergeClients(transaction);
 		setMsgTimeout(transaction.getTimeout());
+
 		for (ClientIdWithConnection c : clients) {
 			sendMsg(c.connection, transaction.getCommand(), transaction.getId());
 		}

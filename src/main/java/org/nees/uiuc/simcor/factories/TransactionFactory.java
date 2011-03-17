@@ -6,10 +6,11 @@ import org.nees.uiuc.simcor.transaction.Address;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.SimCorCompoundMsg;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
-import org.nees.uiuc.simcor.transaction.SimpleTransaction;
-import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
+import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
+import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity.StepTypes;
 
 public class TransactionFactory {
@@ -174,7 +175,9 @@ public class TransactionFactory {
 		if (vampId == null) {
 			vampId = createTransactionId(9999, 0, 0);
 		}
-		return createBroadcastTransaction(vampId.getStep(), vampId.getSubStep()	, vampId.getCorrectionStep() +  vampCount++, msgTimeout);
+		BroadcastTransaction btr = createBroadcastTransaction(vampId.getStep(), vampId.getSubStep()	, vampId.getCorrectionStep() +  vampCount++, msgTimeout);
+		log.debug("Created Vamp\"" + btr  + "\"");
+		return btr;
 	}
 
 	public DirectionType getDirection() {
