@@ -31,7 +31,7 @@ public class TriggerBroadcastVamp {
 		private void sendVamp() {
 			BroadcastTransaction trans = bcast.getTf().createVampTransaction(
 					msgTimeout);
-			log.debug("Broadcasting Vamp " + trans);
+			log.info("Broadcasting Vamp " + trans);
 			bcast.startTransaction(trans);
 			TransactionStateNames state = bcast.isReady();
 			while (state.equals(TransactionStateNames.TRANSACTION_DONE) == false) {

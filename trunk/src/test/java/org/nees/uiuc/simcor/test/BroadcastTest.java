@@ -224,12 +224,6 @@ public class BroadcastTest  {
 		transaction = broadcast();
 		log.debug("Results for broadcast " + number + ": " + transaction);
 		checkTransaction(transaction, false, false, 4);
-		endClient();
-		endClient();
-		checkClientList(2);
-		transaction = broadcast();
-		log.debug("Results for broadcast " + number + ": " + transaction);
-		checkTransaction(transaction, false, true, 2);
 		simcor.shutdown();
 		TransactionStateNames state = simcor.isReady();
 		while (state.equals(TransactionStateNames.READY) == false) {
