@@ -49,7 +49,7 @@ public class UiSimCorTriggerBroadcast {
 	
 	private ClientConnections cc;
 
-	private Transaction transaction;
+	private BroadcastTransaction transaction;
 
 	private boolean connectionActive = false;
 
@@ -122,15 +122,14 @@ public class UiSimCorTriggerBroadcast {
 		this.sap = new StateActionsProcessorWithCc(lsm);
 		this.sap.setIdentity(mdl, system);
 		this.archive = sap.getArchive();
-		transaction = sap.getTf().createSendCommandTransaction(null,
-				sap.getTf().getTransactionTimeout());
+		transaction = sap.getTf().createBroadcastTransaction(0, 0, 0, 1000);
 		transaction.setState(TransactionStateNames.TRANSACTION_DONE);
 		sap.getTf().setMdl(mdl);
 		machine.put(TransactionStateNames.ASSEMBLE_CLOSE_TRIGGER_COMMANDS, new AssembleCloseTriggerCommands(sap));
 		machine.put(TransactionStateNames.BROADCAST_CLOSE_COMMAND, new BroadcastCommand(sap, TransactionStateNames.DELAY_FOR_CLOSE_COMMANDS));
 		machine.put(TransactionStateNames.DELAY_FOR_CLOSE_COMMANDS, new DelayForCloseCommands(sap,2000));		
 		machine.put(TransactionStateNames.CLOSE_TRIGGER_CONNECTIONS, new CloseTriggerConnections(sap));
-		machine.put(TransactionStateNames.STOP_LISTENER, new StopListener(sap));
+		machine.put(TransactionStateNames.STOP_LISTENER, new StopListener(sap,TransactionStateNames.ASSEMBLE_CLOSE_TRIGGER_COMMANDS));
 		machine.put(TransactionStateNames.START_LISTENER, new StartListener(sap, TransactionStateNames.TRANSACTION_DONE));
 		machine.put(TransactionStateNames.ASSEMBLE_TRIGGER_COMMANDS, new AssembleTriggerCommands(sap));
 		machine.put(TransactionStateNames.BROADCAST_COMMAND, new BroadcastCommand(sap, TransactionStateNames.SETUP_TRIGGER_READ_RESPONSES));
@@ -147,7 +146,7 @@ public class UiSimCorTriggerBroadcast {
 		}
 
 		transaction = sap.getTf().createCloseTriggerTransaction(sap.getTf().getTransactionTimeout());
-		transaction.setState(TransactionStateNames.ASSEMBLE_CLOSE_TRIGGER_COMMANDS);
+		transaction.setState(TransactionStateNames.STOP_LISTENER);
 		log.info("Shutting down broadcast trigger");
 		log.info("Shutting down network logger");
 		archive.logTransaction(new ExitTransaction());
@@ -184,8 +183,7 @@ public class UiSimCorTriggerBroadcast {
 	public void startup(TcpParameters params) {
 		sap.setParams(params);
 		TransactionFactory transactionFactory = sap.getTf();
-		transaction = transactionFactory.createSendCommandTransaction(null,
-				transactionFactory.getTransactionTimeout());
+		transaction = transactionFactory.createBroadcastTransaction(0, 0, 0, 1000);
 			transaction.setState(TransactionStateNames.START_LISTENER);
 			transaction.setDirection(DirectionType.SEND_COMMAND);
 		if (archive.isAlive() == false) {

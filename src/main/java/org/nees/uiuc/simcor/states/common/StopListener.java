@@ -8,8 +8,8 @@ import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class StopListener extends TransactionState {
 
-	public StopListener( StateActionsProcessor sap) {
-		super(TransactionStateNames.STOP_LISTENER, sap, TransactionStateNames.TRANSACTION_DONE);
+	public StopListener( StateActionsProcessor sap, TransactionStateNames next) {
+		super(TransactionStateNames.STOP_LISTENER, sap, next);
 	}
 
 	@Override

@@ -1,50 +1,35 @@
 package org.nees.uiuc.simcor.test;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.nees.uiuc.simcor.factories.ListenerConnectionFactory;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
+import org.nees.uiuc.simcor.test.util.RemoteConnecter;
 import org.nees.uiuc.simcor.test.util.RemoteListener;
 import org.nees.uiuc.simcor.transaction.Address;
 import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
-public class ConnectionTest  {
+public class ListenerTest {
 	private Connection connection;
-	private final Logger log = Logger.getLogger(ConnectionTest.class);
+	private final Logger log = Logger.getLogger(ListenerTest.class);
 	private TcpParameters lparams;
 	private Msg2Tcp m2t;
-	private RemoteListener remote;
+	private RemoteConnecter remote;
 	private TcpParameters rparams;
 	private TransactionIdentity tid;
-
-	private TcpActionsDto connect2Remote() {
-		TcpActionsDto dto = new TcpActionsDto();
-		dto.setAction(ActionsType.CONNECT);
-		connection.setToRemoteMsg(dto);
-		int count = 1;
-		while (connection.isBusy()) {
-			try {
-				Thread.sleep(20);
-			} catch (InterruptedException e) {
-			}
-			if (count == 70) {
-				log.debug("Waiting for remote connect");
-				count = 0;
-			}
-			count++;
-		}
-		return connection.getFromRemoteMsg();
-	}
+	private ListenerConnectionFactory listener;
 
 	private TcpActionsDto disconnectFromRemote() {
 		TcpActionsDto dto = new TcpActionsDto();
@@ -111,12 +96,48 @@ public class ConnectionTest  {
 		return connection.getFromRemoteMsg();
 	}
 
+	private void shutdownListener() {
+		int count = 1;
+		while (listener.stopListener() == false) {
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {
+			}
+			if (count == 70) {
+				count = 0;
+				log.debug("Still waiting on listener shutdown");
+			}
+			count++;
+		}
+	}
+
+	private void startListener() {
+		listener = new ListenerConnectionFactory();
+		listener.setParams(lparams);
+		listener.startListener();
+		log.debug("Starting Local Listener");
+	}
+
+	private void connect2Remote() {
+		log.debug("Checking for a connection");
+		connection = listener.checkForListenerConnection();
+		int count = 0;
+		while (connection == null && count < 10) {
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {
+			}
+			connection = listener.checkForListenerConnection();
+				log.debug("Still waiting for a remote connection");
+			count++;
+		}
+	}
+
 	@Before
 	public void setUp() throws Exception {
-		rparams = new TcpParameters(null, 0, 6445, 2000, true);
-		lparams = new TcpParameters("127.0.0.1", 6445, 0, 2000, true);
-		remote = new RemoteListener(rparams);
-		connection = new Connection(lparams);
+		lparams = new TcpParameters(null, 0, 6445, 2000, true);
+		rparams = new TcpParameters("127.0.0.1", 6445, 0, 2000, true);
+		remote = new RemoteConnecter(rparams);
 		tid = new TransactionIdentity();
 		tid.setStep(2);
 		tid.setSubStep(3);
@@ -126,14 +147,7 @@ public class ConnectionTest  {
 		m2t = new Msg2Tcp();
 		m2t.setId(tid);
 	}
-	
-	private void startConnection() {
-		connection.start();
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-		}
-	}
+
 	private void startRemote() {
 		remote.start();
 		try {
@@ -144,6 +158,7 @@ public class ConnectionTest  {
 
 	@After
 	public void tearDown() throws Exception {
+		shutdownListener();
 		if (remote.isRunning()) {
 			remote.setRunning(false);
 			int count = 1;
@@ -163,29 +178,30 @@ public class ConnectionTest  {
 
 	@Test
 	public void test01ConnectFail() {
-		startConnection();
-		TcpActionsDto dto = connect2Remote();
-		Assert.assertEquals(TcpErrorTypes.IO_ERROR, dto.getError().getType());
+		startListener();
+		connect2Remote();
+		Assert.assertNull(connection);
+		shutdownListener();
 	}
 
 	@Test
 	public void test02OpenClose() {
+		startListener();
 		startRemote();
-		startConnection();
-		TcpActionsDto dto = connect2Remote();
-		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
-		dto = disconnectFromRemote();
+		connect2Remote();
+		Assert.assertNotNull(connection);
+		TcpActionsDto dto = disconnectFromRemote();
 		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
 	}
 
 	@Test
 	public void test03WriteSuccessAndReadFail() {
+		startListener();
 		startRemote();
-		startConnection();
-		TcpActionsDto dto = connect2Remote();
-		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+		connect2Remote();
+		Assert.assertNotNull(connection);
 
-		dto = write2Remote();
+		TcpActionsDto dto = write2Remote();
 		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
 
 		remote.setRunning(false);
@@ -194,36 +210,36 @@ public class ConnectionTest  {
 		Assert.assertEquals(TcpErrorTypes.TIMEOUT, dto.getError().getType());
 		dto = disconnectFromRemote();
 		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
-
 	}
 
 	@Test
 	public void test04WriteReadSuccess() {
+		startListener();
 		startRemote();
-		startConnection();
-		TcpActionsDto dto = connect2Remote();
-		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+		connect2Remote();
+		Assert.assertNotNull(connection);
 
-		dto = write2Remote();
+		TcpActionsDto dto = write2Remote();
 		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
 
 		dto = readFromRemote();
 		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
-
 	}
 
 	@Test
-	public void test05WriteReadSuccess2x() {
+	public void test05WriteReadSuccessWithListenerShutdown() {
+		startListener();
 		startRemote();
-		startConnection();
-		TcpActionsDto dto = connect2Remote();
-		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+		connect2Remote();
+		Assert.assertNotNull(connection);
 
-		dto = write2Remote();
+		TcpActionsDto dto = write2Remote();
 		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
 
 		dto = readFromRemote();
 		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+		
+		shutdownListener();
 
 		dto = write2Remote();
 		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
@@ -235,19 +251,18 @@ public class ConnectionTest  {
 
 	@Test
 	public void test06WriteSuccessAndReadAbort() {
+		startListener();
 		startRemote();
-		startConnection();
-		TcpActionsDto dto = connect2Remote();
-		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+		connect2Remote();
+		Assert.assertNotNull(connection);
 
-		dto = write2Remote();
+		TcpActionsDto dto = write2Remote();
 		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
 
 		remote.setRunning(false);
 
 		dto = readFromRemoteWithAbort();
 		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
-
 	}
 
 	private TcpActionsDto write2Remote() {

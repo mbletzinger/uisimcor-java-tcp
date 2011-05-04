@@ -103,6 +103,7 @@ public class TcpListen {
 			error.setType(TcpErrorTypes.IO_ERROR);
 		}
 		log.info("Listener signing off");
+		server = null;
 		return true;
 	}
 

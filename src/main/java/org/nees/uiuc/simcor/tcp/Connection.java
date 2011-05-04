@@ -32,8 +32,9 @@ public class Connection extends Thread {
 		super();
 		writer = new WriteTcpAction(parameters.isLfcrSendEom(), link);
 		reader = new ReadTcpAction(parameters.isLfcrSendEom(),link);
-		openCloseAction = new OpenCloseTcpAction(getLink(), parameters);
+		openCloseAction = new OpenCloseTcpAction(link, parameters);
 		remoteHost = link.getRemoteHost();
+		this.link = link;
 		setConnectionStatus(ConnectionStatus.BUSY);
 	}
 
