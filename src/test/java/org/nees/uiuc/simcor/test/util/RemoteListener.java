@@ -12,7 +12,7 @@ import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
-public class RemoteConnection extends Thread {
+public class RemoteListener extends Thread {
 	public enum RemoteConnectionStatus {
 		LISTENING, READING, STOPPED, WRITING
 	}
@@ -22,7 +22,7 @@ public class RemoteConnection extends Thread {
 
 	private ListenerConnectionFactory listener;
 
-	private final Logger log = Logger.getLogger(RemoteConnection.class);
+	private final Logger log = Logger.getLogger(RemoteListener.class);
 
 	private String message;
 
@@ -32,7 +32,7 @@ public class RemoteConnection extends Thread {
 
 	private RemoteConnectionStatus status = RemoteConnectionStatus.STOPPED;
 
-	public RemoteConnection(TcpParameters params) {
+	public RemoteListener(TcpParameters params) {
 		super();
 		this.params = params;
 	}
