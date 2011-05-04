@@ -7,7 +7,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
   HexTest.class,
   SimCorMsgTest.class,
-  ConnectionTest.class 
+  ConnectionTest.class, 
+  ListenerTest.class
 })
 
 public class BasicTests {

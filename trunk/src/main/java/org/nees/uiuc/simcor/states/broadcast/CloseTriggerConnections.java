@@ -9,7 +9,7 @@ import org.nees.uiuc.simcor.transaction.Transaction;
 public class CloseTriggerConnections extends TransactionState {
 
 	public CloseTriggerConnections(StateActionsProcessor sap) {
-		super(TransactionStateNames.CLOSE_TRIGGER_CONNECTIONS, sap, TransactionStateNames.STOP_LISTENER);
+		super(TransactionStateNames.CLOSE_TRIGGER_CONNECTIONS, sap, TransactionStateNames.TRANSACTION_DONE);
 	}
 
 	@Override

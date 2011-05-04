@@ -186,7 +186,7 @@ public class UiSimCorTcp {
 									sap,
 									TransactionStateNames.CHECK_LISTENER_OPEN_CONNECTION));
 			machine.put(TransactionStateNames.STOP_LISTENER, new StopListener(
-					sap));
+					sap,TransactionStateNames.TRANSACTION_DONE));
 			machine.put(TransactionStateNames.WAIT_FOR_COMMAND,
 					new WaitForCommand(sap));
 			machine.put(TransactionStateNames.WAIT_FOR_RESPONSE_POSTING,
