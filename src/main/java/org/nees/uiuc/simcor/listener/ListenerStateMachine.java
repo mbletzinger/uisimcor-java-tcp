@@ -196,10 +196,14 @@ public class ListenerStateMachine extends Thread {
 
 	private void updateClient(SimpleTransaction transaction) {
 		setError(transaction.getError());
+		ClientIdWithConnection client = sap.getRemoteClient();
+		if(client == null) {
+			log.error("Null client received");
+		}
 		if (isP2P) {
-			oneClient = sap.getRemoteClient();
+			oneClient = client;
 		} else {
-			cc.addClient(sap.getRemoteClient());
+			cc.addClient(client);
 		}
 		setClientAvailable(true);
 		log.debug("Added Client " + oneClient);
