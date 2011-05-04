@@ -13,7 +13,7 @@ import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
 import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
-import org.nees.uiuc.simcor.test.util.RemoteConnection;
+import org.nees.uiuc.simcor.test.util.RemoteListener;
 import org.nees.uiuc.simcor.transaction.Address;
 import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
@@ -24,7 +24,7 @@ public class ConnectionTest  {
 	private final Logger log = Logger.getLogger(ConnectionTest.class);
 	private TcpParameters lparams;
 	private Msg2Tcp m2t;
-	private RemoteConnection remote;
+	private RemoteListener remote;
 	private TcpParameters rparams;
 	private TransactionIdentity tid;
 
@@ -116,7 +116,7 @@ public class ConnectionTest  {
 	public void setUp() throws Exception {
 		rparams = new TcpParameters(null, 0, 6445, 2000, true);
 		lparams = new TcpParameters("127.0.0.1", 6445, 0, 2000, true);
-		remote = new RemoteConnection(rparams);
+		remote = new RemoteListener(rparams);
 		connection = new Connection(lparams);
 		tid = new TransactionIdentity();
 		tid.setStep(2);
