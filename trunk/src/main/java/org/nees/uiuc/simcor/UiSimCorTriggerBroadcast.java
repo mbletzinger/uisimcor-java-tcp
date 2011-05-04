@@ -18,8 +18,9 @@ import org.nees.uiuc.simcor.states.broadcast.AssembleCloseTriggerCommands;
 import org.nees.uiuc.simcor.states.broadcast.AssembleTriggerCommands;
 import org.nees.uiuc.simcor.states.broadcast.BroadcastCommand;
 import org.nees.uiuc.simcor.states.broadcast.CloseTriggerConnections;
+import org.nees.uiuc.simcor.states.broadcast.DelayForCloseCommands;
 import org.nees.uiuc.simcor.states.broadcast.SetupReadTriggerResponses;
-import org.nees.uiuc.simcor.states.broadcast.WaitForTriggerResposnes;
+import org.nees.uiuc.simcor.states.broadcast.WaitForTriggerResponses;
 import org.nees.uiuc.simcor.states.common.Ready;
 import org.nees.uiuc.simcor.states.common.StartListener;
 import org.nees.uiuc.simcor.states.common.StopListener;
@@ -126,14 +127,15 @@ public class UiSimCorTriggerBroadcast {
 		transaction.setState(TransactionStateNames.TRANSACTION_DONE);
 		sap.getTf().setMdl(mdl);
 		machine.put(TransactionStateNames.ASSEMBLE_CLOSE_TRIGGER_COMMANDS, new AssembleCloseTriggerCommands(sap));
-		machine.put(TransactionStateNames.BROADCAST_CLOSE_COMMAND, new BroadcastCommand(sap, TransactionStateNames.CLOSE_TRIGGER_CONNECTIONS));
+		machine.put(TransactionStateNames.BROADCAST_CLOSE_COMMAND, new BroadcastCommand(sap, TransactionStateNames.DELAY_FOR_CLOSE_COMMANDS));
+		machine.put(TransactionStateNames.DELAY_FOR_CLOSE_COMMANDS, new DelayForCloseCommands(sap,2000));		
 		machine.put(TransactionStateNames.CLOSE_TRIGGER_CONNECTIONS, new CloseTriggerConnections(sap));
 		machine.put(TransactionStateNames.STOP_LISTENER, new StopListener(sap));
 		machine.put(TransactionStateNames.START_LISTENER, new StartListener(sap, TransactionStateNames.TRANSACTION_DONE));
 		machine.put(TransactionStateNames.ASSEMBLE_TRIGGER_COMMANDS, new AssembleTriggerCommands(sap));
 		machine.put(TransactionStateNames.BROADCAST_COMMAND, new BroadcastCommand(sap, TransactionStateNames.SETUP_TRIGGER_READ_RESPONSES));
 		machine.put(TransactionStateNames.SETUP_TRIGGER_READ_RESPONSES, new SetupReadTriggerResponses(sap));
-		machine.put(TransactionStateNames.WAIT_FOR_TRIGGER_RESPONSES, new WaitForTriggerResposnes(sap));
+		machine.put(TransactionStateNames.WAIT_FOR_TRIGGER_RESPONSES, new WaitForTriggerResponses(sap));
 		machine.put(TransactionStateNames.TRANSACTION_DONE, new TransactionDone(sap, TransactionStateNames.READY));
 		machine.put(TransactionStateNames.READY, new Ready(sap));
 	}

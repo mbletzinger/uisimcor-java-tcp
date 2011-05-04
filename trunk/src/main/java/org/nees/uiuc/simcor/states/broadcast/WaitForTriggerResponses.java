@@ -7,9 +7,9 @@ import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
 
-public class WaitForTriggerResposnes extends TransactionState {
+public class WaitForTriggerResponses extends TransactionState {
 
-	public WaitForTriggerResposnes(StateActionsProcessor sap) {
+	public WaitForTriggerResponses(StateActionsProcessor sap) {
 		super(TransactionStateNames.WAIT_FOR_TRIGGER_RESPONSES, sap, TransactionStateNames.TRANSACTION_DONE);
 	}
 

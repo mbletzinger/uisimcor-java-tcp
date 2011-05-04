@@ -1,14 +1,15 @@
 package org.nees.uiuc.simcor.listener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.tcp.Connection;
-import org.nees.uiuc.simcor.tcp.TcpActionsDto;
-import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.Connection.ConnectionStatus;
+import org.nees.uiuc.simcor.tcp.TcpActionsDto;
 import org.nees.uiuc.simcor.tcp.TcpActionsDto.ActionsType;
+import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.Msg2Tcp;
@@ -27,6 +28,9 @@ public class ClientConnections {
 	}
 
 	public synchronized void addClient(ClientIdWithConnection client) {
+		if(client == null) {
+			log.error("Null client received");
+		}
 		newClients.add(client);
 	}
 
@@ -40,6 +44,10 @@ public class ClientConnections {
 		setMsgTimeout(transaction.getTimeout());
 
 		for (ClientIdWithConnection c : clients) {
+			if(c == null) {
+				log.error("Null client received");
+				continue;
+			}
 			sendMsg(c.connection, transaction.getCommand(), transaction.getId());
 		}
 	}
@@ -68,6 +76,7 @@ public class ClientConnections {
 
 	private void mergeClients(BroadcastTransaction transaction) {
 		clients.addAll(newClients);
+		checkForNullClients();
 		String message = null;
 		for (ClientId c : newClients) {
 			if (message == null) {
@@ -199,5 +208,8 @@ public class ClientConnections {
 			waitingForResponse.remove(i);
 		}
 		return result;
+	}
+	private void checkForNullClients() {
+		clients.removeAll(Collections.singleton(null));
 	}
 }

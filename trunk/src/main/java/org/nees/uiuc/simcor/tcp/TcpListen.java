@@ -1,6 +1,7 @@
 package org.nees.uiuc.simcor.tcp;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -69,9 +70,10 @@ public class TcpListen {
 
 	public boolean startListening() {
 		try {
-			server = new ServerSocket(params.getLocalPort());
+			server = new ServerSocket();
 			server.setSoTimeout(params.getTcpTimeout());
 			server.setReuseAddress(true);
+			server.bind(new InetSocketAddress(params.getLocalPort()));
 		} catch (IOException e) {
 			log.error("Listening at " + ":" + params.getLocalPort()
 					+ " failed because", e);
