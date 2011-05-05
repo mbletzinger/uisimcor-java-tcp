@@ -8,19 +8,19 @@ import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 
-public class TriggerStateMachine extends Thread {
+public class TriggerClient extends Thread {
 	private String clientId;
 
 	private boolean connected = false;
 
 	private boolean done = false;
 
-	private final Logger log = Logger.getLogger(TriggerStateMachine.class);
+	private final Logger log = Logger.getLogger(TriggerClient.class);
 	private TcpParameters params;
 
-	private UiSimCorTcp simcor;
+	protected UiSimCorTcp simcor;
 
-	public TriggerStateMachine(TcpParameters params, String systemDescription) {
+	public TriggerClient(TcpParameters params, String systemDescription) {
 		simcor = new UiSimCorTcp(ConnectType.TRIGGER_CLIENT, "MDL-00-01",
 				systemDescription);
 		this.params = params;
@@ -112,7 +112,7 @@ public class TriggerStateMachine extends Thread {
 		String lclient = getClientId();
 		TransactionStateNames state = simcor.isReady();
 		int count = 0;
-		while (state.equals(TransactionStateNames.READY) == false && count < 50) {
+		while (state.equals(TransactionStateNames.READY) == false && count < 10) {
 			state = simcor.isReady();
 			count++;
 			try {
@@ -122,7 +122,7 @@ public class TriggerStateMachine extends Thread {
 			log.debug("Trigger " + lclient+ "  connecting "
 					+ simcor.getTransaction());
 		}
-		if (count == 50) {
+		if (count == 10) {
 			log.error(clientId + " Could not connect");
 			stopConnection();
 			return;
