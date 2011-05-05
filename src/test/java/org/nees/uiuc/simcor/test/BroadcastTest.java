@@ -17,14 +17,15 @@ import org.nees.uiuc.simcor.states.TransactionStateNames;
 import org.nees.uiuc.simcor.tcp.TcpListen;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
-import org.nees.uiuc.simcor.test.util.TriggerStateMachine;
+import org.nees.uiuc.simcor.test.util.ReConnectingTriggerClient;
+import org.nees.uiuc.simcor.test.util.TriggerClient;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 
 public class BroadcastTest  {
 	private int clientIdx = 0;
-	private List<TriggerStateMachine> clients = new ArrayList<TriggerStateMachine>();
+	private List<TriggerClient> clients = new ArrayList<TriggerClient>();
 	private TcpParameters cparams = new TcpParameters();
 	private final Logger log = Logger.getLogger(BroadcastTest.class);
 	private TcpParameters lparams = new TcpParameters();
@@ -54,7 +55,7 @@ public class BroadcastTest  {
 	private void checkClientList(int expected) {
 		String clientsStr = "";
 		int activeC = 0;
-		for (TriggerStateMachine c : clients) {
+		for (TriggerClient c : clients) {
 			clientsStr += c.getClientId() + "\n";
 			if (c.isDone() == false) {
 				activeC++;
@@ -80,7 +81,7 @@ public class BroadcastTest  {
 	}
 
 	private void endClient() {
-		for (TriggerStateMachine client : clients) {
+		for (TriggerClient client : clients) {
 			if (client.isDone() == false) {
 				client.setDone(true);
 				try {
@@ -114,9 +115,14 @@ public class BroadcastTest  {
 			log.debug("Start Listening " + simcor.getTransaction());
 		}
 	}
-	private void startClient() {
+	private void startClient(boolean isReconnecting) {
 		String sys = "Client " + clientIdx;
-		TriggerStateMachine client = new TriggerStateMachine(cparams, sys);
+		TriggerClient client;
+		if(isReconnecting) {
+			client = new ReConnectingTriggerClient(cparams, sys);			
+		} else {
+			client = new TriggerClient(cparams, sys);
+		}
 		client.start();
 		clients.add(client);
 		try {
@@ -128,7 +134,7 @@ public class BroadcastTest  {
 
 	@After
 	public void tearDown() throws Exception {
-		for (TriggerStateMachine client : clients) {
+		for (TriggerClient client : clients) {
 			client.setDone(true);
 			log.debug("Close " + client.getClientId()
 					+ (client.isDone() ? " DONE" : " STILL RUNNING"));
@@ -137,7 +143,7 @@ public class BroadcastTest  {
 		boolean allDone = false;
 		while (allDone == false) {
 			allDone = true;
-			for (TriggerStateMachine client : clients) {
+			for (TriggerClient client : clients) {
 				if (client.isAlive()) {
 					allDone = false;
 					log.debug("Waithing for " + client.getClientId()
@@ -170,7 +176,7 @@ public class BroadcastTest  {
 	@Test
 	public void test01OneTriggering() {
 		startSimCor();
-		startClient();
+		startClient(false);
 		checkClientList(1);
 		BroadcastTransaction transaction = broadcast();
 		log.debug("Results for broadcast " + number + ": " + transaction);
@@ -188,12 +194,12 @@ public class BroadcastTest  {
 	@Test
 	public void test02TwoTriggering() {
 		startSimCor();
-		startClient();
+		startClient(false);
 		checkClientList(1);
 		BroadcastTransaction transaction = broadcast();
 		log.debug("Results for broadcast " + number + ": " + transaction);
 		checkTransaction(transaction, true, false, 1);
-		startClient();
+		startClient(false);
 		checkClientList(2);
 		transaction = broadcast();
 		log.debug("Results for broadcast " + number + ": " + transaction);
@@ -213,10 +219,10 @@ public class BroadcastTest  {
 	@Test
 	public void test03BatchWithCloseTriggering() {
 		startSimCor();
-		startClient();
-		startClient();
-		startClient();
-		startClient();
+		startClient(false);
+		startClient(false);
+		startClient(false);
+		startClient(false);
 		checkClientList(4);
 		BroadcastTransaction transaction = broadcast();
 		log.debug("Results for broadcast " + number + ": " + transaction);
@@ -224,6 +230,31 @@ public class BroadcastTest  {
 		transaction = broadcast();
 		log.debug("Results for broadcast " + number + ": " + transaction);
 		checkTransaction(transaction, false, false, 4);
+		simcor.shutdown();
+		TransactionStateNames state = simcor.isReady();
+		while (state.equals(TransactionStateNames.READY) == false) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+			}
+			state = simcor.isReady();
+			log.debug("Closing down " + simcor.getTransaction());
+		}
+		checkClientList(0);
+	}
+
+	@Test
+	public void test031BatchWithCloseReconnectTriggering() {
+		startSimCor();
+		startClient(false);
+		startClient(true);
+		checkClientList(2);
+		BroadcastTransaction transaction = broadcast();
+		log.debug("Results for broadcast " + number + ": " + transaction);
+		checkTransaction(transaction, true, false, 2);
+		transaction = broadcast();
+		log.debug("Results for broadcast " + number + ": " + transaction);
+		checkTransaction(transaction, false, false, 2);
 		simcor.shutdown();
 		TransactionStateNames state = simcor.isReady();
 		while (state.equals(TransactionStateNames.READY) == false) {
@@ -268,7 +299,7 @@ public class BroadcastTest  {
 	@Test
 	public void test05OneClientWithDeadClientClose() {
 		startSimCor();
-		startClient();
+		startClient(false);
 		checkClientList(1);
 		BroadcastTransaction transaction = broadcast();
 		log.debug("Results for broadcast " + number + ": " + transaction);
@@ -292,8 +323,8 @@ public class BroadcastTest  {
 	@Test
 	public void test06BatchWithVamp() throws InterruptedException {
 		startSimCor();
-		startClient();
-		startClient();
+		startClient(false);
+		startClient(false);
 		checkClientList(2);
 		TriggerBroadcastVamp vmp = new TriggerBroadcastVamp(simcor);
 		TransactionIdentity tid = simcor.getTf().createTransactionId(100, 10, 11);
