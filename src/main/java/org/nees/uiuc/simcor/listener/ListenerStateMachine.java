@@ -157,6 +157,11 @@ public class ListenerStateMachine extends Thread {
 			if (transaction.getState().equals(
 					TransactionStateNames.TRANSACTION_DONE)) {
 				updateClient(transaction);
+				SimpleTransaction t = sap.getTf()
+				.createSendCommandTransaction(null,
+						sap.getTf().getTransactionTimeout());
+				t.setState(transaction.getState());
+				transaction = t;
 			}
 			setCurrentState(transaction.getState());
 			try {

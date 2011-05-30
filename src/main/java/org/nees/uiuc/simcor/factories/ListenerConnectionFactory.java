@@ -30,7 +30,7 @@ public class ListenerConnectionFactory {
 		Connection c = new Connection(client, params);
 		try {
 			c.start();
-			Thread.sleep(300); // Give the connection time to start
+			Thread.sleep(200); // Give the connection time to start
 		} catch (Exception e) {
 			log.error("Check for Listener Connection " + c.getRemoteHost()
 					+ " failed", e);
