@@ -113,10 +113,6 @@ public class ConnectionTest  {
 
 	@Before
 	public void setUp() throws Exception {
-		rparams = new TcpParameters(null, 0, 6445, 2000, true);
-		lparams = new TcpParameters("127.0.0.1", 6445, 0, 2000, true);
-		remote = new RemoteListener(rparams);
-		connection = new Connection(lparams);
 		tid = new TransactionIdentity();
 		tid.setStep(2);
 		tid.setSubStep(3);
@@ -126,7 +122,13 @@ public class ConnectionTest  {
 		m2t = new Msg2Tcp();
 		m2t.setId(tid);
 	}
-	
+
+	private void createConnection(boolean sendLfcr) {
+		rparams = new TcpParameters(null, 0, 6445, 2000, sendLfcr);
+		lparams = new TcpParameters("127.0.0.1", 6445, 0, 2000, sendLfcr);
+		remote = new RemoteListener(rparams);
+		connection = new Connection(lparams);
+	}
 	private void startConnection() {
 		connection.start();
 		try {
@@ -163,6 +165,7 @@ public class ConnectionTest  {
 
 	@Test
 	public void test01ConnectFail() {
+		createConnection(true);
 		startConnection();
 		TcpActionsDto dto = connect2Remote();
 		Assert.assertEquals(TcpErrorTypes.IO_ERROR, dto.getError().getType());
@@ -170,6 +173,7 @@ public class ConnectionTest  {
 
 	@Test
 	public void test02OpenClose() {
+		createConnection(true);
 		startRemote();
 		startConnection();
 		TcpActionsDto dto = connect2Remote();
@@ -180,6 +184,7 @@ public class ConnectionTest  {
 
 	@Test
 	public void test03WriteSuccessAndReadFail() {
+		createConnection(true);
 		startRemote();
 		startConnection();
 		TcpActionsDto dto = connect2Remote();
@@ -199,6 +204,7 @@ public class ConnectionTest  {
 
 	@Test
 	public void test04WriteReadSuccess() {
+		createConnection(true);
 		startRemote();
 		startConnection();
 		TcpActionsDto dto = connect2Remote();
@@ -214,6 +220,7 @@ public class ConnectionTest  {
 
 	@Test
 	public void test05WriteReadSuccess2x() {
+		createConnection(true);
 		startRemote();
 		startConnection();
 		TcpActionsDto dto = connect2Remote();
@@ -234,7 +241,24 @@ public class ConnectionTest  {
 	}
 
 	@Test
+	public void test04LfEomWriteReadSuccess() {
+		createConnection(false);
+		startRemote();
+		startConnection();
+		TcpActionsDto dto = connect2Remote();
+		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+
+		dto = write2Remote();
+		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+
+		dto = readFromRemote();
+		Assert.assertEquals(TcpErrorTypes.NONE, dto.getError().getType());
+
+	}
+
+	@Test
 	public void test06WriteSuccessAndReadAbort() {
+		createConnection(true);
 		startRemote();
 		startConnection();
 		TcpActionsDto dto = connect2Remote();

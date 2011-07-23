@@ -140,7 +140,9 @@ public class ReadTcpAction {
 		int marker = 0;
 		for (int i = 0; i < amt; i++) {
 			// scan for the CRLF characters which delineate messages
-			if (buf[i] == eom[1]) {
+			// This assumes that the LF character is always last
+			int cridx = eom.length - 1;
+			if (buf[i] == eom[cridx]) {
 				marker = i - 1;
 				log.debug("found CR at " + i);
 				if (i > 0) {
