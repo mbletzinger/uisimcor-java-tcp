@@ -1,8 +1,6 @@
 package org.nees.uiuc.simcor.test;
 
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;

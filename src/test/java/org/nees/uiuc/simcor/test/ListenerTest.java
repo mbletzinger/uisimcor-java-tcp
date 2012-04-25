@@ -1,7 +1,6 @@
 package org.nees.uiuc.simcor.test;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -15,7 +14,6 @@ import org.nees.uiuc.simcor.tcp.TcpError;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.test.util.RemoteConnecter;
-import org.nees.uiuc.simcor.test.util.RemoteListener;
 import org.nees.uiuc.simcor.transaction.Address;
 import org.nees.uiuc.simcor.transaction.Msg2Tcp;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;

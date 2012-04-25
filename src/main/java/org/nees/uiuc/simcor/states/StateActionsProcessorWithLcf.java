@@ -6,7 +6,6 @@ import org.nees.uiuc.simcor.logging.Archiving;
 import org.nees.uiuc.simcor.tcp.Connection;
 import org.nees.uiuc.simcor.tcp.ConnectionManager;
 import org.nees.uiuc.simcor.tcp.TcpError;
-import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 
 public class StateActionsProcessorWithLcf extends StateActionsProcessor {

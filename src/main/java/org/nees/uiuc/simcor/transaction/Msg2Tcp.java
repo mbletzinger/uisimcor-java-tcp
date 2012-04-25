@@ -137,7 +137,7 @@ public class Msg2Tcp {
 			return;
 		}
 		List<String> sub = tokens.subList(1, tokens.size());
-		parseContent(tokens.subList(1, tokens.size()));
+		parseContent(sub);
 	}
 
 	private void parseContent(List<String> tokens) {

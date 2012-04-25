@@ -2,8 +2,6 @@ package org.nees.uiuc.simcor.states;
 
 import org.nees.uiuc.simcor.listener.ClientConnections;
 import org.nees.uiuc.simcor.listener.ListenerStateMachine;
-import org.nees.uiuc.simcor.tcp.TcpError;
-import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.Transaction;

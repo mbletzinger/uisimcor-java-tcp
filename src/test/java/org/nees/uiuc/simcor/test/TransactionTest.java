@@ -1,14 +1,8 @@
 package org.nees.uiuc.simcor.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -18,14 +12,13 @@ import org.nees.uiuc.simcor.UiSimCorTcp;
 import org.nees.uiuc.simcor.UiSimCorTcp.ConnectType;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
-import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
+import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.test.util.TransactionMsgs;
 import org.nees.uiuc.simcor.test.util.TransactionResponder;
 import org.nees.uiuc.simcor.test.util.TransactionWithTestFlags;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
-import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
 public class TransactionTest  {
 	TransactionMsgs data = new TransactionMsgs();
@@ -39,11 +32,11 @@ public class TransactionTest  {
 			fail();
 		}
 	}
-	private void responderIsDead() {
-		if (responder.isAlive()) {
-			fail();
-		}
-	}
+//	private void responderIsDead() {
+//		if (responder.isAlive()) {
+//			fail();
+//		}
+//	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -98,7 +91,7 @@ public class TransactionTest  {
 		assertEquals(TcpErrorTypes.NONE, simcor.getTransaction().getError().getType());
 		assertEquals(TransactionStateNames.READY, state);
 
-		TransactionFactory tf = simcor.getSap().getTf();
+//		TransactionFactory tf = simcor.getSap().getTf();
 		checkResponder();
 		for (SimpleTransaction transO : data.cmdList) {
 			log.debug("Original command " + transO);

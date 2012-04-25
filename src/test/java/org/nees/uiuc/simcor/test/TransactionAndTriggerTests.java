@@ -8,7 +8,8 @@ import org.junit.runners.Suite;
   StateActionsTest.class,
   ListenerStateMachineTest.class,
   TransactionTest.class,
-  TriggerTest.class
+  TriggerTest.class,
+  BroadcastTest.class
 })
 
 public class TransactionAndTriggerTests {

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -14,9 +13,9 @@ import org.nees.uiuc.simcor.TriggerBroadcastVamp;
 import org.nees.uiuc.simcor.UiSimCorTriggerBroadcast;
 import org.nees.uiuc.simcor.factories.TransactionFactory;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
+import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.tcp.TcpListen;
 import org.nees.uiuc.simcor.tcp.TcpParameters;
-import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.test.util.ReConnectingTriggerClient;
 import org.nees.uiuc.simcor.test.util.TriggerClient;
 import org.nees.uiuc.simcor.transaction.BroadcastTransaction;

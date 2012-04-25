@@ -1,6 +1,5 @@
 package org.nees.uiuc.simcor.states.p2p;
 
-import org.apache.log4j.Logger;
 import org.nees.uiuc.simcor.states.StateActionsProcessor;
 import org.nees.uiuc.simcor.states.TransactionState;
 import org.nees.uiuc.simcor.states.TransactionStateNames;

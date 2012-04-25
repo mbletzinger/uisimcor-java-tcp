@@ -3,9 +3,6 @@ package org.nees.uiuc.simcor.transaction;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.nees.uiuc.simcor.tcp.TcpError;
-import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
-
 public class BroadcastTransaction extends Transaction {
 	private String broadcastMsg = null;
 	private String responseMsg = null;

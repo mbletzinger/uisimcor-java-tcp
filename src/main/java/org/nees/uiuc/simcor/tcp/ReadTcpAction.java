@@ -74,6 +74,10 @@ public class ReadTcpAction {
 		long time = (System.currentTimeMillis() - start);
 		error = new TcpError();
 		message = new Msg2Tcp();
+		if (msgTimeout <= 0) { // Timeout has been disabled
+			error.setType(TcpErrorTypes.NONE);
+			return TcpReadStatus.STILL_READING;			
+		}
 		if (time > msgTimeout) {
 			String remoteHost = link.getRemoteHost();
 			String msg = "Reading message from " + remoteHost + " timed out > "
