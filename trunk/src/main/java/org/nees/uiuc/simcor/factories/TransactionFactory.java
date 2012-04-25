@@ -8,7 +8,6 @@ import org.nees.uiuc.simcor.transaction.SimCorCompoundMsg;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
-import org.nees.uiuc.simcor.transaction.Transaction;
 import org.nees.uiuc.simcor.transaction.Transaction.DirectionType;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity;
 import org.nees.uiuc.simcor.transaction.TransactionIdentity.StepTypes;

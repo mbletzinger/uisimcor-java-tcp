@@ -20,9 +20,7 @@ import org.nees.uiuc.simcor.states.listener.ListenForConnections;
 import org.nees.uiuc.simcor.states.p2p.AssembleCommand;
 import org.nees.uiuc.simcor.states.p2p.AssembleCommand.AssembleCommandType;
 import org.nees.uiuc.simcor.tcp.TcpError;
-import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
 import org.nees.uiuc.simcor.transaction.SimpleTransaction;
-import org.nees.uiuc.simcor.transaction.Transaction;
 
 public class ListenerStateMachine extends Thread {
 	private final ClientConnections cc;

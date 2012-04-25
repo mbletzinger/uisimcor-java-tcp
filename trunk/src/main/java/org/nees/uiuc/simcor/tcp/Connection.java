@@ -90,7 +90,7 @@ public class Connection extends Thread {
 			TcpActionsDto outM = getToRemoteMsg();
 			if (outM.getAction().equals(ActionsType.EXIT)) {
 				TcpActionsDto inM = new TcpActionsDto();
-				boolean result = openCloseAction.close();
+				openCloseAction.close();
 				inM.setError(openCloseAction.getError());
 				setFromRemoteMsg(inM, ActionsType.EXIT);
 				running = false;
@@ -203,7 +203,7 @@ public class Connection extends Thread {
 		}
 
 		if (act.equals(ActionsType.WRITE)) {
-			boolean result = writer.write(outM.getMsg());
+			writer.write(outM.getMsg());
 			inM.setAction(ActionsType.NONE);
 			inM.setError(writer.getError());
 			inM.timestamp();

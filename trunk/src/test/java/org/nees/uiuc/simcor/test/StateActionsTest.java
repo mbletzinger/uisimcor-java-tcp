@@ -1,20 +1,18 @@
 package org.nees.uiuc.simcor.test;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.nees.uiuc.simcor.states.StateActionsProcessorWithLcf;
 import org.nees.uiuc.simcor.states.TransactionStateNames;
-import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.tcp.TcpError.TcpErrorTypes;
+import org.nees.uiuc.simcor.tcp.TcpParameters;
 import org.nees.uiuc.simcor.test.util.StateActionsResponder;
 import org.nees.uiuc.simcor.test.util.StateActionsResponder.DieBefore;
 import org.nees.uiuc.simcor.transaction.SimCorMsg;
-import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
+import org.nees.uiuc.simcor.transaction.SimpleTransaction;
 
 public class StateActionsTest  {
 	private final Logger log = Logger.getLogger(StateActionsTest.class);

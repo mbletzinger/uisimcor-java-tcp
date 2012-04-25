@@ -2,7 +2,6 @@ package org.nees.uiuc.simcor.transaction;
 
 import org.nees.uiuc.simcor.listener.ClientId;
 import org.nees.uiuc.simcor.tcp.TcpError;
-import org.nees.uiuc.simcor.transaction.SimCorMsg.MsgType;
 
 public class TriggerResponse extends SimCorMsg {
 
