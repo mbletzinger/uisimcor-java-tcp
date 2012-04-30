@@ -35,8 +35,14 @@ public class BroadcastTest  {
 	private BroadcastTransaction broadcast() {
 		number++;
 		TransactionFactory tf = simcor.getTf();
-		BroadcastTransaction transaction = tf.createBroadcastTransaction(
+		BroadcastTransaction transaction;
+		if (number % 2 == 0) {
+		transaction = tf.createBroadcastTransaction(
 				number, 0, 0, 5000);
+		} else {
+			transaction = tf.createBroadcastTransaction(
+					number, 3, 12,"subtrigger","SAMPLE CONTENT", 5000);			
+		}
 		log.debug("Assemble Broadcast " + transaction);
 		simcor.startTransaction(transaction);
 		TransactionStateNames state = simcor.isReady();
