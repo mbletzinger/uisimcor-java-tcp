@@ -32,7 +32,14 @@ public class TriggerTest  {
 
 	private BroadcastTransaction broadcast() {
 		number++;
-		BroadcastTransaction transaction = tf.createBroadcastTransaction(number,0,0,5000);
+		BroadcastTransaction transaction;
+		if (number % 2 == 0) {
+			transaction = tf.createBroadcastTransaction(
+					number, 0, 0, 5000);
+			} else {
+				transaction = tf.createBroadcastTransaction(
+						number, 3, 12,"subtrigger","SAMPLE CONTENT", 5000);			
+			}
 		sap.assembleTriggerCommands(transaction,
 				TransactionStateNames.BROADCAST_COMMAND, false);
 		log.debug("Assemble Broadcast " + transaction);

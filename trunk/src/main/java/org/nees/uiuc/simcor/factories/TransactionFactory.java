@@ -42,6 +42,17 @@ public class TransactionFactory {
 		return result;
 	}
 
+	public BroadcastTransaction createBroadcastTransaction(int step,
+			int subStep, int correctionStep, String command, String content,
+			int msgTimeout) {
+		BroadcastTransaction result = createBroadcastTransaction(step, subStep,
+				correctionStep, msgTimeout);
+		result.getCommand().setContent(content);
+		result.getCommand().setCommand(command);
+		log.debug("Created broadcast: " + result);
+		return result;
+	}
+
 	public BroadcastTransaction createCloseTriggerTransaction(int msgTimeout) {
 		BroadcastTransaction result = new BroadcastTransaction();
 		result.setCommand(createSessionCommand(false));
@@ -174,8 +185,10 @@ public class TransactionFactory {
 		if (vampId == null) {
 			vampId = createTransactionId(9999, 0, 0);
 		}
-		BroadcastTransaction btr = createBroadcastTransaction(vampId.getStep(), vampId.getSubStep()	, vampId.getCorrectionStep() +  vampCount++, msgTimeout);
-		log.debug("Created Vamp\"" + btr  + "\"");
+		BroadcastTransaction btr = createBroadcastTransaction(vampId.getStep(),
+				vampId.getSubStep(), vampId.getCorrectionStep() + vampCount++,
+				msgTimeout);
+		log.debug("Created Vamp\"" + btr + "\"");
 		return btr;
 	}
 
