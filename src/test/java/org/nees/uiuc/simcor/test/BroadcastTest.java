@@ -332,8 +332,8 @@ public class BroadcastTest  {
 		startClient(false);
 		checkClientList(2);
 		TriggerBroadcastVamp vmp = new TriggerBroadcastVamp(simcor);
-		TransactionIdentity tid = simcor.getTf().createTransactionId(100, 10, 11);
-		vmp.startVamp(1, 3000,tid);
+		BroadcastTransaction vmpT = simcor.getTf().createBroadcastTransaction(100, 10, 11,3000);
+		vmp.startVamp(1, 3000,vmpT);
 		TcpErrorTypes err = vmp.getError().getType();
 		while(err.equals(TcpErrorTypes.NONE)) {
 			Thread.sleep(100);

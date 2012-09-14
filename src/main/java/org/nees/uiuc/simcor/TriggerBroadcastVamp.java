@@ -82,10 +82,10 @@ public class TriggerBroadcastVamp {
 	}
 
 	public void startVamp(int vampTimeInSeconds, int msgTimeoutInMils,
-			TransactionIdentity vampId) {
+			BroadcastTransaction transaction) {
 		this.vampTimeInSeconds = vampTimeInSeconds;
 		this.msgTimeout = msgTimeoutInMils;
-		bcast.getTf().setVampId(vampId);
+		bcast.getTf().setVampMsg(transaction);
 		setOn(true);
 		vamp.start();
 	}
