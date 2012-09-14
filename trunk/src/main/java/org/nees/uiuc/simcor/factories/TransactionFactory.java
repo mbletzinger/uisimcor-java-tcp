@@ -24,9 +24,9 @@ public class TransactionFactory {
 	private String systemDescription;
 
 	private int transactionTimeout = 3000;
-	private int vampCount = 0;
-	private TransactionIdentity vampId;
 
+	private int vampCount = 0;
+	private BroadcastTransaction vampMsg;
 	public BroadcastTransaction createBroadcastTransaction(int step,
 			int subStep, int correctionStep, int msgTimeout) {
 		BroadcastTransaction result = new BroadcastTransaction();
@@ -182,12 +182,14 @@ public class TransactionFactory {
 	}
 
 	public BroadcastTransaction createVampTransaction(int msgTimeout) {
-		if (vampId == null) {
-			vampId = createTransactionId(9999, 0, 0);
+		if (vampMsg == null) {
+			log.error("Vamp Msg is Missing");
 		}
-		BroadcastTransaction btr = createBroadcastTransaction(vampId.getStep(),
-				vampId.getSubStep(), vampId.getCorrectionStep() + vampCount++,
-				msgTimeout);
+		BroadcastTransaction btr = new BroadcastTransaction();
+		TransactionIdentity vid = vampMsg.getId();
+		btr.setId(createTransactionId(vid.getStep(), vid.getSubStep(), vid.getCorrectionStep() + vampCount++));
+		btr.setCommand(vampMsg.getCommand());
+		btr.setTimeout(msgTimeout);
 		log.debug("Created Vamp\"" + btr + "\"");
 		return btr;
 	}
@@ -215,8 +217,8 @@ public class TransactionFactory {
 	/**
 	 * @return the vampId
 	 */
-	public TransactionIdentity getVampId() {
-		return vampId;
+	public BroadcastTransaction getVampMsg() {
+		return vampMsg;
 	}
 
 	public void setDirection(DirectionType direction) {
@@ -250,11 +252,10 @@ public class TransactionFactory {
 	}
 
 	/**
-	 * @param vampId
-	 *            the vampId to set
+	 * @param vampMsg the vampMsg to set
 	 */
-	public void setVampId(TransactionIdentity vampId) {
-		this.vampId = vampId;
+	public void setVampMsg(BroadcastTransaction vampMsg) {
+		this.vampMsg = vampMsg;
 	}
 
 }
